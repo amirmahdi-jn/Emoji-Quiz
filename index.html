@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+            background: #0f172a;
+            direction: rtl;
+            transition: background 0.5s ease;
+        }
+
+        .card {
+            background: #1e293b;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 45px;
+            padding: 35px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .icon-box-top {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+        .icon-box-top:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .icon-box-top svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 10px 18px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .stat-box svg {
+            width: 24px;
+            height: 24px;
+        }
+        .stat-icon.coin {
+            color: #fbbf24;
+            fill: #fbbf24;
+        }
+        .stat-icon.star {
+            color: #f97316;
+            fill: #f97316;
+        }
+
+        .level-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 25px;
+            padding: 8px 18px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .level-container .arrow {
+            font-size: 16px;
+            color: #cbd5e1;
+            cursor: pointer;
+            padding: 2px 8px;
+            user-select: none;
+            transition: 0.2s;
+        }
+
+        .level-container .arrow.disabled {
+            color: #475569;
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .level-badge {
+            font-size: 15px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .emoji-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 35px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .emoji-container .emoji {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-direction: row-reverse;
+        }
+
+        .input-container {
+            flex: 3;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .input-container.disabled {
+            opacity: 0.5;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 6px 0;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 13px;
+            font-family: 'Vazirmatn', sans-serif;
+            color: #f8fafc;
+        }
+
+        .input-container input:disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .input-container input::placeholder {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .btn-small {
+            padding: 6px 14px;
+            height: 36px;
+            border: none;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Vazirmatn', sans-serif;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-small:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-confirm-sm {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-cancel-sm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 0;
+            padding-bottom: 0;
+            flex-wrap: wrap;
+        }
+
+        .btn-bottom {
+            padding: 10px 16px;
+            min-width: 70px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 1 auto;
+        }
+
+        .btn-bottom:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-bottom svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .coin-currency {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            fill: #000;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #1e293b;
+            border-radius: 30px;
+            padding: 30px 35px;
+            max-width: 420px;
+            width: 92%;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .modal-btn {
+            background: #7dd3fc;
+            color: #0f172a;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            margin-top: 14px;
+            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+        }
+
+        .modal-btn:hover {
+            background: #bae6fd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
+        }
+
+        .modal-btn:active {
+            transform: scale(0.97);
+        }
+
+        .info-items {
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 7px 0;
+            color: #cbd5e1;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            stroke: #94a3b8;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .info-item .label {
+            color: #94a3b8;
+            margin-left: 4px;
+        }
+
+        .info-item .value {
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <div class="icon-box-top" onclick="showShopModal()">
+            <svg viewBox="0 0 24 24">
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+        </div>
+
+        <div class="title">Emoji Quiz</div>
+
+        <div class="icon-box-top" onclick="showInfoModal()">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <svg class="stat-icon coin" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <text x="12" y="17" class="coin-currency" text-anchor="middle">$</text>
+            </svg>
+            <span id="coins">50</span>
+        </div>
+        <div class="stat-box">
+            <svg class="stat-icon star" viewBox="0 0 24 24">
+                <polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9"/>
+            </svg>
+            <span id="stars">0</span>
+        </div>
+    </div>
+
+    <div class="level-container">
+        <span class="arrow disabled" id="prevBtn" onclick="changeLevel(-1)">▶</span>
+        <div class="level-badge" id="levelText">مرحله ۱ از ۵</div>
+        <span class="arrow disabled" id="nextBtn" onclick="changeLevel(1)">◀</span>
+    </div>
+
+    <div class="emoji-container">
+        <span class="emoji" id="emoji1">🧑</span>
+        <span class="emoji" id="emoji2">🐬</span>
+    </div>
+
+    <div class="input-row">
+        <button class="btn-small btn-cancel-sm" id="cancelBtn" onclick="clearAll()">✖ لغو</button>
+        <button class="btn-small btn-confirm-sm" id="confirmBtn" onclick="checkAnswer()">✔ تایید</button>
+        <div class="input-container" id="inputContainer">
+            <input type="text" id="answerInput" placeholder="پاسخ را وارد کنید...">
+        </div>
+    </div>
+
+    <div class="bottom-actions">
+        <button class="btn-bottom" onclick="showBackgroundModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+            </svg>
+            پس‌زمینه
+        </button>
+
+        <button class="btn-bottom" onclick="showAnswer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="9" r="6"/>
+                <line x1="13.5" y1="13.5" x2="21" y2="21"/>
+            </svg>
+            جواب
+        </button>
+    </div>
+</div>
+
+<!-- مودال‌ها -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle">درست</div>
+        <div class="modal-message" id="modalMessage"></div>
+        <button class="modal-btn" id="modalBtn" onclick="closeModal()">قبول</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="offlineModal">
+    <div class="modal-box">
+        <div class="modal-title">آفلاین</div>
+        <div class="modal-message">اینترنت شما قطع است.<br>لطفا اینترنت خود را بررسی کنید.</div>
+        <button class="modal-btn" onclick="checkConnection()">تلاش مجدد</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="infoModal">
+    <div class="modal-box">
+        <div class="modal-title">اطلاعات</div>
+        <div class="info-items">
+            <div class="info-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span><span class="label">توسعه دهنده :</span> <span class="value">AmirMahdi.JN</span></span>
+            </div>
+            <div class="info-item">
+                <svg viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="5"/>
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+                <span><span class="label">اینستاگرام :</span> <span class="value">_AmirMahdi.JN_@</span></span>
+            </div>
+            <div class="info-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                </svg>
+                <span><span class="label">تلگرام :</span> <span class="value">AmirMahdi_2023@</span></span>
+            </div>
+            <div class="info-item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span><span class="label">روبیکا :</span> <span class="value">AmirMahdi_2018@</span></span>
+            </div>
+            <div class="info-item">
+                <svg viewBox="0 0 24 24">
+                    <rect x="5" y="3" width="14" height="18" rx="2.5" stroke="#94a3b8" stroke-width="2" fill="none"/>
+                    <circle cx="12" cy="16.5" r="1.5" fill="#94a3b8" stroke="none"/>
+                </svg>
+                <span><span class="label">موبایل :</span> <span class="value">09918659161</span></span>
+            </div>
+        </div>
+        <button class="modal-btn" onclick="closeInfoModal()">بستن</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="shopModal">
+    <div class="modal-box">
+        <div class="modal-title">فروشگاه</div>
+        <div class="modal-message">این بخش به زودی فعال می‌شود.</div>
+        <button class="modal-btn" onclick="closeShopModal()">بستن</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="bgModal">
+    <div class="modal-box">
+        <div class="modal-title">پس‌زمینه</div>
+        <div class="modal-message">این بخش به زودی فعال می‌شود.</div>
+        <button class="modal-btn" onclick="closeBgModal()">بستن</button>
+    </div>
+</div>
+
+<script>
+    // ========== ریست یک‌باره بازی ==========
+    (function resetGameOnce() {
+        const RESET_KEY = 'emoji_quiz_reset_done';
+        if (!localStorage.getItem(RESET_KEY)) {
+            // پاک کردن همه داده‌های ذخیره‌شده
+            localStorage.removeItem('emoji_quiz_save');
+            localStorage.removeItem('emoji_quiz_background');
+            // علامت‌گذاری که ریست انجام شده
+            localStorage.setItem(RESET_KEY, 'true');
+            console.log('بازی ریست شد!');
+        }
+    })();
+
+    // ========== ثبت Service Worker ==========
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .catch(() => {});
+    }
+
+    // ========== سوالات ==========
+    const questions = {
+        1: { emoji1: '🧑', emoji2: '🐬', answer: 'پسر دلفینی' },
+        2: { emoji1: '🌅', emoji2: '🧊', answer: 'عصر یخبندان' },
+        3: { emoji1: '🐁', emoji2: '👨‍🍳', answer: 'موش سرآشپز' },
+        4: { emoji1: '🐈‍⬛', emoji2: '👢', answer: 'گربه چکمه پوش' },
+        5: { emoji1: '📚', emoji2: '🌾', answer: 'دانشجو' }
+    };
+
+    // ========== متغیرهای بازی ==========
+    let currentLevel = 1;
+    const totalLevels = Object.keys(questions).length;
+    let modalCallback = null;
+
+    let answeredLevels = {};
+    let correctAttempts = {};
+    let totalStars = 0;
+
+    const SAVE_KEY = 'emoji_quiz_save';
+
+    // ========== ذخیره‌سازی ==========
+    function saveGame() {
+        const data = {
+            currentLevel: currentLevel,
+            answeredLevels: answeredLevels,
+            correctAttempts: correctAttempts,
+            totalStars: totalStars
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    }
+
+    function loadGame() {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                currentLevel = data.currentLevel || 1;
+                answeredLevels = data.answeredLevels || {};
+                correctAttempts = data.correctAttempts || {};
+                totalStars = data.totalStars || 0;
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // ========== المان‌ها ==========
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const levelText = document.getElementById('levelText');
+    const emoji1 = document.getElementById('emoji1');
+    const emoji2 = document.getElementById('emoji2');
+    const answerInput = document.getElementById('answerInput');
+    const inputContainer = document.getElementById('inputContainer');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalBtn = document.getElementById('modalBtn');
+    const coinsSpan = document.getElementById('coins');
+    const starsSpan = document.getElementById('stars');
+    const offlineModal = document.getElementById('offlineModal');
+    const infoModal = document.getElementById('infoModal');
+    const shopModal = document.getElementById('shopModal');
+    const bgModal = document.getElementById('bgModal');
+
+    const answerBtn = document.querySelector('.btn-bottom[onclick="showAnswer()"]');
+
+    // ========== مدیریت آفلاین ==========
+    function showOfflineModal() {
+        offlineModal.classList.add('active');
+        answerInput.disabled = true;
+        confirmBtn.disabled = true;
+        cancelBtn.disabled = true;
+        if (answerBtn) {
+            answerBtn.style.pointerEvents = 'none';
+            answerBtn.style.opacity = '0.4';
+        }
+    }
+
+    function hideOfflineModal() {
+        offlineModal.classList.remove('active');
+        if (!answeredLevels[currentLevel]) {
+            answerInput.disabled = false;
+            confirmBtn.disabled = false;
+            cancelBtn.disabled = false;
+            if (answerBtn) {
+                answerBtn.style.pointerEvents = 'auto';
+                answerBtn.style.opacity = '1';
+            }
+        }
+    }
+
+    function checkConnection() {
+        if (navigator.onLine) {
+            hideOfflineModal();
+        } else {
+            offlineModal.classList.add('active');
+        }
+    }
+
+    window.addEventListener('offline', showOfflineModal);
+    window.addEventListener('online', hideOfflineModal);
+
+    if (!navigator.onLine) {
+        showOfflineModal();
+    }
+
+    // ========== مدیریت مودال‌ها ==========
+    function showInfoModal() { infoModal.classList.add('active'); }
+    function closeInfoModal() { infoModal.classList.remove('active'); }
+    function showShopModal() { shopModal.classList.add('active'); }
+    function closeShopModal() { shopModal.classList.remove('active'); }
+    function showBackgroundModal() { bgModal.classList.add('active'); }
+    function closeBgModal() { bgModal.classList.remove('active'); }
+
+    // ========== منطق بازی ==========
+    function updateButtons() {
+        if (currentLevel === 1) {
+            prevBtn.classList.add('disabled');
+        } else {
+            prevBtn.classList.remove('disabled');
+        }
+
+        if (currentLevel === totalLevels) {
+            nextBtn.classList.add('disabled');
+        } else {
+            if (answeredLevels[currentLevel]) {
+                nextBtn.classList.remove('disabled');
+            } else {
+                nextBtn.classList.add('disabled');
+            }
+        }
+    }
+
+    function disableInput(level) {
+        if (answeredLevels[level]) {
+            inputContainer.classList.add('disabled');
+            answerInput.disabled = true;
+            confirmBtn.disabled = true;
+            cancelBtn.disabled = true;
+        } else {
+            inputContainer.classList.remove('disabled');
+            answerInput.disabled = false;
+            confirmBtn.disabled = false;
+            cancelBtn.disabled = false;
+        }
+    }
+
+    function loadLevel(level) {
+        const q = questions[level];
+        if (q) {
+            emoji1.textContent = q.emoji1;
+            emoji2.textContent = q.emoji2;
+            levelText.textContent = `مرحله ${level} از ${totalLevels}`;
+
+            if (answeredLevels[level]) {
+                answerInput.value = q.answer;
+                disableInput(level);
+            } else {
+                answerInput.value = '';
+                disableInput(level);
+            }
+
+            answerInput.placeholder = 'پاسخ را وارد کنید...';
+            updateButtons();
+            coinsSpan.textContent = 50;
+            starsSpan.textContent = totalStars;
+        }
+    }
+
+    function changeLevel(direction) {
+        const newLevel = currentLevel + direction;
+        if (newLevel >= 1 && newLevel <= totalLevels) {
+            currentLevel = newLevel;
+            loadLevel(currentLevel);
+            saveGame();
+        }
+    }
+
+    function showModal(title, message, callback) {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalCallback = callback || null;
+        modalOverlay.classList.add('active');
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        if (modalCallback) {
+            const cb = modalCallback;
+            modalCallback = null;
+            cb();
+        }
+    }
+
+    function applyScore(level) {
+        const attempts = correctAttempts[level] || 0;
+        let scoreChange = 0;
+
+        if (attempts === 0) {
+            scoreChange = 30;
+        } else if (attempts === 1) {
+            scoreChange = 20;
+        } else if (attempts === 2) {
+            scoreChange = 10;
+        } else {
+            scoreChange = -5;
+        }
+
+        totalStars += scoreChange;
+        starsSpan.textContent = totalStars;
+        correctAttempts[level] = attempts + 1;
+        saveGame();
+    }
+
+    function checkAnswer() {
+        if (!navigator.onLine) {
+            showOfflineModal();
+            return;
+        }
+
+        if (answeredLevels[currentLevel]) {
+            showModal('توجه', 'شما قبلاً به این سوال پاسخ داده‌اید.', null);
+            return;
+        }
+
+        const userAnswer = answerInput.value.trim();
+        const q = questions[currentLevel];
+
+        if (userAnswer === '') {
+            showModal('خطا', 'لطفا پاسخ را وارد کنید.', null);
+            return;
+        }
+
+        if (userAnswer === q.answer) {
+            applyScore(currentLevel);
+            answeredLevels[currentLevel] = true;
+            disableInput(currentLevel);
+            updateButtons();
+            saveGame();
+
+            showModal(
+                'درست',
+                'جواب شما کاملا صحیح بود.',
+                function() {
+                    if (currentLevel < totalLevels) {
+                        currentLevel++;
+                        loadLevel(currentLevel);
+                        saveGame();
+                    } else {
+                        showModal('تبریک', 'شما همه مراحل را کامل کردید.', null);
+                    }
+                }
+            );
+        } else {
+            showModal(
+                'نادرست',
+                'لطفا دوباره تلاش کنید.',
+                function() {
+                    answerInput.value = '';
+                    answerInput.focus();
+                }
+            );
+        }
+    }
+
+    function clearAll() {
+        if (answeredLevels[currentLevel] || !navigator.onLine) return;
+        answerInput.value = '';
+        answerInput.focus();
+    }
+
+    function showAnswer() {
+        if (!navigator.onLine) {
+            showOfflineModal();
+            return;
+        }
+        const q = questions[currentLevel];
+        showModal('جواب', `پاسخ صحیح : (${q.answer})`, null);
+    }
+
+    // ========== مقداردهی اولیه ==========
+    function init() {
+        loadGame();
+        loadLevel(currentLevel);
+        starsSpan.textContent = totalStars;
+        coinsSpan.textContent = 50;
+    }
+
+    init();
+
+    // ========== رویدادها ==========
+    answerInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkAnswer();
+    });
+
+    modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) closeModal();
+    });
+
+    infoModal.addEventListener('click', function(e) {
+        if (e.target === infoModal) closeInfoModal();
+    });
+
+    shopModal.addEventListener('click', function(e) {
+        if (e.target === shopModal) closeShopModal();
+    });
+
+    bgModal.addEventListener('click', function(e) {
+        if (e.target === bgModal) closeBgModal();
+    });
+</script>
+
+</body>
+</html>
