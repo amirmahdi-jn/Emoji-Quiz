@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emoji Quiz</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap');
 
         * {
             box-sizing: border-box;
@@ -25,6 +25,87 @@
             transition: background 0.5s ease;
         }
 
+        /* ===== استایل صفحه اسپلش ===== */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+            flex-direction: column;
+        }
+
+        #splashScreen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-content {
+            text-align: center;
+            animation: splashFloat 2.5s ease-in-out infinite;
+        }
+
+        @keyframes splashFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .splash-icon {
+            display: block;
+            margin-bottom: 16px;
+            width: 80px;
+            height: 80px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .splash-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .splash-title {
+            font-size: 38px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        .splash-sub {
+            color: #94a3b8;
+            font-size: 15px;
+            font-weight: 400;
+            margin-bottom: 24px;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        .splash-loader {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto;
+            border: 4px solid rgba(255, 255, 255, 0.08);
+            border-top: 4px solid #a78bfa;
+            border-right: 4px solid #a78bfa;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== کارت اصلی بازی ===== */
         .card {
             background: #1e293b;
             backdrop-filter: blur(8px);
@@ -403,6 +484,27 @@
 </head>
 <body>
 
+<!-- ===== صفحه اسپلش ===== -->
+<div id="splashScreen">
+    <div class="splash-content">
+        <span class="splash-icon">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#2563eb" opacity="0.12"/>
+                <circle cx="50" cy="50" r="35" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                <circle cx="38" cy="43" r="5" fill="#1e293b"/>
+                <circle cx="62" cy="43" r="5" fill="#1e293b"/>
+                <circle cx="36" cy="41" r="2" fill="white"/>
+                <circle cx="60" cy="41" r="2" fill="white"/>
+                <path d="M35 58 Q50 72 65 58" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+        </span>
+        <div class="splash-title">Emoji Quiz</div>
+        <div class="splash-sub">در حال بارگذاری...</div>
+        <div class="splash-loader"></div>
+    </div>
+</div>
+
+<!-- ===== کارت بازی ===== -->
 <div class="card">
     <div class="header">
         <div class="icon-box-top" onclick="showShopModal()">
@@ -556,16 +658,26 @@
 </div>
 
 <script>
+    // ========== اسکریپت اسپلش (زمان ۳۰۰۰ میلی‌ثانیه) ==========
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const splash = document.getElementById('splashScreen');
+            if (splash) {
+                splash.classList.add('hide');
+                setTimeout(function() {
+                    splash.style.display = 'none';
+                }, 800);
+            }
+        }, 3000);
+    });
+
     // ========== ریست یک‌باره بازی ==========
     (function resetGameOnce() {
         const RESET_KEY = 'emoji_quiz_reset_done';
         if (!localStorage.getItem(RESET_KEY)) {
-            // پاک کردن همه داده‌های ذخیره‌شده
             localStorage.removeItem('emoji_quiz_save');
             localStorage.removeItem('emoji_quiz_background');
-            // علامت‌گذاری که ریست انجام شده
             localStorage.setItem(RESET_KEY, 'true');
-            console.log('بازی ریست شد!');
         }
     })();
 
@@ -758,9 +870,11 @@
         }
     }
 
-    function showModal(title, message, callback) {
+    // ===== تابع نمایش مودال با قابلیت تنظیم متن دکمه =====
+    function showModal(title, message, callback, buttonText) {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
+        modalBtn.textContent = buttonText || 'قبول';
         modalCallback = callback || null;
         modalOverlay.classList.add('active');
     }
@@ -851,13 +965,15 @@
         answerInput.focus();
     }
 
+    // ===== پنجره جواب با فرمت جدید و دکمه «باشه» =====
     function showAnswer() {
         if (!navigator.onLine) {
             showOfflineModal();
             return;
         }
         const q = questions[currentLevel];
-        showModal('جواب', `پاسخ صحیح : (${q.answer})`, null);
+        const answerText = q.answer;
+        showModal('جواب', `پاسخ صحیح : « ${answerText} »`, null, 'باشه');
     }
 
     // ========== مقداردهی اولیه ==========
@@ -893,4 +1009,4 @@
 </script>
 
 </body>
-</html>
+                    </html>
