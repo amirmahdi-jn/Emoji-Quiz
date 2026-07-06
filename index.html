@@ -361,7 +361,6 @@
             stroke-linejoin: round;
         }
 
-        /* مودال‌های اصلی (اطلاعات، پیام، خطا، راهنمایی) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -468,7 +467,247 @@
             font-weight: 500;
         }
 
-        /* استایل مودال راهنمایی */
+        /* فروشگاه غیرفعال */
+        .shop-disabled {
+            text-align: center;
+            padding: 30px 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #facc15;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            margin: 12px 0;
+        }
+
+        .shop-close-btn {
+            margin-top: 10px;
+        }
+
+        .confirm-buy-btn {
+            background: #7dd3fc;
+            color: #0f172a;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+            min-width: 100px;
+        }
+        .confirm-buy-btn:hover {
+            background: #bae6fd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
+        }
+        .confirm-buy-btn:active {
+            transform: scale(0.97);
+        }
+        .cancel-buy-btn {
+            background: #64748b;
+            color: #fff;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            min-width: 100px;
+        }
+        .cancel-buy-btn:hover {
+            background: #94a3b8;
+            transform: translateY(-2px);
+        }
+        .confirm-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        #confirmBuyMessage {
+            font-size: 16px;
+            line-height: 1.8;
+            max-width: 100%;
+            direction: rtl;
+            padding: 0 2px;
+            white-space: normal;
+            text-align: center;
+        }
+        #confirmBuyMessage .line1 {
+            display: block;
+        }
+        #confirmBuyMessage .line2 {
+            display: block;
+        }
+
+        /* ===== مودال پرداخت ===== */
+        .payment-modal {
+            z-index: 2000 !important;
+        }
+        .payment-modal .modal-box {
+            max-width: 420px;
+            text-align: center;
+        }
+        .payment-modal .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .payment-modal .modal-title svg {
+            width: 28px;
+            height: 28px;
+        }
+        .payment-modal .payment-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 6px;
+            text-align: center;
+            padding: 0 4px;
+        }
+        .payment-modal .payment-row .highlight {
+            color: #7dd3fc;
+            font-weight: 700;
+        }
+        .payment-modal .payment-row .icon-symbol {
+            font-size: 16px;
+            color: #fbbf24;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .payment-modal .card-number {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 12px 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            color: #f1f5f9;
+            direction: ltr;
+            margin: 12px 0 16px 0;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .payment-modal .token-label {
+            color: #cbd5e1;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+            line-height: 1.6;
+            flex-wrap: wrap;
+        }
+        .payment-modal .token-label .icon-symbol {
+            font-size: 18px;
+            color: #facc15;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .payment-modal .token-label .token-text {
+            display: inline;
+        }
+        .payment-modal .token-input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 6px;
+            text-align: center;
+            outline: none;
+            transition: 0.3s;
+            direction: ltr;
+        }
+        .payment-modal .token-input:focus {
+            border-color: #7dd3fc;
+            box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.2);
+        }
+        .payment-modal .token-input::placeholder {
+            color: #64748b;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .payment-modal .payment-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .payment-modal .payment-btn {
+            background: #7dd3fc;
+            color: #0f172a;
+            border: none;
+            padding: 8px 28px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+            min-width: 80px;
+        }
+        .payment-modal .payment-btn:hover {
+            background: #bae6fd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
+        }
+        .payment-modal .payment-btn:active {
+            transform: scale(0.97);
+        }
+        .payment-modal .cancel-payment-btn {
+            background: #64748b;
+            color: #fff;
+            border: none;
+            padding: 8px 28px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Vazirmatn', sans-serif;
+            min-width: 80px;
+        }
+        .payment-modal .cancel-payment-btn:hover {
+            background: #94a3b8;
+            transform: translateY(-2px);
+        }
+
+        #paymentDesc {
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .hint-modal .modal-box {
+            max-width: 400px;
+            text-align: center;
+        }
         .hint-modal .hint-cost {
             font-size: 18px;
             font-weight: 700;
@@ -497,6 +736,212 @@
         }
         .hint-modal .hint-buttons .modal-btn.cancel:hover {
             background: #94a3b8;
+        }
+
+        .modal-overlay.error-modal {
+            z-index: 1100;
+        }
+        .modal-overlay.success-modal {
+            z-index: 1100;
+        }
+        .modal-overlay.hint-modal {
+            z-index: 1100;
+        }
+
+        .bg-modal .modal-box {
+            max-width: 540px;
+            padding: 28px 24px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .bg-modal .modal-box .modal-title {
+            margin-bottom: 18px;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .bg-modal .modal-box .theme-grid-wrap {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 2px 2px 10px 2px;
+            margin: 0 -4px 0 -4px;
+        }
+        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar {
+            width: 6px;
+        }
+        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar-thumb {
+            background: #7dd3fc;
+            border-radius: 10px;
+        }
+        .theme-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 0;
+        }
+        .theme-square {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2.5px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px;
+            min-height: 130px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .theme-square:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .theme-square .theme-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 15px;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+            transition: transform 0.4s ease;
+        }
+        .theme-square:hover .theme-bg {
+            transform: scale(1.04);
+        }
+        .theme-square .theme-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.05) 100%);
+            border-radius: 15px;
+            z-index: 1;
+        }
+        .theme-square .theme-name {
+            position: relative;
+            z-index: 2;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+            padding: 2px 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .theme-square .theme-status {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 3;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .theme-square .theme-status svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        .theme-square.selected {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        .theme-square.selected .theme-status {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+        }
+        /* قفل‌ها کاملاً حذف شدند */
+        .theme-square .lock-center {
+            display: none !important;
+        }
+
+        .theme-bg-default {
+            background: linear-gradient(135deg, #1a2a4a, #1e3a5f, #2a4a7a);
+        }
+        .theme-bg-orange {
+            background: linear-gradient(135deg, #7c2d12, #ea580c, #f97316);
+        }
+        .theme-bg-purple {
+            background: linear-gradient(135deg, #4c1d5e, #d946ef, #ec4899);
+        }
+        .theme-bg-green {
+            background: linear-gradient(135deg, #064e3b, #059669, #10b981);
+        }
+        .theme-bg-red {
+            background: linear-gradient(135deg, #7f1d1d, #dc2626, #ef4444);
+        }
+        .theme-bg-pink {
+            background: linear-gradient(135deg, #831843, #db2777, #f472b6);
+        }
+        .theme-bg-cyan {
+            background: linear-gradient(135deg, #164e63, #0891b2, #22d3ee);
+        }
+        .theme-bg-yellow {
+            background: linear-gradient(135deg, #713f12, #ca8a04, #facc15);
+        }
+        .theme-bg-navy {
+            background: linear-gradient(135deg, #1a2a4a, #1e3a5f, #2a4a7a);
+        }
+
+        #buyThemeModal {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .theme-grid {
+                gap: 10px;
+            }
+            .theme-square {
+                min-height: 100px;
+                padding: 6px;
+                border-radius: 14px;
+            }
+            .theme-square .theme-name {
+                font-size: 12px;
+                padding: 1px 8px;
+            }
+            .theme-square .theme-status {
+                width: 28px;
+                height: 28px;
+                top: 5px;
+                left: 5px;
+            }
+            .theme-square .theme-status svg {
+                width: 16px;
+                height: 16px;
+            }
+            .bg-modal .modal-box {
+                padding: 20px 16px;
+            }
+            .bg-modal .modal-title {
+                font-size: 17px;
+            }
         }
     </style>
 </head>
@@ -533,8 +978,7 @@
     <!-- ===== کارت بازی ===== -->
     <div class="card">
         <div class="header">
-            <!-- دکمه فروشگاه (بازگشت) -->
-            <div class="icon-box-top" onclick="showShopMessage()">
+            <div class="icon-box-top" onclick="showShopModal()">
                 <svg viewBox="0 0 24 24">
                     <circle cx="9" cy="21" r="1"/>
                     <circle cx="20" cy="21" r="1"/>
@@ -587,8 +1031,7 @@
         </div>
 
         <div class="bottom-actions">
-            <!-- دکمه پس‌زمینه (بازگشت) -->
-            <button class="btn-bottom" onclick="showBackgroundMessage()">
+            <button class="btn-bottom" onclick="showBackgroundModal()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
@@ -606,8 +1049,7 @@
         </div>
     </div>
 
-    <!-- ===== مودال‌های مورد نیاز ===== -->
-    <!-- مودال عمومی برای پیام‌ها -->
+    <!-- ===== مودال‌ها ===== -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
             <div class="modal-title" id="modalTitle">درست</div>
@@ -616,7 +1058,6 @@
         </div>
     </div>
 
-    <!-- مودال آفلاین -->
     <div class="modal-overlay" id="offlineModal">
         <div class="modal-box">
             <div class="modal-title">آفلاین</div>
@@ -625,7 +1066,6 @@
         </div>
     </div>
 
-    <!-- مودال اطلاعات -->
     <div class="modal-overlay" id="infoModal">
         <div class="modal-box">
             <div class="modal-title">اطلاعات</div>
@@ -655,7 +1095,65 @@
         </div>
     </div>
 
-    <!-- مودال راهنمایی -->
+    <!-- ===== فروشگاه (غیرفعال) ===== -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-box">
+            <div class="modal-title">فروشگاه</div>
+            <div class="shop-disabled">
+                این بخش به زودی فعال می‌شود.
+            </div>
+            <button class="modal-btn shop-close-btn" onclick="closeShopModal()">بستن</button>
+        </div>
+    </div>
+
+    <!-- ===== مودال تایید خرید (غیرفعال) ===== -->
+    <div class="modal-overlay" id="confirmBuyModal" style="display:none !important;">
+        <div class="modal-box">
+            <div class="modal-title">خرید</div>
+            <div class="modal-message" id="confirmBuyMessage">
+                <span class="line1"></span>
+                <span class="line2"></span>
+            </div>
+            <div class="confirm-buttons">
+                <button class="confirm-buy-btn" onclick="executeBuy()">قبول</button>
+                <button class="cancel-buy-btn" onclick="closeConfirmBuyModal()">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== مودال پرداخت (غیرفعال) ===== -->
+    <div class="modal-overlay payment-modal" id="paymentModal" style="display:none !important;">
+        <div class="modal-box">
+            <div class="modal-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+                پرداخت
+            </div>
+            <div id="paymentMessage" class="payment-row">
+                <span class="icon-symbol">◆</span>
+                <span id="paymentDesc">مبلغ مورد نظر را به شماره کارت زیر واریز کنید.</span>
+            </div>
+            <div class="payment-row">
+                <span class="icon-symbol">●</span>
+                فیش واریزی را به آیدی <span class="highlight">AmirMahdi_2023@</span> در تلگرام ارسال کنید.
+            </div>
+            <div class="card-number">6037 9982 5196 2329</div>
+            <div class="token-label">
+                <span class="icon-symbol">✿</span>
+                <span class="token-text">لطفا کد توکن داده شده از سوی مدیریت</span>
+                <span class="token-text">را در کادر زیر وارد کنید.</span>
+            </div>
+            <input class="token-input" type="text" placeholder="XXXXXX" maxlength="6" id="tokenInput">
+            <div class="payment-buttons">
+                <button class="payment-btn" onclick="submitPayment()">تایید</button>
+                <button class="cancel-payment-btn" onclick="closePaymentModal()">لغو</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== مودال راهنمایی (کسر سکه) ===== -->
     <div class="modal-overlay hint-modal" id="hintModal">
         <div class="modal-box">
             <div class="modal-title">راهنمایی</div>
@@ -668,12 +1166,160 @@
         </div>
     </div>
 
-    <!-- مودال نمایش جواب -->
+    <!-- ===== مودال نمایش جواب (بعد از کسر سکه) ===== -->
     <div class="modal-overlay" id="answerModal">
         <div class="modal-box">
             <div class="modal-title">جواب</div>
             <div class="modal-message" id="answerMessage"></div>
             <button class="modal-btn" onclick="closeAnswerModal()">باشه</button>
+        </div>
+    </div>
+
+    <!-- ===== مودال خطا ===== -->
+    <div class="modal-overlay error-modal" id="errorModal">
+        <div class="modal-box">
+            <div class="modal-title" id="errorTitle">خطا</div>
+            <div class="modal-message" id="errorMessage"></div>
+            <button class="modal-btn" id="errorBtn" onclick="closeErrorModal()">باشه</button>
+        </div>
+    </div>
+
+    <!-- ===== مودال موفقیت ===== -->
+    <div class="modal-overlay success-modal" id="successModal">
+        <div class="modal-box">
+            <div class="modal-title">موفق</div>
+            <div class="modal-message" id="successMessage">خرید شما با موفقیت انجام شد.</div>
+            <button class="modal-btn" onclick="closeSuccessModal()">بستن</button>
+        </div>
+    </div>
+
+    <!-- ===== مودال خرید تم (کاملاً غیرفعال) ===== -->
+    <div class="modal-overlay" id="buyThemeModal" style="display:none !important;">
+        <div class="modal-box">
+            <div class="modal-title">قفل</div>
+            <div class="modal-message" style="font-size:16px; line-height:1.9;">
+                این تم قفل است.<br>
+                آیا مایل به خرید آن هستید؟
+            </div>
+            <div class="confirm-buttons">
+                <button class="confirm-buy-btn" onclick="confirmThemePurchase()">قبول</button>
+                <button class="cancel-buy-btn" onclick="closeBuyThemeModal()">انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== مودال پس‌زمینه (همه تم‌ها رایگان) ===== -->
+    <div class="modal-overlay bg-modal" id="bgModal">
+        <div class="modal-box">
+            <div class="modal-title">پس‌زمینه</div>
+            <div class="theme-grid-wrap">
+                <div class="theme-grid" id="themeGrid">
+                    <!-- تم سورمه‌ای -->
+                    <div class="theme-square selected" data-theme="default" onclick="selectTheme('default')">
+                        <div class="theme-bg theme-bg-navy"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-default">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم سورمه‌ای</span>
+                    </div>
+                    <!-- تم نارنجی -->
+                    <div class="theme-square" data-theme="orange" onclick="selectTheme('orange')">
+                        <div class="theme-bg theme-bg-orange"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-orange">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم نارنجی</span>
+                    </div>
+                    <!-- تم بنفش -->
+                    <div class="theme-square" data-theme="purple" onclick="selectTheme('purple')">
+                        <div class="theme-bg theme-bg-purple"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-purple">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم بنفش</span>
+                    </div>
+                    <!-- تم سبز -->
+                    <div class="theme-square" data-theme="green" onclick="selectTheme('green')">
+                        <div class="theme-bg theme-bg-green"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم سبز</span>
+                    </div>
+                    <!-- تم قرمز -->
+                    <div class="theme-square" data-theme="red" onclick="selectTheme('red')">
+                        <div class="theme-bg theme-bg-red"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-red">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم قرمز</span>
+                    </div>
+                    <!-- تم صورتی -->
+                    <div class="theme-square" data-theme="pink" onclick="selectTheme('pink')">
+                        <div class="theme-bg theme-bg-pink"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-pink">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم صورتی</span>
+                    </div>
+                    <!-- تم فیروزه‌ای -->
+                    <div class="theme-square" data-theme="cyan" onclick="selectTheme('cyan')">
+                        <div class="theme-bg theme-bg-cyan"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-cyan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم فیروزه‌ای</span>
+                    </div>
+                    <!-- تم زرد -->
+                    <div class="theme-square" data-theme="yellow" onclick="selectTheme('yellow')">
+                        <div class="theme-bg theme-bg-yellow"></div>
+                        <div class="theme-overlay"></div>
+                        <div class="theme-status" id="status-yellow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="theme-name">تم زرد</span>
+                    </div>
+                </div>
+            </div>
+            <button class="modal-btn modal-close-btn" onclick="closeBgModal()">بستن</button>
         </div>
     </div>
 
@@ -699,6 +1345,32 @@
             }
             let timer = setInterval(activateNextBlock, 1200);
         });
+
+        // ===== دیتابیس توکن‌ها (سکه) =====
+        function generateTokenDB() {
+            const TOKEN_KEY = 'emoji_quiz_tokens';
+            let tokens = localStorage.getItem(TOKEN_KEY);
+            if (tokens) {
+                try {
+                    return JSON.parse(tokens);
+                } catch (e) {}
+            }
+            const packages = [1, 2, 3, 4, 5];
+            const db = {};
+            for (let pkg of packages) {
+                const codes = new Set();
+                while (codes.size < 5) {
+                    let code = '';
+                    for (let i = 0; i < 6; i++) {
+                        code += Math.floor(Math.random() * 10);
+                    }
+                    codes.add(code);
+                }
+                db[pkg] = Array.from(codes);
+            }
+            localStorage.setItem(TOKEN_KEY, JSON.stringify(db));
+            return db;
+        }
 
         // ===== Service Worker =====
         if ('serviceWorker' in navigator) {
@@ -807,7 +1479,7 @@
             98:{ emoji1: '🤴', emoji2: '👂', answer: 'شاهگوش' },
             99:{ emoji1: '😢', emoji2: '🐊', answer: 'اشک تمساح' },
             100:{ emoji1: '4️⃣', emoji2: '🧱', answer: 'چار دیواری' }
-     };
+      };
 
         // ===== متغیرها =====
         let currentLevel = 1;
@@ -818,6 +1490,12 @@
         let totalStars = 0;
         let coinCount = 50;
         const SAVE_KEY = 'emoji_quiz_save';
+        const RESET_KEY = 'emoji_quiz_reset_done_v3';
+
+        // متغیرهای پرداخت (غیرفعال)
+        let paymentType = 'coin';
+        let pendingPackageId = null;
+        let pendingThemePurchase = null;
 
         function saveGame() {
             localStorage.setItem(SAVE_KEY, JSON.stringify({
@@ -845,8 +1523,11 @@
             return false;
         }
 
+        // ===== ریست کامل بازی =====
         function resetGame() {
             localStorage.removeItem(SAVE_KEY);
+            localStorage.removeItem('emoji_quiz_tokens');
+            localStorage.removeItem(RESET_KEY);
             currentLevel = 1;
             answeredLevels = {};
             correctAttempts = {};
@@ -873,6 +1554,14 @@
         const starsSpan = document.getElementById('stars');
         const offlineModal = document.getElementById('offlineModal');
         const infoModal = document.getElementById('infoModal');
+        const shopModal = document.getElementById('shopModal');
+        const bgModal = document.getElementById('bgModal');
+        const errorModal = document.getElementById('errorModal');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorBtn = document.getElementById('errorBtn');
+        const successModal = document.getElementById('successModal');
+        const successMessage = document.getElementById('successMessage');
         const hintModal = document.getElementById('hintModal');
         const answerModal = document.getElementById('answerModal');
         const answerMessage = document.getElementById('answerMessage');
@@ -913,32 +1602,37 @@
 
         function closeInfoModal() { infoModal.classList.remove('active'); }
 
-        // ===== دکمه‌های فروشگاه و پس‌زمینه (پیام جدید) =====
-        function showShopMessage() {
-            showModal('فروشگاه', 'این بخش به زودی فعال می‌شود.', null);
+        function showShopModal() { shopModal.classList.add('active'); }
+
+        function closeShopModal() { shopModal.classList.remove('active'); }
+
+        function showBackgroundModal() { bgModal.classList.add('active'); }
+
+        function closeBgModal() { bgModal.classList.remove('active'); }
+
+        function showErrorModal(title, message, btnText) {
+            errorTitle.textContent = title || 'خطا';
+            errorMessage.textContent = message || 'مشکلی پیش آمده است.';
+            errorBtn.textContent = btnText || 'باشه';
+            errorModal.classList.add('active');
         }
 
-        function showBackgroundMessage() {
-            showModal('پس‌زمینه', 'این بخش به زودی فعال می‌شود.', null);
+        function closeErrorModal() {
+            errorModal.classList.remove('active');
         }
 
-        // ===== مودال عمومی =====
-        function showModal(title, message, callback, buttonText) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalBtn.textContent = buttonText || 'قبول';
-            modalCallback = callback || null;
-            modalOverlay.classList.add('active');
+        function showSuccessModal() {
+            successModal.classList.add('active');
         }
 
-        function closeModal() {
-            modalOverlay.classList.remove('active');
-            if (modalCallback) { const cb = modalCallback;
-                modalCallback = null;
-                cb(); }
+        function closeSuccessModal() {
+            successModal.classList.remove('active');
+            // بستن مودال‌های پرداخت و فروشگاه در صورت باز بودن
+            closePaymentModal();
+            closeShopModal();
         }
 
-        // ===== راهنمایی =====
+        // ===== مودال راهنمایی (کسر سکه) =====
         function showHintModal() {
             if (!navigator.onLine) { showOfflineModal(); return; }
             if (answeredLevels[currentLevel]) {
@@ -954,7 +1648,7 @@
 
         function confirmHint() {
             if (coinCount < 15) {
-                showModal('خطا', 'سکه کافی برای راهنمایی ندارید!', null);
+                showErrorModal('خطا', 'سکه کافی برای راهنمایی ندارید!', 'باشه');
                 closeHintModal();
                 return;
             }
@@ -970,6 +1664,15 @@
         function closeAnswerModal() {
             answerModal.classList.remove('active');
         }
+
+        // ===== پرداخت (کاملاً غیرفعال) =====
+        function showCoinPayment(pkgId) { /* غیرفعال */ }
+
+        function showThemePayment(themeName) { /* غیرفعال */ }
+
+        function closePaymentModal() { /* غیرفعال */ }
+
+        function submitPayment() { /* غیرفعال */ }
 
         // ===== بازی =====
         function updateButtons() {
@@ -1018,6 +1721,22 @@
             }
         }
 
+        function showModal(title, message, callback, buttonText) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalBtn.textContent = buttonText || 'قبول';
+            modalCallback = callback || null;
+            modalOverlay.classList.add('active');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            if (modalCallback) { const cb = modalCallback;
+                modalCallback = null;
+                cb(); }
+        }
+
+        // ===== تابع بررسی پاسخ =====
         function checkAnswer() {
             if (!navigator.onLine) { showOfflineModal(); return; }
             if (answeredLevels[currentLevel]) {
@@ -1069,6 +1788,163 @@
             answerInput.focus();
         }
 
+        // ===== فروشگاه (غیرفعال) =====
+        // توابع خرید حذف شدند
+
+        // ===== خرید تم (غیرفعال) =====
+        function confirmThemePurchase() { /* غیرفعال */ }
+
+        function closeBuyThemeModal() { /* غیرفعال */ }
+
+        // ===== تم پس‌زمینه (همه رایگان) =====
+        const THEME_KEY = 'emoji_quiz_theme';
+        let currentTheme = 'default';
+
+        function loadTheme() {
+            const saved = localStorage.getItem(THEME_KEY);
+            if (saved) {
+                currentTheme = saved;
+            } else {
+                currentTheme = 'default';
+                localStorage.setItem(THEME_KEY, 'default');
+            }
+            applyTheme(currentTheme);
+            updateThemeUI(currentTheme);
+        }
+
+        function applyTheme(theme) {
+            const body = document.body;
+            const card = document.querySelector('.card');
+            let borderColor, borderFocus, shadowColor;
+
+            switch (theme) {
+                case 'default':
+                    body.style.background = '#1a2a4a';
+                    card.style.background = '#1e3a5f';
+                    card.style.borderColor = 'rgba(255,255,255,0.15)';
+                    borderColor = '#60a5fa';
+                    borderFocus = '#93c5fd';
+                    shadowColor = 'rgba(96,165,250,0.25)';
+                    break;
+                case 'orange':
+                    body.style.background = '#1a0e05';
+                    card.style.background = '#2d1a0a';
+                    card.style.borderColor = 'rgba(251,146,60,0.25)';
+                    borderColor = '#fb923c';
+                    borderFocus = '#fdba74';
+                    shadowColor = 'rgba(251,146,60,0.3)';
+                    break;
+                case 'purple':
+                    body.style.background = '#1a0b1f';
+                    card.style.background = '#2d142b';
+                    card.style.borderColor = 'rgba(236,72,153,0.25)';
+                    borderColor = '#c084fc';
+                    borderFocus = '#d8b4fe';
+                    shadowColor = 'rgba(192,132,252,0.25)';
+                    break;
+                case 'green':
+                    body.style.background = '#051a12';
+                    card.style.background = '#0d2a1e';
+                    card.style.borderColor = 'rgba(16,185,129,0.25)';
+                    borderColor = '#34d399';
+                    borderFocus = '#6ee7b7';
+                    shadowColor = 'rgba(52,211,153,0.25)';
+                    break;
+                case 'red':
+                    body.style.background = '#1a0505';
+                    card.style.background = '#2d0d0d';
+                    card.style.borderColor = 'rgba(239,68,68,0.25)';
+                    borderColor = '#f87171';
+                    borderFocus = '#fca5a5';
+                    shadowColor = 'rgba(248,113,113,0.25)';
+                    break;
+                case 'pink':
+                    body.style.background = '#1a0512';
+                    card.style.background = '#2d0d22';
+                    card.style.borderColor = 'rgba(244,114,182,0.25)';
+                    borderColor = '#f472b6';
+                    borderFocus = '#f9a8d4';
+                    shadowColor = 'rgba(244,114,182,0.25)';
+                    break;
+                case 'cyan':
+                    body.style.background = '#05151a';
+                    card.style.background = '#0d222b';
+                    card.style.borderColor = 'rgba(34,211,238,0.25)';
+                    borderColor = '#22d3ee';
+                    borderFocus = '#67e8f9';
+                    shadowColor = 'rgba(34,211,238,0.25)';
+                    break;
+                case 'yellow':
+                    body.style.background = '#1a1405';
+                    card.style.background = '#2d240a';
+                    card.style.borderColor = 'rgba(250,204,21,0.25)';
+                    borderColor = '#facc15';
+                    borderFocus = '#fde047';
+                    shadowColor = 'rgba(250,204,21,0.25)';
+                    break;
+                default:
+                    body.style.background = '#1a2a4a';
+                    card.style.background = '#1e3a5f';
+                    card.style.borderColor = 'rgba(255,255,255,0.15)';
+                    borderColor = '#60a5fa';
+                    borderFocus = '#93c5fd';
+                    shadowColor = 'rgba(96,165,250,0.25)';
+            }
+
+            document.documentElement.style.setProperty('--input-border', borderColor);
+            document.documentElement.style.setProperty('--input-border-focus', borderFocus);
+            document.documentElement.style.setProperty('--input-shadow', shadowColor);
+        }
+
+        function updateThemeUI(selectedTheme) {
+            const squares = document.querySelectorAll('.theme-square');
+            squares.forEach(sq => {
+                const theme = sq.dataset.theme;
+                const isSelected = theme === selectedTheme;
+
+                sq.classList.remove('selected');
+                if (isSelected) {
+                    sq.classList.add('selected');
+                }
+
+                const statusEl = sq.querySelector('.theme-status');
+                if (statusEl) {
+                    if (isSelected) {
+                        statusEl.innerHTML = `
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                            `;
+                        statusEl.style.borderColor = '#22c55e';
+                        statusEl.style.background = 'rgba(34,197,94,0.2)';
+                    } else {
+                        statusEl.innerHTML = `
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                            `;
+                        statusEl.style.borderColor = '#ef4444';
+                        statusEl.style.background = 'rgba(239,68,68,0.15)';
+                    }
+                }
+                // حذف هرگونه المان قفل
+                const lock = sq.querySelector('.lock-center');
+                if (lock) lock.remove();
+            });
+        }
+
+        function selectTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem(THEME_KEY, theme);
+            applyTheme(theme);
+            updateThemeUI(theme);
+            // بستن مودال پس از انتخاب (اختیاری)
+            // closeBgModal();
+        }
+
         // ===== مقداردهی اولیه =====
         function init() {
             resetGame();
@@ -1076,6 +1952,7 @@
             loadLevel(currentLevel);
             starsSpan.textContent = totalStars;
             coinsSpan.textContent = coinCount;
+            loadTheme();
         }
 
         init();
@@ -1084,6 +1961,10 @@
         answerInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkAnswer(); });
         modalOverlay.addEventListener('click', function(e) { if (e.target === modalOverlay) closeModal(); });
         infoModal.addEventListener('click', function(e) { if (e.target === infoModal) closeInfoModal(); });
+        shopModal.addEventListener('click', function(e) { if (e.target === shopModal) closeShopModal(); });
+        bgModal.addEventListener('click', function(e) { if (e.target === bgModal) closeBgModal(); });
+        errorModal.addEventListener('click', function(e) { if (e.target === errorModal) closeErrorModal(); });
+        successModal.addEventListener('click', function(e) { if (e.target === successModal) closeSuccessModal(); });
         hintModal.addEventListener('click', function(e) { if (e.target === hintModal) closeHintModal(); });
         answerModal.addEventListener('click', function(e) { if (e.target === answerModal) closeAnswerModal(); });
     </script>
