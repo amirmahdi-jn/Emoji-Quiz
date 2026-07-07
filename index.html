@@ -377,13 +377,11 @@
         .modal-overlay.active {
             display: flex;
         }
-        /* افزایش z-index برای مودال‌های خرید و تبریک و نتیجه */
         #buyThemeModal,
         #congratsModal,
         #resultModal {
             z-index: 9999 !important;
         }
-        /* مودال توجه (خطا/اطلاع) نیز اولویت بالایی دارد اما کمتر از تبریک/نتیجه */
         #modalOverlay {
             z-index: 9998 !important;
         }
@@ -811,8 +809,6 @@
         .theme-bg-yellow {
             background: linear-gradient(135deg, #713f12, #ca8a04, #facc15);
         }
-
-        /* استایل مودال شانس (gift modal) */
         .gift-modal .modal-box {
             max-width: 420px;
         }
@@ -869,8 +865,6 @@
         .gift-close-btn {
             margin-top: 6px;
         }
-
-        /* مودال نتیجه */
         #resultModal .modal-message {
             font-size: 18px;
             font-weight: 700;
@@ -880,7 +874,6 @@
             display: block;
             margin-bottom: 8px;
         }
-
         @media (max-width: 480px) {
             .theme-grid {
                 gap: 8px;
@@ -1050,6 +1043,15 @@
                     <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
                 </svg>
                 جایزه
+            </button>
+            <button class="btn-bottom" onclick="openChallengeModal()">
+                <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;">
+                    <circle cx="30" cy="30" r="20" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="30" cy="30" r="14" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="30" cy="30" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="30" cy="30" r="2" fill="currentColor"/>
+                </svg>
+                چالش
             </button>
             <button class="btn-bottom" onclick="showHintModal()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1349,48 +1351,44 @@
             <button class="modal-btn" onclick="closeCongratsModal()">بستن</button>
         </div>
     </div>
-
-    <!-- مودال شانس (جایزه) -->
     <div class="modal-overlay gift-modal" id="giftModal">
-   <div class="modal-box">
-    <div class="modal-title">شانس</div>
-    <div class="gift-container">
-        <div class="gift-box" onclick="openGift(1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="8" width="16" height="12" rx="2" />
-                <rect x="3" y="4" width="18" height="4" rx="1.5" />
-                <line x1="12" y1="3" x2="12" y2="20" />
-                <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
-            </svg>
-            <span>جعبه ۱</span>
-        </div>
-        <div class="gift-box" onclick="openGift(2)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="8" width="16" height="12" rx="2" />
-                <rect x="3" y="4" width="18" height="4" rx="1.5" />
-                <line x1="12" y1="3" x2="12" y2="20" />
-                <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
-            </svg>
-            <span>جعبه ۲</span>
-        </div>
-        <div class="gift-box" onclick="openGift(3)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="4" y="8" width="16" height="12" rx="2" />
-                <rect x="3" y="4" width="18" height="4" rx="1.5" />
-                <line x1="12" y1="3" x2="12" y2="20" />
-                <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
-            </svg>
-            <span>جعبه ۳</span>
+        <div class="modal-box">
+            <div class="modal-title">گردونه شانس</div>
+            <div class="gift-container">
+                <div class="gift-box" onclick="openGift(1)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                        <rect x="3" y="4" width="18" height="4" rx="1.5" />
+                        <line x1="12" y1="3" x2="12" y2="20" />
+                        <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
+                    </svg>
+                    <span>جعبه ۱</span>
+                </div>
+                <div class="gift-box" onclick="openGift(2)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                        <rect x="3" y="4" width="18" height="4" rx="1.5" />
+                        <line x1="12" y1="3" x2="12" y2="20" />
+                        <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
+                    </svg>
+                    <span>جعبه ۲</span>
+                </div>
+                <div class="gift-box" onclick="openGift(3)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="8" width="16" height="12" rx="2" />
+                        <rect x="3" y="4" width="18" height="4" rx="1.5" />
+                        <line x1="12" y1="3" x2="12" y2="20" />
+                        <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
+                    </svg>
+                    <span>جعبه ۳</span>
+                </div>
+            </div>
+            <div style="text-align: center; margin: 6px 0 4px;">
+                <div class="gift-timer" id="giftTimer">--:--:--</div>
+            </div>
+            <button class="modal-btn gift-close-btn" onclick="closeGiftModal()">بستن</button>
         </div>
     </div>
-    <!-- تایمر دقیقاً زیر جعبه‌ها و بالای دکمه بستن -->
-    <div style="text-align: center; margin: 6px 0 4px;">
-        <div class="gift-timer" id="giftTimer">--:--:--</div>
-    </div>
-    <button class="modal-btn gift-close-btn" onclick="closeGiftModal()">بستن</button>
-</div>
-
-    <!-- مودال نتیجه -->
     <div class="modal-overlay" id="resultModal">
         <div class="modal-box">
             <div class="modal-title">نتیجه</div>
@@ -1398,26 +1396,25 @@
             <button class="modal-btn" onclick="closeResultModal()">باشه</button>
         </div>
     </div>
-
+    <div class="modal-overlay" id="challengeModal">
+        <div class="modal-box">
+            <div class="modal-title">چالش روزانه</div>
+            <div id="challengeContent"></div>
+            <button class="modal-btn" onclick="closeChallengeModal()" style="margin-top:12px;">بستن</button>
+        </div>
+    </div>
     <script>
-        // =============================================
-        // ریست یک‌باره بازی (فقط اولین بار اجرا می‌شود)
-        // =============================================
         (function resetGameOnce() {
-            const RESET_KEY = 'emoji_quiz_reset_done';
+            var RESET_KEY = 'emoji_quiz_reset_done_v2';
             if (!localStorage.getItem(RESET_KEY)) {
                 localStorage.clear();
                 localStorage.setItem(RESET_KEY, 'true');
-                console.log('بازی یک بار ریست شد.');
             }
         })();
 
-        // =============================================
-        // بارگذاری اولیه و منطق بازی
-        // =============================================
         window.addEventListener('load', function() {
-            const blocks = document.querySelectorAll('.progress-block');
-            let step = 0;
+            var blocks = document.querySelectorAll('.progress-block');
+            var step = 0;
 
             function activateNextBlock() {
                 if (step < 5) {
@@ -1433,22 +1430,22 @@
                     }, 500);
                 }
             }
-            let timer = setInterval(activateNextBlock, 1200);
+            var timer = setInterval(activateNextBlock, 1200);
         });
 
-        let coinCount = 100;
-        let diamondCount = 50;
-        let totalStars = 0;
-        let currentLevel = 1;
-        let answeredLevels = {};
-        let correctAttempts = {};
+        var coinCount = 100;
+        var diamondCount = 50;
+        var totalStars = 0;
+        var currentLevel = 1;
+        var answeredLevels = {};
+        var correctAttempts = {};
 
-        const SAVE_KEY = 'emoji_quiz_save_v5';
-        const THEME_KEY = 'emoji_quiz_theme';
-        const PURCHASED_KEY = 'purchased_themes';
-        const GIFT_KEY = 'gift_last_open';
+        var SAVE_KEY = 'emoji_quiz_save_v5';
+        var THEME_KEY = 'emoji_quiz_theme';
+        var PURCHASED_KEY = 'purchased_themes';
+        var GIFT_KEY = 'gift_last_open';
 
-        const questions = {
+        var questions = {
             1: { emoji1: '🧑', emoji2: '🐬', answer: 'پسر دلفینی' },
             2: { emoji1: '🌅', emoji2: '🧊', answer: 'عصر یخبندان' },
             3: { emoji1: '🐁', emoji2: '👨‍🍳', answer: 'موش سرآشپز' },
@@ -1549,25 +1546,25 @@
             98:{ emoji1: '🤴', emoji2: '👂', answer: 'شاهگوش' },
             99:{ emoji1: '😢', emoji2: '🐊', answer: 'اشک تمساح' },
             100:{ emoji1: '4️⃣', emoji2: '🧱', answer: 'چار دیواری' }
-    };
-        const totalLevels = Object.keys(questions).length;
+         };
+        var totalLevels = Object.keys(questions).length;
 
         function saveGame() {
             localStorage.setItem(SAVE_KEY, JSON.stringify({
-                currentLevel,
-                answeredLevels,
-                correctAttempts,
-                totalStars,
-                coinCount,
-                diamondCount
+                currentLevel: currentLevel,
+                answeredLevels: answeredLevels,
+                correctAttempts: correctAttempts,
+                totalStars: totalStars,
+                coinCount: coinCount,
+                diamondCount: diamondCount
             }));
         }
 
         function loadGame() {
-            const saved = localStorage.getItem(SAVE_KEY);
+            var saved = localStorage.getItem(SAVE_KEY);
             if (saved) {
                 try {
-                    const data = JSON.parse(saved);
+                    var data = JSON.parse(saved);
                     currentLevel = data.currentLevel || 1;
                     answeredLevels = data.answeredLevels || {};
                     correctAttempts = data.correctAttempts || {};
@@ -1580,40 +1577,40 @@
             return false;
         }
 
-        const coinsSpan = document.getElementById('coins');
-        const diamondsSpan = document.getElementById('diamonds');
-        const starsSpan = document.getElementById('stars');
-        const levelText = document.getElementById('levelText');
-        const emoji1 = document.getElementById('emoji1');
-        const emoji2 = document.getElementById('emoji2');
-        const answerInput = document.getElementById('answerInput');
-        const inputContainer = document.getElementById('inputContainer');
-        const confirmBtn = document.getElementById('confirmBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalBtn = document.getElementById('modalBtn');
-        const offlineModal = document.getElementById('offlineModal');
-        const infoModal = document.getElementById('infoModal');
-        const shopModal = document.getElementById('shopModal');
-        const bgModal = document.getElementById('bgModal');
-        const buyThemeModal = document.getElementById('buyThemeModal');
-        const buyThemeMessage = document.getElementById('buyThemeMessage');
-        const hintModal = document.getElementById('hintModal');
-        const answerModal = document.getElementById('answerModal');
-        const answerMessage = document.getElementById('answerMessage');
-        const congratsModal = document.getElementById('congratsModal');
-        const congratsMessage = document.getElementById('congratsMessage');
-        const giftModal = document.getElementById('giftModal');
-        const giftTimer = document.getElementById('giftTimer');
-        const resultModal = document.getElementById('resultModal');
-        const resultMessage = document.getElementById('resultMessage');
-        const answerBtn = document.querySelector('.btn-bottom[onclick="showHintModal()"]');
+        var coinsSpan = document.getElementById('coins');
+        var diamondsSpan = document.getElementById('diamonds');
+        var starsSpan = document.getElementById('stars');
+        var levelText = document.getElementById('levelText');
+        var emoji1 = document.getElementById('emoji1');
+        var emoji2 = document.getElementById('emoji2');
+        var answerInput = document.getElementById('answerInput');
+        var inputContainer = document.getElementById('inputContainer');
+        var confirmBtn = document.getElementById('confirmBtn');
+        var cancelBtn = document.getElementById('cancelBtn');
+        var prevBtn = document.getElementById('prevBtn');
+        var nextBtn = document.getElementById('nextBtn');
+        var modalOverlay = document.getElementById('modalOverlay');
+        var modalTitle = document.getElementById('modalTitle');
+        var modalMessage = document.getElementById('modalMessage');
+        var modalBtn = document.getElementById('modalBtn');
+        var offlineModal = document.getElementById('offlineModal');
+        var infoModal = document.getElementById('infoModal');
+        var shopModal = document.getElementById('shopModal');
+        var bgModal = document.getElementById('bgModal');
+        var buyThemeModal = document.getElementById('buyThemeModal');
+        var buyThemeMessage = document.getElementById('buyThemeMessage');
+        var hintModal = document.getElementById('hintModal');
+        var answerModal = document.getElementById('answerModal');
+        var answerMessage = document.getElementById('answerMessage');
+        var congratsModal = document.getElementById('congratsModal');
+        var congratsMessage = document.getElementById('congratsMessage');
+        var giftModal = document.getElementById('giftModal');
+        var giftTimer = document.getElementById('giftTimer');
+        var resultModal = document.getElementById('resultModal');
+        var resultMessage = document.getElementById('resultMessage');
+        var answerBtn = document.querySelector('.btn-bottom[onclick="showHintModal()"]');
 
-        let giftInterval = null;
+        var giftInterval = null;
 
         function showOfflineModal() {
             offlineModal.classList.add('active');
@@ -1643,7 +1640,7 @@
         window.addEventListener('online', hideOfflineModal);
         if (!navigator.onLine) showOfflineModal();
 
-        let modalCallback = null;
+        var modalCallback = null;
 
         function showModal(title, message, callback, buttonText) {
             modalTitle.textContent = title;
@@ -1656,7 +1653,7 @@
 
         function closeModal() {
             modalOverlay.classList.remove('active');
-            if (modalCallback) { const cb = modalCallback;
+            if (modalCallback) { var cb = modalCallback;
                 modalCallback = null;
                 cb(); }
         }
@@ -1678,7 +1675,7 @@
             coinCount += coins;
             updateStats();
             saveGame();
-            showCongratsModal(`شما ${coins} سکه را با ${diamonds} الماس خریدید.`);
+            showCongratsModal('شما ' + coins + ' سکه را با ' + diamonds + ' الماس خریدید.');
         }
 
         function showCongratsModal(msg) {
@@ -1691,7 +1688,6 @@
             congratsModal.classList.remove('active');
         }
 
-        // ===== توابع مربوط به جایزه (شانس) =====
         function showGiftModal() {
             giftModal.classList.add('active');
             startGiftTimer();
@@ -1709,55 +1705,51 @@
         }
 
         function updateGiftTimer() {
-            const lastOpen = localStorage.getItem(GIFT_KEY);
+            var lastOpen = localStorage.getItem(GIFT_KEY);
             if (!lastOpen) {
                 giftTimer.textContent = '--:--:--';
                 return;
             }
-            const elapsed = Date.now() - parseInt(lastOpen);
-            const remaining = 24 * 60 * 60 * 1000 - elapsed;
+            var elapsed = Date.now() - parseInt(lastOpen);
+            var remaining = 24 * 60 * 60 * 1000 - elapsed;
             if (remaining <= 0) {
                 giftTimer.textContent = '۰:۰۰:۰۰';
                 if (giftInterval) clearInterval(giftInterval);
                 return;
             }
-            const hours = Math.floor(remaining / (60 * 60 * 1000));
-            const mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-            const secs = Math.floor((remaining % (60 * 1000)) / 1000);
-            const pad = n => String(n).padStart(2, '0');
-            giftTimer.textContent = `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+            var hours = Math.floor(remaining / (60 * 60 * 1000));
+            var mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+            var secs = Math.floor((remaining % (60 * 1000)) / 1000);
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            giftTimer.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
         }
 
         function openGift(boxNumber) {
-            const lastOpen = localStorage.getItem(GIFT_KEY);
+            var lastOpen = localStorage.getItem(GIFT_KEY);
             if (lastOpen) {
-                const elapsed = Date.now() - parseInt(lastOpen);
+                var elapsed = Date.now() - parseInt(lastOpen);
                 if (elapsed < 24 * 60 * 60 * 1000) {
                     showModal('توجه', 'امکان باز کردن جعبه تا ۲۴ ساعت دیگر وجود ندارد.', null);
                     return;
                 }
             }
-
-            const prizes = [
+            var prizes = [
                 { type: 'coin', amount: 30, label: '۳۰ سکه' },
                 { type: 'diamond', amount: 15, label: '۱۵ الماس' },
                 { type: 'empty', amount: 0, label: 'پوچ' }
             ];
-
-            const randomIndex = Math.floor(Math.random() * prizes.length);
-            const prize = prizes[randomIndex];
-
-            let msg = '';
+            var randomIndex = Math.floor(Math.random() * prizes.length);
+            var prize = prizes[randomIndex];
+            var msg = '';
             if (prize.type === 'coin') {
                 coinCount += prize.amount;
-                msg = `تبریک! شما ${prize.label} برنده شدید.`;
+                msg = 'تبریک! شما ' + prize.label + ' برنده شدید.';
             } else if (prize.type === 'diamond') {
                 diamondCount += prize.amount;
-                msg = `تبریک! شما ${prize.label} برنده شدید.`;
+                msg = 'تبریک! شما ' + prize.label + ' برنده شدید.';
             } else {
-                msg = `متاسفانه هیچ جایزه‌ای برنده نشدید. <br> فردا دوباره امتحان کنید.`;
+                msg = 'متاسفانه هیچ جایزه‌ای برنده نشدید. <br> فردا دوباره امتحان کنید.';
             }
-
             updateStats();
             saveGame();
             localStorage.setItem(GIFT_KEY, Date.now().toString());
@@ -1775,13 +1767,12 @@
             resultModal.classList.remove('active');
         }
 
-        // ===== تم‌های پس‌زمینه =====
-        let currentTheme = 'default';
-        let purchasedThemes = ['default'];
-        let pendingTheme = null;
+        var currentTheme = 'default';
+        var purchasedThemes = ['default'];
+        var pendingTheme = null;
 
         function loadPurchased() {
-            const saved = localStorage.getItem(PURCHASED_KEY);
+            var saved = localStorage.getItem(PURCHASED_KEY);
             if (saved) {
                 try {
                     purchasedThemes = JSON.parse(saved);
@@ -1792,9 +1783,9 @@
             } else {
                 purchasedThemes = ['default'];
             }
-            document.querySelectorAll('.theme-square').forEach(sq => {
-                const theme = sq.dataset.theme;
-                const isPurchased = purchasedThemes.includes(theme);
+            document.querySelectorAll('.theme-square').forEach(function(sq) {
+                var theme = sq.dataset.theme;
+                var isPurchased = purchasedThemes.includes(theme);
                 sq.dataset.locked = isPurchased ? 'false' : 'true';
                 sq.classList.toggle('locked', !isPurchased);
             });
@@ -1805,7 +1796,7 @@
         }
 
         function loadTheme() {
-            const saved = localStorage.getItem(THEME_KEY);
+            var saved = localStorage.getItem(THEME_KEY);
             if (saved && purchasedThemes.includes(saved)) {
                 currentTheme = saved;
             } else {
@@ -1817,11 +1808,10 @@
         }
 
         function applyTheme(theme) {
-            const body = document.body;
-            const card = document.querySelector('.card');
-            const splash = document.getElementById('splashScreen');
-            let bgColor, cardBg, borderColor, borderFocus, shadowColor;
-
+            var body = document.body;
+            var card = document.querySelector('.card');
+            var splash = document.getElementById('splashScreen');
+            var bgColor, cardBg, borderColor, borderFocus, shadowColor;
             switch (theme) {
                 case 'default':
                     bgColor = '#1a2a4a';
@@ -1886,25 +1876,23 @@
                     borderFocus = '#93c5fd';
                     shadowColor = 'rgba(96,165,250,0.25)';
             }
-
             body.style.background = bgColor;
             card.style.background = cardBg;
             card.style.borderColor = 'rgba(255,255,255,0.15)';
             if (splash) {
                 splash.style.background = bgColor;
             }
-
             document.documentElement.style.setProperty('--input-border', borderColor);
             document.documentElement.style.setProperty('--input-border-focus', borderFocus);
             document.documentElement.style.setProperty('--input-shadow', shadowColor);
         }
 
         function updateThemeUI(selectedTheme) {
-            const squares = document.querySelectorAll('.theme-square');
-            squares.forEach(sq => {
-                const theme = sq.dataset.theme;
-                const isPurchased = purchasedThemes.includes(theme);
-                const isSelected = theme === selectedTheme;
+            var squares = document.querySelectorAll('.theme-square');
+            squares.forEach(function(sq) {
+                var theme = sq.dataset.theme;
+                var isPurchased = purchasedThemes.includes(theme);
+                var isSelected = theme === selectedTheme;
                 sq.classList.remove('selected', 'locked');
                 if (!isPurchased) {
                     sq.classList.add('locked');
@@ -1912,27 +1900,27 @@
                 if (isSelected) {
                     sq.classList.add('selected');
                 }
-                const statusEl = sq.querySelector('.theme-status');
+                var statusEl = sq.querySelector('.theme-status');
                 if (statusEl) {
                     if (isSelected) {
                         statusEl.innerHTML =
-                            `<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>`;
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>';
                         statusEl.style.borderColor = '#22c55e';
                         statusEl.style.background = 'rgba(34,197,94,0.2)';
                     } else {
                         statusEl.innerHTML =
-                            `<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`;
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
                         statusEl.style.borderColor = '#ef4444';
                         statusEl.style.background = 'rgba(239,68,68,0.15)';
                     }
                 }
-                let lockCenter = sq.querySelector('.lock-center');
+                var lockCenter = sq.querySelector('.lock-center');
                 if (!isPurchased) {
                     if (!lockCenter) {
                         lockCenter = document.createElement('div');
                         lockCenter.className = 'lock-center';
                         lockCenter.innerHTML =
-                            `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
                         sq.appendChild(lockCenter);
                     }
                 } else {
@@ -1949,13 +1937,13 @@
         }
 
         function selectTheme(theme) {
-            const square = document.querySelector(`.theme-square[data-theme="${theme}"]`);
+            var square = document.querySelector('.theme-square[data-theme="' + theme + '"]');
             if (!square) return;
-            const isLocked = square.dataset.locked === 'true';
+            var isLocked = square.dataset.locked === 'true';
             if (isLocked) {
                 pendingTheme = theme;
                 buyThemeMessage.innerHTML =
-                    `آیا مایل به خرید این تم با <strong>۵ الماس</strong> هستید؟`;
+                    'آیا مایل به خرید این تم با <strong>۵ الماس</strong> هستید؟';
                 buyThemeModal.classList.add('active');
                 return;
             }
@@ -1967,7 +1955,7 @@
         }
 
         function confirmThemePurchase() {
-            const theme = pendingTheme;
+            var theme = pendingTheme;
             buyThemeModal.classList.remove('active');
             if (!theme) return;
             if (diamondCount < 5) {
@@ -1985,7 +1973,7 @@
             refreshThemes();
             updateStats();
             saveGame();
-            showCongratsModal(`تم ${theme} با موفقیت خریداری شد.`);
+            showCongratsModal('تم ' + theme + ' با موفقیت خریداری شد.');
             pendingTheme = null;
         }
 
@@ -2026,8 +2014,8 @@
             updateStats();
             saveGame();
             closeHintModal();
-            const q = questions[currentLevel];
-            answerMessage.textContent = `پاسخ صحیح : « ${q.answer} »`;
+            var q = questions[currentLevel];
+            answerMessage.textContent = 'پاسخ صحیح : « ' + q.answer + ' »';
             answerModal.classList.add('active');
         }
 
@@ -2045,13 +2033,13 @@
         }
 
         function disableInput(level) {
-            const disabled = answeredLevels[level] || false;
+            var disabled = answeredLevels[level] || false;
             inputContainer.classList.toggle('disabled', disabled);
             answerInput.disabled = disabled;
             confirmBtn.disabled = disabled;
             cancelBtn.disabled = disabled;
             if (disabled) {
-                const q = questions[level];
+                var q = questions[level];
                 if (q) answerInput.value = q.answer;
             } else {
                 answerInput.value = '';
@@ -2059,11 +2047,11 @@
         }
 
         function loadLevel(level) {
-            const q = questions[level];
+            var q = questions[level];
             if (q) {
                 emoji1.textContent = q.emoji1;
                 emoji2.textContent = q.emoji2;
-                levelText.textContent = `مرحله ${level} از ${totalLevels}`;
+                levelText.textContent = 'مرحله ' + level + ' از ' + totalLevels;
                 disableInput(level);
                 answerInput.placeholder = 'پاسخ را وارد کنید...';
                 updateButtons();
@@ -2072,7 +2060,7 @@
         }
 
         function changeLevel(direction) {
-            const newLevel = currentLevel + direction;
+            var newLevel = currentLevel + direction;
             if (newLevel >= 1 && newLevel <= totalLevels) {
                 currentLevel = newLevel;
                 loadLevel(currentLevel);
@@ -2092,15 +2080,15 @@
                 showModal('توجه', 'شما قبلاً به این سوال پاسخ داده‌اید.', null);
                 return;
             }
-            const userAnswer = answerInput.value.trim();
-            const q = questions[currentLevel];
+            var userAnswer = answerInput.value.trim();
+            var q = questions[currentLevel];
             if (userAnswer === '') {
                 showModal('خطا', 'لطفا پاسخ را وارد کنید.', null);
                 return;
             }
             if (userAnswer === q.answer) {
-                const attempts = correctAttempts[currentLevel] || 0;
-                let change = attempts === 0 ? 30 : attempts === 1 ? 20 : attempts === 2 ? 10 : -5;
+                var attempts = correctAttempts[currentLevel] || 0;
+                var change = attempts === 0 ? 30 : attempts === 1 ? 20 : attempts === 2 ? 10 : -5;
                 totalStars += change;
                 starsSpan.textContent = totalStars;
                 correctAttempts[currentLevel] = attempts + 1;
@@ -2155,10 +2143,135 @@
         congratsModal.addEventListener('click', function(e) { if (e.target === congratsModal) closeCongratsModal(); });
         giftModal.addEventListener('click', function(e) { if (e.target === giftModal) closeGiftModal(); });
         resultModal.addEventListener('click', function(e) { if (e.target === resultModal) closeResultModal(); });
+        document.getElementById('challengeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeChallengeModal();
+        });
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
+            navigator.serviceWorker.register('sw.js').catch(function() {});
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var dailyQuestions = [
+                { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌ نما' },
+                { emoji1: '🧜‍♀️', emoji2: '🌊', answer: 'پری دریایی' },
+                { emoji1: '1️⃣', emoji2: '🦄', answer: 'تک شاخ' },
+                { emoji1: '🥷', emoji2: '🌊', answer: 'دزد دریایی' },
+                { emoji1: '🛤', emoji2: '🚂', answer: 'ریل قطار' },
+             ];
+            var dayOfMonth = new Date().getDate();
+            var questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
+            var todayQuestion = dailyQuestions[questionIndex];
+            var container = document.getElementById('challengeContent');
+            container.innerHTML =
+                '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion
+                .emoji2 + '</span></div>' +
+                '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+                '<div class="challenge-input-row"><input type="text" id="dailyInput" placeholder="پاسخ..."><button class="challenge-btn" id="dailySubmitBtn">ثبت</button></div>' +
+                '<div class="challenge-result" id="dailyResult"></div>';
+            var dailyInput = document.getElementById('dailyInput');
+            var dailySubmit = document.getElementById('dailySubmitBtn');
+            var dailyResult = document.getElementById('dailyResult');
+            var timerEl = document.getElementById('dailyTimer');
+            var DAILY_KEY = 'emoji_daily_challenge';
+
+            function getDailyState() {
+                var saved = localStorage.getItem(DAILY_KEY);
+                if (saved) {
+                    try {
+                        var data = JSON.parse(saved);
+                        var today = new Date().toDateString();
+                        if (data.date === today) return data;
+                    } catch (e) {}
+                }
+                return null;
+            }
+
+            function setDailyState(answered, correct) {
+                var today = new Date().toDateString();
+                localStorage.setItem(DAILY_KEY, JSON.stringify({
+                    date: today,
+                    answered: answered,
+                    correct: correct
+                }));
+            }
+            var state = getDailyState();
+            if (state && state.answered) {
+                dailyInput.disabled = true;
+                dailySubmit.disabled = true;
+                if (state.correct) {
+                    dailyResult.textContent = ' امروز را پاسخ داده‌اید. (صحیح)';
+                    dailyResult.className = 'challenge-result success';
+                } else {
+                    dailyResult.textContent = ' امروز را پاسخ داده‌اید. (نادرست)';
+                    dailyResult.className = 'challenge-result fail';
+                }
+            } else {
+                dailyInput.disabled = false;
+                dailySubmit.disabled = false;
+                dailyResult.textContent = '';
+            }
+
+            function updateDailyTimer() {
+                var now = new Date();
+                var midnight = new Date(now);
+                midnight.setHours(24, 0, 0, 0);
+                var diff = midnight - now;
+                if (diff <= 0) {
+                    timerEl.textContent = '۰:۰۰:۰۰';
+                    return;
+                }
+                var hours = Math.floor(diff / (60 * 60 * 1000));
+                var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+                var secs = Math.floor((diff % (60 * 1000)) / 1000);
+                var pad = function(n) { return String(n).padStart(2, '0'); };
+                timerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+            }
+            updateDailyTimer();
+            setInterval(updateDailyTimer, 1000);
+            dailySubmit.addEventListener('click', function() {
+                if (dailyInput.disabled) return;
+                var answer = dailyInput.value.trim();
+                if (!answer) {
+                    dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.';
+                    dailyResult.className = 'challenge-result';
+                    return;
+                }
+                var isCorrect = (answer === todayQuestion.answer);
+                setDailyState(true, isCorrect);
+                dailyInput.disabled = true;
+                dailySubmit.disabled = true;
+                if (isCorrect) {
+                    if (typeof coinCount !== 'undefined' && typeof diamondCount !== 'undefined') {
+                        coinCount += 10;
+                        diamondCount += 5;
+                        if (typeof updateStats === 'function') updateStats();
+                        if (typeof saveGame === 'function') saveGame();
+                    }
+                    dailyResult.textContent = ' درست! ۱۰ سکه + ۵ الماس دریافت کردید.';
+                    dailyResult.className = 'challenge-result success';
+                } else {
+                    dailyResult.textContent = ' نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
+                    dailyResult.className = 'challenge-result fail';
+                }
+            });
+            dailyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') dailySubmit.click();
+            });
+        });
+
+        function closeChallengeModal() {
+            document.getElementById('challengeModal').classList.remove('active');
+        }
+
+        function openChallengeModal() {
+            document.getElementById('challengeModal').classList.add('active');
+        }
+
+        var style = document.createElement('style');
+        style.textContent =
+            '#dailyChallengeContainer { margin-top: 16px; background: rgba(255,255,255,0.05); border-radius: 20px; padding: 14px 16px 16px; border: 1px solid rgba(255,255,255,0.1); text-align: center; display: none; } #dailyChallengeContainer.active { display: block; } .challenge-title { font-size: 15px; font-weight: 700; color: #facc15; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; } .challenge-emoji-row { font-size: 28px; letter-spacing: 4px; margin: 4px 0 8px; background: rgba(255,255,255,0.04); border-radius: 30px; padding: 6px 12px; display: inline-block; } .challenge-timer { font-size: 14px; color: #94a3b8; direction: ltr; background: rgba(0,0,0,0.25); padding: 2px 12px; border-radius: 30px; display: inline-block; margin: 8px 8px; } .challenge-input-row { display: flex; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; } .challenge-input-row input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 25px; padding: 6px 14px; font-size: 13px; font-family: "Vazirmatn", sans-serif; color: #fff; outline: none; width: 160px; } .challenge-input-row input::placeholder { color: #94a3b8; font-size: 12px; } .challenge-input-row input:focus { border-color: #facc15; box-shadow: 0 0 0 3px rgba(250,204,21,0.15); } .challenge-btn { background: #facc15; color: #0f172a; border: none; border-radius: 25px; padding: 4px 18px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: "Vazirmatn", sans-serif; } .challenge-btn:hover { transform: scale(1.05); background: #fde047; } .challenge-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; } .challenge-result { font-size: 14px; margin-top: 8px; color: #cbd5e1; min-height: 24px; } .challenge-result.success { color: #4ade80; } .challenge-result.fail { color: #f87171; } @media (max-width: 480px) { .challenge-input-row input { width: 120px; } .challenge-emoji-row { font-size: 24px; } } .modal-overlay#challengeModal { z-index: 9999; } #challengeModal .modal-box { max-width: 420px; } #challengeModal .modal-box .modal-title { margin-bottom: 8px; }';
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
