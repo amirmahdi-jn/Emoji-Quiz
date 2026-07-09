@@ -1,898 +1,268 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Quiz</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap');
+        body { margin: 0; padding: 0; font-family: 'Vazirmatn', sans-serif; background: #1a237e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #background-green { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        #game-app { width: 100%; height: 100vh; border-radius: 0; padding: 10px 20px 0px 20px; box-sizing: border-box; background: #1a237e; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        #header { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; padding-bottom: 10px; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-right { display: flex; align-items: center; }
+        .info-btn { background: #283593; color: white; width: 40px; height: 40px; border-radius: 12px; border: none; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .info-btn:active { transform: scale(0.9); }
+        .coin-box { background: #283593; border-radius: 12px; padding: 5px 12px 5px 8px; color: white; font-weight: bold; display: flex; align-items: center; gap: 5px; height: 40px; box-sizing: border-box; }
+        .diamond-box { background: #283593; border-radius: 12px; padding: 5px 12px 5px 8px; color: white; font-weight: bold; display: flex; align-items: center; gap: 5px; height: 40px; box-sizing: border-box; }
+        .diamond-box svg { width: 22px; height: 22px; flex-shrink: 0; fill: #3b82f6; stroke: #2563eb; stroke-width: 1.5; }
+        .diamond-box span { font-size: 16px; color: white; }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
-            background: #0d1f4a;
-            direction: rtl;
-            transition: background 0.5s ease;
-        }
+        .profile-section { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.15); padding: 6px 6px 6px 14px; border-radius: 30px; cursor: pointer; transition: 0.2s; }
+        .profile-section:active { transform: scale(0.95); }
+        .profile-name { color: white; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .profile-name:hover { opacity: 0.8; }
+        .profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: white; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        #splashScreen {
+        #main-menu { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; padding-bottom: 0px; }
+        .game-logo { text-align: center; color: white; margin-top: -15px; }
+        .game-logo h1 { font-size: 52px; margin: 0; font-weight: 800; color: #ffffff; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 3px 3px 0 #000; }
+        .menu-buttons { width: 100%; display: flex; flex-direction: column; padding: 0 10px; }
+        .btn-start { background: white; border: none; border-radius: 16px; padding: 20px; width: 100%; color: #1a237e; font-size: 22px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 10px; cursor: pointer; box-shadow: 0 6px 0 #0d47a1; transition: 0.1s linear; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 2px 0 #0d47a1; }
+        .btn-start svg { width: 22px; height: 22px; fill: #1a237e; }
+
+        #bottom-nav { display: flex; justify-content: space-between; background: rgba(255, 255, 255, 0.1); padding: 12px 10px; border-radius: 15px; margin-top: 15px; margin-bottom: 25px; }
+        .nav-item { flex: 1; text-align: center; color: white; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .nav-item .icon-box { width: 35px; height: 35px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 18px; color: white; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.15); }
+        .nav-item:nth-child(1) .icon-box { background: #6f298e; }
+        .nav-item:nth-child(2) .icon-box { background: #fb8c00; }
+        .nav-item:nth-child(3) .icon-box { background: #e91e63; }
+        .nav-item:nth-child(4) .icon-box { background: #29b6f6; }
+        .nav-item span { text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
+
+        @media (max-width: 480px) { .game-logo h1 { font-size: 44px; } .btn-start { font-size: 20px; padding: 18px; } #game-app { padding: 10px 15px 0px 15px; } }
+
+        #splash-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #1a237e; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Vazirmatn', sans-serif; transition: opacity 0.8s ease-in-out; pointer-events: none; }
+        #splash-screen.hide { opacity: 0; pointer-events: none; }
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 20px; box-sizing: border-box; }
+        .splash-icon { display: flex; justify-content: center; width: 100%; margin-bottom: 16px; }
+        .splash-icon svg { width: 80px; height: 80px; display: block; }
+        .splash-title { font-size: 42px; font-weight: 900; color: #ffffff; margin: 0 0 35px 0; letter-spacing: 1px; text-align: center; }
+        .custom-loader { display: flex; flex-direction: column; align-items: center; width: 180px; }
+        .progress-track { direction: ltr; display: flex; gap: 12px; justify-content: center; }
+        .progress-block { width: 20px; height: 20px; background: #166534; border-radius: 4px; transform: scale(0.85); transition: all 0.3s ease; }
+        .progress-block.active { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; background: #22c55e; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; background-color: #166534; } 80% { transform: scale(1.1); opacity: 1; background-color: #22c55e; } 100% { transform: scale(1); opacity: 1; background-color: #22c55e; } }
+        .progress-text { font-family: 'Vazirmatn', sans-serif; margin-top: 14px; font-size: 16px; font-weight: 700; color: rgba(255, 255, 255, 0.7); letter-spacing: 1px; text-align: center; }
+        @media (max-width: 480px) { .splash-title { font-size: 34px; margin: 0 0 30px 0; } .splash-icon svg { width: 65px; height: 65px; } }
+
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 9999; display: none; justify-content: center; align-items: center; }
+        #modal-overlay.active { display: flex; }
+        .modal-box { display: none; flex-direction: column; align-items: center; width: 340px; max-width: 90%; background-color: #1a237e; border-radius: 20px; padding: 20px; box-sizing: border-box; box-shadow: 0 15px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #modal-overlay.active .modal-box.active { display: flex; transform: scale(1); }
+        .modal-title { color: white; font-size: 20px; font-weight: 900; margin-bottom: 10px; text-shadow: 1px 1px 0 rgba(0,0,0,0.2); }
+        .close-btn { background: rgba(255, 255, 255, 0.2); border: none; border-radius: 12px; padding: 10px 35px; color: white; font-weight: bold; font-size: 15px; font-family: 'Vazirmatn', sans-serif; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 10px; width: fit-content; }
+        .close-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.4); }
+
+        .preview-circle { width: 80px; height: 80px; border-radius: 50%; background: white; margin: 10px auto 20px auto; border: 3px solid rgba(255, 255, 255, 0.5); overflow: hidden; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .preview-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: 5px; }
+        .avatar-row { display: flex; justify-content: center; gap: 15px; width: 100%; }
+        .avatar-item { width: 75px; height: 75px; flex: 0 0 auto; border-radius: 50%; background: rgba(255, 255, 255, 0.2); overflow: hidden; cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.3); transition: 0.2s ease; }
+        .avatar-item:active { transform: scale(0.85); }
+        .avatar-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        #info-modal .info-items { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; margin: 10px 0; }
+        #info-modal .info-item { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 0; color: #ffffff; font-size: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); width: 100%; }
+        #info-modal .info-item:last-child { border-bottom: none; }
+        #info-modal .info-item svg { width: 22px; height: 22px; flex-shrink: 0; stroke: rgba(255, 255, 255, 0.9); fill: none; stroke-width: 2; }
+        #info-modal .info-item .label { color: rgba(255, 255, 255, 0.7); margin-left: 4px; }
+        #info-modal .info-item .value { color: #ffffff; font-weight: 700; }
+
+        .gift-container { display: flex; justify-content: center; gap: 8px; margin: 8px 0; flex-wrap: nowrap; width: 100%; }
+        .gift-box { background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(255, 255, 255, 0.25); border-radius: 16px; padding: 15px 5px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+        .gift-box:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-4px); }
+        .gift-box:active { transform: scale(0.95); }
+        .gift-box svg { width: 30px; height: 30px; stroke: #ffffff; fill: none; stroke-width: 2; }
+        .gift-box span { font-size: 12px; color: #ffffff; font-weight: bold; }
+        .gift-timer { font-size: 18px; font-weight: 700; color: #ffffff; direction: ltr; background: rgba(0, 0, 0, 0.2); padding: 4px 18px; border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1); margin: 12px 0 4px; display: inline-block; }
+
+        .challenge-emoji-row { font-size: 28px; letter-spacing: 4px; margin: 4px 0 8px; background: rgba(255, 255, 255, 0.15); border-radius: 30px; padding: 6px 12px; display: inline-block; color: #ffffff; }
+        .challenge-timer { font-size: 14px; color: #ffffff; direction: ltr; background: rgba(0, 0, 0, 0.2); padding: 2px 12px; border-radius: 30px; display: inline-block; margin: 8px 8px; }
+        .challenge-input-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: nowrap; width: 100%; }
+        .challenge-input-row input { flex: 1; min-width: 0; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 25px; padding: 6px 14px; font-size: 13px; font-family: 'Vazirmatn', sans-serif; color: #fff; outline: none; width: auto; }
+        .challenge-input-row input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .challenge-input-row input:focus { border-color: #ffffff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15); }
+        .challenge-btn { background: #facc15; color: #0f172a; border: none; border-radius: 25px; padding: 4px 18px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Vazirmatn', sans-serif; flex-shrink: 0; }
+        .challenge-btn:hover { transform: scale(1.05); background: #fde047; }
+        .challenge-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .challenge-result { font-size: 14px; margin-top: 8px; color: #ffffff; min-height: 24px; font-weight: bold; }
+        .challenge-result.success { color: #4ade80; }
+        .challenge-result.fail { color: #f87171; }
+
+        .shop-container { display: flex; justify-content: center; gap: 12px; margin: 10px 0; width: 100%; flex-wrap: wrap; }
+        .shop-item { background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(255, 255, 255, 0.25); border-radius: 36px; padding: 20px 10px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 80px; }
+        .shop-item:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-3px); }
+        .shop-item:active { transform: scale(0.95); }
+        .shop-item .icon { font-size: 36px; color: #ffd700; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
+        .shop-item .label { font-size: 14px; color: #ffffff; font-weight: bold; }
+        .shop-item .buy-btn { background: #facc15; color: #0f172a; border: none; border-radius: 20px; padding: 6px 20px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: 'Vazirmatn', sans-serif; }
+        .shop-item .buy-btn:hover { background: #fde047; transform: scale(1.02); }
+        .shop-item .buy-btn:active { transform: scale(0.9); }
+
+        .news-text { color: #ffffff; text-align: center; width: 100%; padding: 8px 0; }
+        .news-text p { margin: 4px 0; line-height: 1.5; font-size: 12px; }
+        .news-text .highlight { font-weight: 700; color: #facc15; direction: ltr; display: inline-block; }
+
+        .result-icon { font-size: 50px; margin: 5px 0 10px; }
+        .result-message { color: #ffffff; font-size: 16px; font-weight: 700; text-align: center; margin: 5px 0 10px; }
+        .result-sub { color: rgba(255,255,255,0.8); font-size: 13px; text-align: center; margin: 0 0 10px; }
+        .soon-box { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px 25px; margin: 5px 0; text-align: center; }
+        .soon-box .title { color: #ffffff; font-size: 18px; font-weight: 700; }
+        .soon-box .desc { color: rgba(255,255,255,0.85); font-size: 15px; margin-top: 6px; }
+        .attention-text { color: #ffffff; font-size: 16px; font-weight: 500; text-align: center; padding: 10px 0; white-space: nowrap; }
+
+        @media (max-width: 400px) { .modal-box { width: 280px; padding: 15px; } .modal-title { font-size: 17px; } .preview-circle { width: 65px; height: 65px; } .avatar-item { width: 65px; height: 65px; } .shop-item { padding: 15px 5px; } .result-icon { font-size: 40px; } .attention-text { font-size: 12px; white-space: normal; } }
+
+        #game-screen {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: #0a1a3a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease, background 0.5s ease;
-            flex-direction: column;
-        }
-        #splashScreen.hide {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .splash-content {
-            text-align: center;
-        }
-        .splash-icon {
-            display: block;
-            margin-bottom: 16px;
-            width: 80px;
-            height: 80px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .splash-icon svg {
             width: 100%;
-            height: 100%;
-        }
-        .splash-title {
-            font-size: 38px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 1px;
-            margin-bottom: 24px;
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        .custom-loader {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 0;
-            width: 180px;
-        }
-        .progress-track {
-            direction: ltr;
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        .progress-block {
-            width: 20px;
-            height: 20px;
-            background: #22c55e;
-            border-radius: 4px;
-            opacity: 0.2;
-            transform: scale(0.85);
-            transition: all 0.3s ease;
-        }
-        .progress-block.active {
-            opacity: 1;
-            transform: scale(1);
-            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        @keyframes popIn {
-            0% {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            80% {
-                transform: scale(1.1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        .progress-text {
-            font-family: 'Vazirmatn', sans-serif;
-            margin-top: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #94a3b8;
-            letter-spacing: 1px;
-        }
-
-        #menuScreen {
+            height: 100vh;
+            overflow-y: auto;
+            background: #1a237e;
+            padding: 15px 20px 30px 20px;
+            box-sizing: border-box;
             display: none;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 90%;
-            max-width: 420px;
-            padding: 40px 20px;
-            background: #1a2a4a;
-            border-radius: 45px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            transition: background 0.5s ease, border-color 0.5s ease;
-            gap: 28px;
-        }
-        #menuScreen.active {
-            display: flex;
-        }
-
-        .menu-item {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .menu-btn {
-            width: 100%;
-            padding: 18px 10px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            color: #f1f5f9;
-            font-size: 22px;
-            font-weight: 700;
-            font-family: 'Vazirmatn', sans-serif;
-            cursor: pointer;
-            transition: 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        .menu-btn:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.13);
-            border-color: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-        .menu-btn svg {
-            width: 32px;
-            height: 32px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            flex-shrink: 0;
-        }
-
-        #gameScreen {
-            display: none;
-            width: 90%;
-            max-width: 550px;
-        }
-        #gameScreen.active {
-            display: block;
-        }
-
-        .card {
-            background: #1a2a4a;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 45px;
-            padding: 25px 25px 25px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            flex-direction: column;
-            transition: background 0.5s ease, border-color 0.5s ease;
-        }
-
-        .game-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            gap: 8px;
-        }
-        .game-title {
-            font-size: 28px;
-            font-weight: 800;
-            color: #ececec;
-            letter-spacing: 1px;
-            flex: 1;
-            text-align: center;
+            z-index: 100;
         }
         .back-btn {
-            width: 44px;
-            height: 44px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #cbd5e1;
-            flex-shrink: 0;
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid white;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.2s;
         }
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-        .back-btn svg {
-            width: 28px;
-            height: 28px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .stats-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
+        .back-btn:active { transform: scale(0.9); }
         .stat-box {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 30px;
-            padding: 4px 10px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #f1f5f9;
+            background: rgba(255,255,255,0.1); border-radius: 12px; padding: 5px 12px;
+            color: white; font-weight: bold; display: flex; align-items: center; gap: 4px;
+            height: 40px;
         }
-        .stat-box svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
+        .stat-box svg { width: 24px; height: 24px; }
+        .score-pill {
+            background: rgba(255,255,255,0.15); padding: 5px 15px 5px 20px;
+            border-radius: 30px; display: flex; align-items: center; gap: 10px;
+            height: 40px;
         }
-        .stat-icon.coin {
-            color: #fbbf24;
-            fill: #fbbf24;
+        .score-num {
+            color: white; font-size: 22px; font-weight: 900;
+            border: none; border-radius: 0; padding: 0; min-width: auto;
+            line-height: 1.4;
+            margin-top: 10px;
         }
-        .stat-icon.star {
-            color: #f97316;
-            fill: #f97316;
-        }
-        .stat-icon.diamond {
-            color: #3b82f6;
-            fill: #3b82f6;
+        #game-screen-title {
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            font-size: 36px;
+            margin-top: 60px;
+            padding: 15px 0;
         }
 
-        .level-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 25px;
-            padding: 8px 18px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        #prev-btn, #next-btn {
+            transition: color 0.2s ease;
         }
-        .level-container .arrow {
-            font-size: 16px;
-            color: #cbd5e1;
-            cursor: pointer;
-            padding: 2px 8px;
-            user-select: none;
-            transition: 0.2s;
+        #prev-btn.active, #next-btn.active {
+            color: #ffffff !important;
         }
-        .level-container .arrow.disabled {
-            color: #475569;
+        #prev-btn.inactive, #next-btn.inactive {
+            color: rgba(255,255,255,0.25) !important;
+        }
+
+        #answer-input:disabled {
+            background: rgba(255,255,255,0.05) !important;
+            color: rgba(255,255,255,0.3) !important;
+            border-color: rgba(255,255,255,0.05) !important;
             cursor: not-allowed;
-            opacity: 0.5;
+        }
+        #confirm-btn:disabled, #cancel-btn:disabled {
+            filter: brightness(0.45);
+            opacity: 0.6;
+            cursor: not-allowed;
             pointer-events: none;
         }
-        .level-badge {
-            font-size: 15px;
-            font-weight: 700;
-            color: #e2e8f0;
-        }
 
-        .emoji-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 35px;
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .emoji-container .emoji {
-            font-size: 28px;
-            line-height: 1;
-        }
-
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 24px;
-            flex-direction: row-reverse;
-        }
-        .input-container {
-            flex: 3;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 30px;
-            padding: 8px 16px;
-            border: 2px solid var(--input-border, #7dd3fc);
-            transition: 0.3s;
-        }
-        .input-container:focus-within {
-            border-color: var(--input-border-focus, #7dd3fc);
-            box-shadow: 0 0 0 3px var(--input-shadow, rgba(125, 211, 252, 0.15));
-        }
-        .input-container.disabled {
-            opacity: 0.6;
-            background: rgba(255, 255, 255, 0.02);
-            border-color: rgba(148, 163, 184, 0.2);
-        }
-        .input-container input {
-            width: 100%;
-            padding: 6px 0;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 13px;
-            font-family: 'Vazirmatn', sans-serif;
-            color: #ffffff;
-        }
-        .input-container input::placeholder {
-            color: #ffffff;
-            font-size: 13px;
-            opacity: 0.8;
-        }
-        .input-container.disabled input {
-            color: #94a3b8;
-        }
-        .input-container.disabled input::placeholder {
-            color: #94a3b8;
-            opacity: 0.6;
-        }
-        .input-container input:disabled {
-            cursor: not-allowed;
-        }
-
-        .btn-small {
-            padding: 6px 14px;
-            height: 36px;
-            border: none;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Vazirmatn', sans-serif;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .btn-small:hover {
-            transform: translateY(-2px);
-        }
-        .btn-small:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        .btn-confirm-sm {
-            background: #22c55e;
-            color: white;
-        }
-        .btn-cancel-sm {
-            background: #ef4444;
-            color: white;
-        }
-
-        .bottom-actions {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 0;
-            padding-bottom: 0;
-            flex-wrap: nowrap;
-        }
-        .btn-bottom {
-            padding: 6px 8px;
-            min-width: 0;
-            flex: 1 1 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Vazirmatn', sans-serif;
-            background: rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            white-space: nowrap;
-        }
-        .btn-bottom:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-        .btn-bottom svg {
-            width: 16px;
-            height: 16px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            flex-shrink: 0;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-box {
-            background: #1e293b;
-            border-radius: 30px;
-            padding: 20px 20px;
-            max-width: 380px;
-            width: 92%;
-            text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #f1f5f9;
-            margin-bottom: 12px;
-        }
-        .modal-message {
-            font-size: 15px;
-            color: #cbd5e1;
-            margin-bottom: 6px;
-            line-height: 1.6;
-        }
-        .modal-btn {
-            background: #7dd3fc;
-            color: #0f172a;
-            border: none;
-            padding: 10px 32px;
-            border-radius: 30px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Vazirmatn', sans-serif;
-            margin-top: 14px;
-            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
-        }
-        .modal-btn:hover {
-            background: #bae6fd;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
-        }
-        .modal-btn:active {
-            transform: scale(0.97);
-        }
-
-        .confirm-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-        .confirm-buy-btn {
-            background: #7dd3fc;
-            color: #0f172a;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 30px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Vazirmatn', sans-serif;
-            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
-            min-width: 90px;
-        }
-        .confirm-buy-btn:hover {
-            background: #bae6fd;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
-        }
-        .confirm-buy-btn:active {
-            transform: scale(0.97);
-        }
-        .cancel-buy-btn {
-            background: #64748b;
-            color: #fff;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 30px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Vazirmatn', sans-serif;
-            min-width: 90px;
-        }
-        .cancel-buy-btn:hover {
-            background: #94a3b8;
-            transform: translateY(-2px);
-        }
-
-        .shop-select-grid {
+        .action-btn {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            margin: 16px 0;
-        }
-        .shop-select-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 16px 10px;
-            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Vazirmatn', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            color: #f1f5f9;
-        }
-        .shop-select-btn:hover {
-            background: rgba(255, 255, 255, 0.14);
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-        }
-        .shop-select-btn svg {
-            width: 36px;
-            height: 36px;
-            flex-shrink: 0;
-        }
-
-        .shop-packages {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin: 8px 0;
-        }
-        .shop-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 8px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
             gap: 4px;
-            direction: rtl;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .shop-item .coin-icon {
-            flex-shrink: 0;
-            width: 26px;
-            height: 26px;
-            margin-left: 2px;
-        }
-        .shop-item .coin-icon svg {
-            width: 100%;
-            height: 100%;
-        }
-        .shop-item .coin-amount {
-            font-size: 15px;
-            font-weight: 700;
-            color: #f1f5f9;
-            font-family: 'Vazirmatn', sans-serif;
-            white-space: nowrap;
-            flex: 0 0 auto;
-            margin-left: 6px;
-        }
-        .shop-item .price-info {
-            font-size: 14px;
-            font-weight: 700;
-            color: #7dd3fc;
-            font-family: 'Vazirmatn', sans-serif;
-            white-space: nowrap;
-            flex: 0 0 auto;
-            margin-right: 6px;
-        }
-        .shop-item .buy-btn {
-            background: #ec4899;
-            color: #fff;
-            border: none;
-            border-radius: 18px;
-            padding: 4px 14px;
-            font-size: 13px;
-            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 8px 4px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
             font-family: 'Vazirmatn', sans-serif;
-            box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
-            flex-shrink: 0;
-            line-height: 1.7;
+            color: #cbd5e1;
+            flex: 1;
+            min-width: 0;
+            height: 70px;
         }
-        .shop-item .buy-btn:hover {
-            transform: scale(1.05);
-            background: #f472b6;
-            box-shadow: 0 4px 14px rgba(236, 72, 153, 0.5);
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
         }
-        .shop-item .buy-btn:active {
+        .action-btn:active {
             transform: scale(0.95);
         }
-
-        .bg-modal .modal-box {
-            max-width: 540px;
-            padding: 24px 20px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .bg-modal .modal-box .modal-title {
-            margin-bottom: 16px;
-            font-size: 20px;
+        .action-btn svg {
+            width: 28px;
+            height: 28px;
             flex-shrink: 0;
-        }
-        .bg-modal .modal-box .theme-grid-wrap {
-            flex: 1 1 auto;
-            overflow-y: auto;
-            padding: 2px 2px 10px 2px;
-            margin: 0 -4px 0 -4px;
-        }
-        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar {
-            width: 6px;
-        }
-        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-        .bg-modal .modal-box .theme-grid-wrap::-webkit-scrollbar-thumb {
-            background: #7dd3fc;
-            border-radius: 10px;
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 0;
-        }
-
-        .theme-square {
-            position: relative;
-            aspect-ratio: 1/1;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 2.5px solid rgba(255, 255, 255, 0.08);
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 10px;
-            min-height: 120px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        .theme-square:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-        }
-        .theme-square .theme-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 15px;
-            background-size: cover;
-            background-position: center;
-            z-index: 0;
-            transition: transform 0.4s ease;
-        }
-        .theme-square:hover .theme-bg {
-            transform: scale(1.04);
-        }
-        .theme-square .theme-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.1) 70%, rgba(0, 0, 0, 0.05) 100%);
-            border-radius: 15px;
-            z-index: 1;
-        }
-        .theme-square .theme-name {
-            position: relative;
-            z-index: 2;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ffffff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-            margin-bottom: 2px;
-            letter-spacing: 0.3px;
-            padding: 2px 10px;
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .theme-square .theme-status {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            z-index: 3;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .theme-square .theme-status svg {
-            width: 18px;
-            height: 18px;
-            display: block;
-        }
-        .theme-square.selected {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4);
-        }
-        .theme-square.selected .theme-status {
-            border-color: #22c55e;
-            background: rgba(34, 197, 94, 0.2);
-        }
-        .theme-square.locked .theme-status {
-            border-color: #ef4444;
-            background: rgba(239, 68, 68, 0.15);
-        }
-        .theme-square .lock-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 4;
-            width: 40px;
-            height: 40px;
-            opacity: 0.85;
-            pointer-events: none;
-        }
-        .theme-square .lock-center svg {
-            width: 100%;
-            height: 100%;
-            stroke: #ffffff;
+            stroke: currentColor;
             fill: none;
-            stroke-width: 2.2;
+            stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
-
-        .bg-modal .modal-close-btn {
-            margin-top: 14px;
-            flex-shrink: 0;
-        }
-
-        .theme-bg-default {
-            background: #1a2a4a;
-        }
-        .theme-bg-orange {
-            background: linear-gradient(135deg, #7c2d12, #ea580c, #f97316);
-        }
-        .theme-bg-purple {
-            background: linear-gradient(135deg, #4c1d5e, #d946ef, #ec4899);
-        }
-        .theme-bg-green {
-            background: linear-gradient(135deg, #064e3b, #059669, #10b981);
-        }
-        .theme-bg-red {
-            background: linear-gradient(135deg, #7f1d1d, #dc2626, #ef4444);
-        }
-        .theme-bg-pink {
-            background: linear-gradient(135deg, #831843, #db2777, #f472b6);
-        }
-        .theme-bg-cyan {
-            background: linear-gradient(135deg, #164e63, #0891b2, #22d3ee);
-        }
-        .theme-bg-yellow {
-            background: linear-gradient(135deg, #713f12, #ca8a04, #facc15);
-        }
-
-        .info-items {
-            text-align: center;
-            margin: 12px 0;
-        }
-        .info-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 7px 0;
+        .action-btn .label {
+            font-size: 11px;
+            font-weight: bold;
             color: #cbd5e1;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            line-height: 1.2;
         }
-        .info-item:last-child {
-            border-bottom: none;
-        }
-        .info-item svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-            stroke: #94a3b8;
-            fill: none;
-            stroke-width: 2;
-        }
-        .info-item .label {
-            color: #94a3b8;
-            margin-left: 4px;
-        }
-        .info-item .value {
-            color: #f1f5f9;
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            font-size: 13px;
             font-weight: 500;
         }
+        .stat-item .stat-label {
+            color: #94a3b8;
+        }
+        .stat-item .stat-value {
+            color: #f1f5f9;
+            font-weight: 700;
+        }
+        .stat-item .stat-value.green { color: #4ade80; }
+        .stat-item .stat-value.red { color: #f87171; }
+        .stat-item .stat-value.blue { color: #60a5fa; }
+        .stat-item .stat-value.yellow { color: #facc15; }
 
         .hint-modal .hint-cost {
             font-size: 18px;
@@ -924,264 +294,9 @@
             background: #94a3b8;
         }
 
-        #answerModal .modal-message {
+        #answer-modal .modal-message {
             font-size: 18px;
             font-weight: 700;
-            color: #facc15;
-        }
-
-        .gift-modal .gift-container {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin: 12px 0 8px;
-        }
-        .gift-modal .gift-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 10px 6px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            flex: 1;
-            min-width: 60px;
-        }
-        .gift-modal .gift-box:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-4px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-        }
-        .gift-modal .gift-box:active {
-            transform: scale(0.95);
-        }
-        .gift-modal .gift-box svg {
-            width: 36px;
-            height: 36px;
-            stroke: #cbd5e1;
-            fill: none;
-        }
-        .gift-modal .gift-box span {
-            font-size: 11px;
-            color: #94a3b8;
-        }
-        .gift-timer {
-            font-size: 18px;
-            font-weight: 700;
-            color: #f1f5f9;
-            direction: ltr;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 4px 18px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            margin: 4px 0 8px;
-            display: inline-block;
-        }
-
-        #resultModal .modal-message {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        #challengeModal .modal-box {
-            max-width: 420px;
-        }
-        .challenge-emoji-row {
-            font-size: 28px;
-            letter-spacing: 4px;
-            margin: 4px 0 8px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 30px;
-            padding: 6px 12px;
-            display: inline-block;
-        }
-        .challenge-timer {
-            font-size: 14px;
-            color: #94a3b8;
-            direction: ltr;
-            background: rgba(0, 0, 0, 0.25);
-            padding: 2px 12px;
-            border-radius: 30px;
-            display: inline-block;
-            margin: 8px 8px;
-        }
-        .challenge-input-row {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-        .challenge-input-row input {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-family: "Vazirmatn", sans-serif;
-            color: #fff;
-            outline: none;
-            width: 160px;
-        }
-        .challenge-input-row input::placeholder {
-            color: #94a3b8;
-            font-size: 12px;
-        }
-        .challenge-input-row input:focus {
-            border-color: #7dd3fc;
-            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
-        }
-        .challenge-btn {
-            background: #facc15;
-            color: #0f172a;
-            border: none;
-            border-radius: 25px;
-            padding: 4px 18px;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: "Vazirmatn", sans-serif;
-        }
-        .challenge-btn:hover {
-            transform: scale(1.05);
-            background: #fde047;
-        }
-        .challenge-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .challenge-result {
-            font-size: 14px;
-            margin-top: 8px;
-            color: #cbd5e1;
-            min-height: 24px;
-        }
-        .challenge-result.success {
-            color: #4ade80;
-        }
-        .challenge-result.fail {
-            color: #f87171;
-        }
-
-        @media (max-width: 480px) {
-            .menu-btn {
-                font-size: 18px;
-                padding: 14px 8px;
-            }
-            .menu-btn svg {
-                width: 26px;
-                height: 26px;
-            }
-            .game-title {
-                font-size: 22px;
-            }
-            .back-btn {
-                width: 36px;
-                height: 36px;
-            }
-            .back-btn svg {
-                width: 22px;
-                height: 22px;
-            }
-            .stats-container {
-                gap: 6px;
-            }
-            .stat-box {
-                padding: 4px 8px;
-                font-size: 13px;
-            }
-            .stat-box svg {
-                width: 18px;
-                height: 18px;
-            }
-            .bottom-actions {
-                gap: 3px;
-            }
-            .btn-bottom {
-                font-size: 9px;
-                padding: 4px 4px;
-                gap: 2px;
-            }
-            .btn-bottom svg {
-                width: 13px;
-                height: 13px;
-            }
-            .theme-grid {
-                gap: 8px;
-            }
-            .theme-square {
-                min-height: 90px;
-                padding: 6px;
-                border-radius: 14px;
-            }
-            .theme-square .theme-name {
-                font-size: 11px;
-                padding: 1px 6px;
-            }
-            .theme-square .theme-status {
-                width: 24px;
-                height: 24px;
-                top: 4px;
-                left: 4px;
-            }
-            .theme-square .theme-status svg {
-                width: 14px;
-                height: 14px;
-            }
-            .theme-square .lock-center {
-                width: 30px;
-                height: 30px;
-            }
-            .bg-modal .modal-box {
-                padding: 16px 12px;
-            }
-            .bg-modal .modal-title {
-                font-size: 17px;
-            }
-            .shop-select-btn {
-                font-size: 17px;
-                padding: 12px 8px;
-            }
-            .shop-select-btn svg {
-                width: 28px;
-                height: 28px;
-            }
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 10px;
-            margin-bottom: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #e2e8f0;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        .stat-item .stat-label {
-            color: #94a3b8;
-        }
-        .stat-item .stat-value {
-            color: #f1f5f9;
-            font-weight: 700;
-        }
-        .stat-item .stat-value.green {
-            color: #4ade80;
-        }
-        .stat-item .stat-value.red {
-            color: #f87171;
-        }
-        .stat-item .stat-value.blue {
-            color: #60a5fa;
-        }
-        .stat-item .stat-value.yellow {
             color: #facc15;
         }
 
@@ -1191,197 +306,149 @@
             padding: 12px 16px;
             margin: 12px 0;
             border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 100%;
+            box-sizing: border-box;
         }
         .tip-box .tip-content {
-            font-size: 11px;
+            font-size: 14px;
             color: #60a5fa;
             line-height: 1.8;
             font-weight: 500;
-            text-align: justify;
+            text-align: center;
             letter-spacing: 0.3px;
             word-spacing: 1px;
+        }
+
+        #message-modal .modal-message {
+            color: white;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .game-section {
+            width: 90%;
+            margin: 16px auto;
+            box-sizing: border-box;
+        }
+        .game-section:last-of-type {
+            margin-bottom: 20px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 90%;
+            margin: 20px auto 25px auto;
+        }
+        @media (max-width: 480px) {
+            .action-btn { height: 60px; padding: 6px 2px; }
+            .action-btn svg { width: 24px; height: 24px; }
+            .action-btn .label { font-size: 10px; }
+            .action-bar { gap: 5px; }
+            .game-section { margin: 12px auto; }
         }
     </style>
 </head>
 <body>
-
-    <div id="splashScreen">
-        <div class="splash-content">
-            <span class="splash-icon">
-                <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="#2563eb" opacity="0.12"/>
-                    <circle cx="50" cy="50" r="35" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
-                    <circle cx="38" cy="43" r="5" fill="#1e293b"/>
-                    <circle cx="62" cy="43" r="5" fill="#1e293b"/>
-                    <circle cx="36" cy="41" r="2" fill="white"/>
-                    <circle cx="60" cy="41" r="2" fill="white"/>
-                    <path d="M35 58 Q50 72 65 58" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>
-                </svg>
-            </span>
-            <div class="splash-title">Emoji Quiz</div>
-            <div class="custom-loader">
-                <div class="progress-track">
-                    <div class="progress-block"></div>
-                    <div class="progress-block"></div>
-                    <div class="progress-block"></div>
-                    <div class="progress-block"></div>
-                    <div class="progress-block"></div>
+    <div id="background-green">
+        <div id="game-app">
+            <div id="splash-screen">
+                <div class="splash-content">
+                    <span class="splash-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="48" fill="#FFCC00" />
+                            <circle cx="35" cy="38" r="7" fill="#333333" />
+                            <circle cx="65" cy="38" r="7" fill="#333333" />
+                            <circle cx="33" cy="36" r="2.5" fill="#ffffff" />
+                            <circle cx="63" cy="36" r="2.5" fill="#ffffff" />
+                            <path d="M 28 61 Q 50 78 72 61" stroke="#333333" stroke-width="4" fill="none" stroke-linecap="round" />
+                        </svg>
+                    </span>
+                    <div class="splash-title">Emoji Quiz</div>
+                    <div class="custom-loader">
+                        <div class="progress-track">
+                            <div class="progress-block"></div>
+                            <div class="progress-block"></div>
+                            <div class="progress-block"></div>
+                            <div class="progress-block"></div>
+                            <div class="progress-block"></div>
+                        </div>
+                        <div class="progress-text">در حال بارگذاری...</div>
+                    </div>
                 </div>
-                <div class="progress-text">در حال بارگذاری...</div>
+            </div>
+
+            <div id="header">
+                <div class="header-right">
+                    <div class="profile-section" onclick="openModal('profile-modal')">
+                        <div class="profile-avatar">
+                            <img id="header-avatar" src="https://uploadkon.ir/uploads/190f08_26InShot-20260709-000258602.jpg" alt="Avatar">
+                        </div>
+                        <span class="profile-name" id="profile-name-display" onclick="event.stopPropagation(); openNameModal()">بدون نام</span>
+                    </div>
+                </div>
+                <div class="header-left">
+                    <div class="coin-box" id="coin-box">
+                        <i class="fas fa-coins"></i> <span id="coins-text">۱۰۰</span>
+                    </div>
+                    <div class="diamond-box">
+                        <svg class="stat-icon diamond" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M4 4 L20 4 L22 10 L12 22 L2 10 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
+                        </svg>
+                        <span id="diamonds">50</span>
+                    </div>
+                    <button class="info-btn" onclick="openModal('info-modal')"><i class="fas fa-info"></i></button>
+                </div>
+            </div>
+
+            <div id="main-menu">
+                <div class="game-logo"><h1>Emoji Quiz</h1></div>
+                <div class="menu-buttons">
+                    <button class="btn-start">
+                        <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"></polygon></svg>
+                        شروع بازی
+                    </button>
+                </div>
+            </div>
+
+            <div id="bottom-nav">
+                <div class="nav-item" onclick="openModal('shop-modal')">
+                    <div class="icon-box"><i class="fas fa-shopping-cart"></i></div>
+                    <span>فروشگاه</span>
+                </div>
+                <div class="nav-item" onclick="openModal('challenge-modal')">
+                    <div class="icon-box"><i class="fas fa-trophy"></i></div>
+                    <span>چالش</span>
+                </div>
+                <div class="nav-item" onclick="openModal('gift-modal')">
+                    <div class="icon-box"><i class="fas fa-gift"></i></div>
+                    <span>جایزه</span>
+                </div>
+                <div class="nav-item" onclick="openModal('news-modal')">
+                    <div class="icon-box"><i class="fas fa-bullhorn"></i></div>
+                    <span>اخبار</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="menuScreen" class="active">
-        <div class="menu-item">
-            <button class="menu-btn" id="startGameBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="5,3 19,12 5,21" fill="none" />
-                </svg>
-                شروع
-            </button>
-        </div>
-        <div class="menu-item">
-            <button class="menu-btn" onclick="showGiftModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="4" y="8" width="16" height="12" rx="2" />
-                    <rect x="3" y="4" width="18" height="4" rx="1.5" />
-                    <line x1="12" y1="3" x2="12" y2="20" />
-                    <path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" />
-                </svg>
-                جایزه
-            </button>
-        </div>
-        <div class="menu-item">
-            <button class="menu-btn" onclick="showShopSelectionModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="21" r="1"/>
-                    <circle cx="20" cy="21" r="1"/>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
-                فروشگاه
-            </button>
-        </div>
-        <div class="menu-item">
-            <button class="menu-btn" onclick="showInfoModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="16" x2="12" y2="12"/>
-                    <line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-                اطلاعات
-            </button>
-        </div>
-    </div>
-
-    <div id="gameScreen">
-        <div class="card">
-            <div class="game-header">
-                <div class="back-btn" onclick="openChallengeModal()" title="چالش">
-                    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;">
-                        <circle cx="30" cy="30" r="20" fill="none" stroke="currentColor" stroke-width="2.5"/>
-                        <circle cx="30" cy="30" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/>
-                        <circle cx="30" cy="30" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/>
-                        <circle cx="30" cy="30" r="2" fill="currentColor"/>
-                    </svg>
-                </div>
-                <div class="game-title">Emoji Quiz</div>
-                <div class="back-btn" onclick="goToMenu()" title="بازگشت به منو">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 12H4" />
-                        <path d="M8 8l-4 4 4 4" />
-                    </svg>
-                </div>
+    <div id="modal-overlay" onclick="closeModal()">
+        <div id="profile-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">انتخاب پروفایل</div>
+            <div class="preview-circle">
+                <img id="modal-preview" src="https://uploadkon.ir/uploads/190f08_26InShot-20260709-000258602.jpg" alt="Preview">
             </div>
-
-            <div class="stats-container">
-                <div class="stat-box">
-                    <svg viewBox="0 0 24 24" width="24" height="24">
-                        <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                        <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                    </svg>
-                    <span id="coins">100</span>
-                </div>
-                <div class="stat-box">
-                    <svg class="stat-icon diamond" viewBox="0 0 24 24" width="24" height="24">
-                        <path d="M4 4 L20 4 L22 10 L12 22 L2 10 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
-                    </svg>
-                    <span id="diamonds">50</span>
-                </div>
-                <div class="stat-box">
-                    <svg class="stat-icon star" viewBox="0 0 24 24">
-                        <polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="#f97316"/>
-                    </svg>
-                    <span id="stars">0</span>
-                </div>
+            <div class="avatar-grid" id="avatar-grid">
+                <div class="avatar-row" id="row1"></div>
+                <div class="avatar-row" id="row2"></div>
             </div>
-
-            <div class="level-container">
-                <span class="arrow disabled" id="prevBtn" onclick="changeLevel(-1)">▶</span>
-                <div class="level-badge" id="levelText">مرحله ۱ از ۵</div>
-                <span class="arrow disabled" id="nextBtn" onclick="changeLevel(1)">◀</span>
-            </div>
-
-            <div class="emoji-container">
-                <span class="emoji" id="emoji1">🧑</span>
-                <span class="emoji" id="emoji2">🐬</span>
-            </div>
-
-            <div class="input-row">
-                <button class="btn-small btn-cancel-sm" id="cancelBtn" onclick="clearAll()">✖ لغو</button>
-                <button class="btn-small btn-confirm-sm" id="confirmBtn" onclick="checkAnswer()">✔ تایید</button>
-                <div class="input-container" id="inputContainer">
-                    <input type="text" id="answerInput" placeholder="پاسخ را وارد کنید...">
-                </div>
-            </div>
-
-            <div class="bottom-actions">
-                <button class="btn-bottom" onclick="showStatsModal()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="14" width="4" height="8" rx="0.5" />
-                        <rect x="10" y="8" width="4" height="14" rx="0.5" />
-                        <rect x="18" y="2" width="4" height="20" rx="0.5" />
-                    </svg>
-                    آمار
-                </button>
-
-                <button class="btn-bottom" onclick="showHintModal()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="9" r="6"/>
-                        <line x1="13.5" y1="13.5" x2="21" y2="21"/>
-                    </svg>
-                    جواب
-                </button>
-
-                <button class="btn-bottom" onclick="showTipModal()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <text x="12" y="17" font-family="Arial" font-weight="normal" font-size="14" fill="currentColor" text-anchor="middle">!</text>
-                    </svg>
-                    نکته
-                </button>
-            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-box">
-            <div class="modal-title" id="modalTitle">درست</div>
-            <div class="modal-message" id="modalMessage"></div>
-            <button class="modal-btn" id="modalBtn" onclick="closeModal()">قبول</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="offlineModal">
-        <div class="modal-box">
-            <div class="modal-title">آفلاین</div>
-            <div class="modal-message">اینترنت شما قطع است.<br>لطفا اینترنت خود را بررسی کنید.</div>
-            <button class="modal-btn" onclick="checkConnection()">تلاش مجدد</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="infoModal">
-        <div class="modal-box">
+        <div id="info-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">اطلاعات</div>
             <div class="info-items">
                 <div class="info-item">
@@ -1401,285 +468,20 @@
                     <span><span class="label">روبیکا :</span> <span class="value">AmirMahdi_2018@</span></span>
                 </div>
                 <div class="info-item">
-                    <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5" stroke="#94a3b8" stroke-width="2" fill="none"/><circle cx="12" cy="16.5" r="1.5" fill="#94a3b8" stroke="none"/></svg>
+                    <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5" stroke="#ffffff" stroke-width="2" fill="none"/><circle cx="12" cy="16.5" r="1.5" fill="#ffffff" stroke="none"/></svg>
                     <span><span class="label">موبایل :</span> <span class="value">09918659161</span></span>
                 </div>
             </div>
-            <button class="modal-btn" onclick="closeInfoModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="shopSelectionModal">
-        <div class="modal-box" style="max-width:420px;">
-            <div class="modal-title">فروشگاه</div>
-            <div class="shop-select-grid">
-                <div class="shop-select-btn" onclick="openCoinShop()">
-                    <svg viewBox="0 0 24 24" width="48" height="48">
-                        <circle cx="12" cy="12" r="11" fill="white" stroke="#333" stroke-width="1.5"/>
-                        <text x="12" y="18" font-family="Arial" font-weight="bold" font-size="16" fill="#333" text-anchor="middle">$</text>
-                    </svg>
-                    خرید سکه
-                </div>
-                <div class="shop-select-btn" onclick="openThemeShop()">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2" />
-                        <path d="M8 2v4" />
-                        <path d="M16 2v4" />
-                    </svg>
-                    خرید تم
-                </div>
-            </div>
-            <button class="modal-btn" onclick="closeShopSelectionModal()" style="margin-top:6px;">بستن</button>
+        <div id="challenge-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">چالش روزانه</div>
+            <div id="challengeContent" style="text-align:center; width:100%;"></div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="coinShopModal">
-        <div class="modal-box" style="max-width:420px;">
-            <div class="modal-title">سکه</div>
-            <div class="shop-packages">
-                <div class="shop-item">
-                    <span class="coin-icon">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                        </svg>
-                    </span>
-                    <span class="coin-amount">۱۰۰ سکه</span>
-                    <span class="price-info">۱۰ الماس</span>
-                    <button class="buy-btn" onclick="buyCoinsWithDiamonds(100, 10)">خرید</button>
-                </div>
-                <div class="shop-item">
-                    <span class="coin-icon">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                        </svg>
-                    </span>
-                    <span class="coin-amount">۲۰۰ سکه</span>
-                    <span class="price-info">۲۰ الماس</span>
-                    <button class="buy-btn" onclick="buyCoinsWithDiamonds(200, 20)">خرید</button>
-                </div>
-                <div class="shop-item">
-                    <span class="coin-icon">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                        </svg>
-                    </span>
-                    <span class="coin-amount">۳۰۰ سکه</span>
-                    <span class="price-info">۳۰ الماس</span>
-                    <button class="buy-btn" onclick="buyCoinsWithDiamonds(300, 30)">خرید</button>
-                </div>
-                <div class="shop-item">
-                    <span class="coin-icon">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                        </svg>
-                    </span>
-                    <span class="coin-amount">۴۰۰ سکه</span>
-                    <span class="price-info">۴۰ الماس</span>
-                    <button class="buy-btn" onclick="buyCoinsWithDiamonds(400, 40)">خرید</button>
-                </div>
-                <div class="shop-item">
-                    <span class="coin-icon">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                        </svg>
-                    </span>
-                    <span class="coin-amount">۵۰۰ سکه</span>
-                    <span class="price-info">۵۰ الماس</span>
-                    <button class="buy-btn" onclick="buyCoinsWithDiamonds(500, 50)">خرید</button>
-                </div>
-            </div>
-            <button class="modal-btn" onclick="closeCoinShopModal()">بستن</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay bg-modal" id="bgModal">
-        <div class="modal-box">
-            <div class="modal-title">پس‌زمینه</div>
-            <div class="theme-grid-wrap">
-                <div class="theme-grid" id="themeGrid">
-                    <div class="theme-square selected" data-theme="default" data-locked="false" onclick="selectTheme('default')">
-                        <div class="theme-bg theme-bg-default"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-default">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M9 12l2 2 4-4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم سورمه‌ای</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="orange" data-locked="true" onclick="selectTheme('orange')">
-                        <div class="theme-bg theme-bg-orange"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-orange">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم نارنجی</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="purple" data-locked="true" onclick="selectTheme('purple')">
-                        <div class="theme-bg theme-bg-purple"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-purple">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم بنفش</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="green" data-locked="true" onclick="selectTheme('green')">
-                        <div class="theme-bg theme-bg-green"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-green">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم سبز</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="red" data-locked="true" onclick="selectTheme('red')">
-                        <div class="theme-bg theme-bg-red"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-red">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم قرمز</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="pink" data-locked="true" onclick="selectTheme('pink')">
-                        <div class="theme-bg theme-bg-pink"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-pink">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم صورتی</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="cyan" data-locked="true" onclick="selectTheme('cyan')">
-                        <div class="theme-bg theme-bg-cyan"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-cyan">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم فیروزه‌ای</span>
-                    </div>
-                    <div class="theme-square locked" data-theme="yellow" data-locked="true" onclick="selectTheme('yellow')">
-                        <div class="theme-bg theme-bg-yellow"></div>
-                        <div class="theme-overlay"></div>
-                        <div class="theme-status" id="status-yellow">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="15" y1="9" x2="9" y2="15"/>
-                                <line x1="9" y1="9" x2="15" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="lock-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                        </div>
-                        <span class="theme-name">تم زرد</span>
-                    </div>
-                </div>
-            </div>
-            <button class="modal-btn modal-close-btn" onclick="closeBgModal()">بستن</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="buyThemeModal">
-        <div class="modal-box">
-            <div class="modal-title">خرید</div>
-            <div class="modal-message" id="buyThemeMessage">
-                آیا مایل به خرید این تم با <strong>۵ الماس</strong> هستید؟
-            </div>
-            <div class="confirm-buttons">
-                <button class="confirm-buy-btn" onclick="confirmThemePurchase()">قبول</button>
-                <button class="cancel-buy-btn" onclick="closeBuyThemeModal()">انصراف</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay hint-modal" id="hintModal">
-        <div class="modal-box">
-            <div class="modal-title">راهنمایی</div>
-            <div class="hint-cost">هزینه : ۱۵ سکه</div>
-            <div class="hint-question">آیا تمایل دارید؟</div>
-            <div class="hint-buttons">
-                <button class="modal-btn" onclick="confirmHint()">قبول</button>
-                <button class="modal-btn cancel" onclick="closeHintModal()">انصراف</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="answerModal">
-        <div class="modal-box">
-            <div class="modal-title">جواب</div>
-            <div class="modal-message" id="answerMessage"></div>
-            <button class="modal-btn" onclick="closeAnswerModal()">باشه</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay gift-modal" id="giftModal">
-        <div class="modal-box">
+        <div id="gift-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">جایزه روزانه</div>
             <div class="gift-container">
                 <div class="gift-box" onclick="openGift(1)">
@@ -1710,97 +512,549 @@
                     <span>جعبه ۳</span>
                 </div>
             </div>
-            <div style="text-align: center; margin: 6px 0 4px;">
-                <div class="gift-timer" id="giftTimer">--:--:--</div>
-            </div>
-            <button class="modal-btn gift-close-btn" onclick="closeGiftModal()">بستن</button>
+            <div class="gift-timer" id="giftTimer">--:--:--</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div class="modal-overlay" id="resultModal">
-        <div class="modal-box">
-            <div class="modal-title">نتیجه</div>
-            <div class="modal-message" id="resultMessage"></div>
-            <button class="modal-btn" onclick="closeResultModal()">باشه</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="challengeModal">
-        <div class="modal-box">
-            <div class="modal-title">چالش روزانه</div>
-            <div id="challengeContent"></div>
-            <button class="modal-btn" onclick="closeChallengeModal()" style="margin-top:12px;">بستن</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="statsModal">
-        <div class="modal-box" style="max-width:400px;">
-            <div class="modal-title">آمار</div>
-            <div id="statsContent"></div>
-            <button class="modal-btn" onclick="closeStatsModal()">بستن</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="tipModal">
-        <div class="modal-box" style="max-width:400px;">
-            <div class="modal-title">نکته</div>
-            <div id="tipContent">
-                <div class="tip-box">
-                    <div class="tip-content" id="tipCategoryText">در حال بارگذاری...</div>
+        <div id="shop-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">فروشگاه</div>
+            <div class="shop-container">
+                <div class="shop-item" onclick="openShopItem('coin')">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36">
+                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
+                        </svg>
+                    </div>
+                    <span class="label">سکه</span>
+                    <button class="buy-btn">خرید</button>
+                </div>
+                <div class="shop-item" onclick="openShopItem('theme')">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" fill="#f0f0f0" stroke="#333"/>
+                            <circle cx="7.5" cy="7.5" r="2" fill="#ff4444" stroke="#333"/>
+                            <circle cx="12" cy="7.5" r="2" fill="#44bb44" stroke="#333"/>
+                            <circle cx="16.5" cy="7.5" r="2" fill="#4444ff" stroke="#333"/>
+                            <circle cx="7.5" cy="12" r="2" fill="#ffcc00" stroke="#333"/>
+                            <circle cx="12" cy="12" r="2" fill="#ff44ff" stroke="#333"/>
+                            <circle cx="16.5" cy="12" r="2" fill="#44cccc" stroke="#333"/>
+                            <circle cx="7.5" cy="16.5" r="2" fill="#ff8800" stroke="#333"/>
+                            <circle cx="12" cy="16.5" r="2" fill="#88ff88" stroke="#333"/>
+                            <circle cx="16.5" cy="16.5" r="2" fill="#8888ff" stroke="#333"/>
+                        </svg>
+                    </div>
+                    <span class="label">تم</span>
+                    <button class="buy-btn">خرید</button>
                 </div>
             </div>
-            <button class="modal-btn" onclick="closeTipModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="news-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">اخبار</div>
+            <div class="news-text">
+                <p style="font-size: 14px; font-weight: 700; margin: 2px 0;">کاربر محترم</p>
+                <p style="margin: 2px 0;">جهت آگاهی و اطلاع از وضعیت بازی‌ها و برنامه‌ها</p>
+                <p style="margin: 2px 0;">و خبرهای جدید و بروزرسانی‌ها در کانال تلگرام و</p>
+                <p style="margin: 2px 0;">روبیکا به نشانی <span class="highlight">@MyApp2026</span> عضو شوید.</p>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="gift-result-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title" id="giftResultTitle">نتیجه</div>
+            <div class="result-message" id="giftResultMsg">پیام نتیجه</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="attention-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">توجه</div>
+            <div class="attention-text">امکان باز کردن جعبه تا ۲۴ ساعت دیگر وجود ندارد.</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="shop-coin-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">سکه</div>
+            <div class="soon-box">
+                <div class="title">به زودی فعال می‌شود.</div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="shop-theme-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">تم</div>
+            <div class="soon-box">
+                <div class="title">به زودی فعال می‌شود.</div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="stats-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">آمار</div>
+            <div id="statsContent" style="color: white; width:100%; padding: 10px 0; text-align: center;"></div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="hint-modal" class="modal-box hint-modal" onclick="event.stopPropagation()">
+            <div class="modal-title">راهنمایی</div>
+            <div class="hint-cost">هزینه : ۱۵ سکه</div>
+            <div class="hint-question">آیا تمایل دارید؟</div>
+            <div class="hint-buttons">
+                <button class="modal-btn" onclick="confirmHint()" style="background:#06b6d4; color:white; border:none; border-radius:30px; padding:8px 28px; font-weight:bold; font-family:'Vazirmatn'; cursor:pointer;">قبول</button>
+                <button class="modal-btn cancel" onclick="closeModal()" style="background:#64748b; color:white; border:none; border-radius:30px; padding:8px 28px; font-weight:bold; font-family:'Vazirmatn'; cursor:pointer;">انصراف</button>
+            </div>
+        </div>
+
+        <div id="answer-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">جواب</div>
+            <div class="modal-message" id="answerMessage"></div>
+            <button class="close-btn" onclick="closeModal()">باشه</button>
+        </div>
+
+        <div id="tip-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">نکته</div>
+            <div style="color: white; text-align: center; margin: 10px 0; padding: 10px; width:100%; box-sizing:border-box;">
+                <div class="tip-box">
+                    <div class="tip-content" id="tipCategoryText" style="font-size: 14px; color: #60a5fa; font-weight: 500; text-align: center; line-height: 1.8;">در حال بارگذاری...</div>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="message-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">پیام</div>
+            <div class="modal-message" style="color: white; text-align: center; margin: 10px 0; padding: 10px;"></div>
+            <button class="close-btn" onclick="closeModal()">قبول</button>
+        </div>
+    </div>
+
+    <div id="name-modal-overlay" onclick="closeNameModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 10000; display: none; justify-content: center; align-items: center;">
+        <div id="name-modal" onclick="event.stopPropagation()" style="width: 320px; max-width: 90%; background-color: #1a237e; border-radius: 20px; padding: 30px 20px; box-sizing: border-box; box-shadow: 0 15px 30px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; font-family: 'Vazirmatn', sans-serif; border: 1px solid rgba(255,255,255,0.2);">
+            <div class="modal-title" style="color: white; font-size: 20px; font-weight: 900; margin-bottom: 10px; text-shadow: 1px 1px 0 rgba(0,0,0,0.2);">تغییر نام</div>
+            <input type="text" id="name-input" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: none; background: rgba(255, 255, 255, 0.2); color: white; font-size: 16px; font-family: 'Vazirmatn', sans-serif; outline: none; margin-bottom: 15px; box-sizing: border-box; text-align: center; direction: ltr;" placeholder="...نام جدید را وارد کنید" maxlength="20">
+            <div style="display: flex; justify-content: center; gap: 12px; width: 100%;">
+                <button onclick="saveName()" style="background: white; border: none; border-radius: 12px; padding: 10px 35px; color: #1a237e; font-weight: bold; font-size: 15px; cursor: pointer; font-family: 'Vazirmatn', sans-serif; transition: 0.2s; box-shadow: 0 4px 0 #0d47a1;">ثبت</button>
+            </div>
         </div>
     </div>
 
     <script>
-        (function resetGameOnce() {
-            var RESET_KEY = 'emoji_quiz_reset_done_v5';
-            if (!localStorage.getItem(RESET_KEY)) {
-                localStorage.clear();
-                localStorage.setItem(RESET_KEY, 'true');
-            }
-        })();
+        function resetGame() {
+            const keys = ['gameCoins', 'diamondCount', 'gift_last_open_teal', 'emoji_daily_challenge_teal', 'my_emoji_quiz_save'];
+            keys.forEach(key => localStorage.removeItem(key));
+            coinCount = 100;
+            diamondCount = 50;
+            currentLevel = 1;
+            answeredLevels = {};
+            correctAttempts = {};
+            totalStars = 0;
+            totalCorrect = 0;
+            totalWrong = 0;
+            totalAttempted = 0;
+            updateCoinUI();
+            updateDiamondUI();
+            saveGame();
+        }
 
         window.addEventListener('load', function() {
+            const hasSaved = loadGame();
+            if (!hasSaved) {
+                coinCount = 100;
+                diamondCount = 50;
+                currentLevel = 1;
+                answeredLevels = {};
+                correctAttempts = {};
+                totalStars = 0;
+                totalCorrect = 0;
+                totalWrong = 0;
+                totalAttempted = 0;
+                saveGame();
+            }
+            updateCoinUI();
+            updateDiamondUI();
+
+            const savedName = localStorage.getItem('userName');
+            const savedAvatar = localStorage.getItem('userAvatar');
+            if (savedName) { document.getElementById('profile-name-display').innerText = savedName; }
+            if (savedAvatar) { document.getElementById('header-avatar').src = savedAvatar; }
+
             var blocks = document.querySelectorAll('.progress-block');
             var step = 0;
-
+            var splash = document.getElementById('splash-screen');
             function activateNextBlock() {
-                if (step < 5) {
+                if (step < blocks.length) {
                     blocks[step].classList.add('active');
                     step++;
                 } else {
                     clearInterval(timer);
                     setTimeout(function() {
-                        document.getElementById('splashScreen').classList.add('hide');
-                        setTimeout(function() {
-                            document.getElementById('splashScreen').style.display = 'none';
-                            document.getElementById('menuScreen').classList.add('active');
-                        }, 800);
-                    }, 500);
+                        splash.classList.add('hide');
+                        setTimeout(function() { splash.style.display = 'none'; }, 800);
+                    }, 400);
                 }
             }
             var timer = setInterval(activateNextBlock, 1200);
         });
 
+        const avatarImages = [
+            'https://uploadkon.ir/uploads/190f08_26InShot-20260709-000258602.jpg',
+            'https://uploadkon.ir/uploads/19c008_26InShot-20260709-000451814.jpg',
+            'https://uploadkon.ir/uploads/e89a08_26InShot-20260709-000536844.jpg',
+            'https://uploadkon.ir/uploads/86a308_26InShot-20260709-000736226.jpg',
+            'https://uploadkon.ir/uploads/77e508_26InShot-20260709-000703224.jpg',
+            'https://uploadkon.ir/uploads/5c0b08_26InShot-20260709-000806355.jpg', 
+        ];
+
+        const headerAvatar = document.getElementById('header-avatar');
+        const modalPreview = document.getElementById('modal-preview');
+        const row1 = document.getElementById('row1');
+        const row2 = document.getElementById('row2');
+
+        function generateAvatars() {
+            row1.innerHTML = ''; row2.innerHTML = '';
+            for(let i = 0; i < 3; i++) {
+                const item = document.createElement('div');
+                item.className = 'avatar-item';
+                const img = document.createElement('img');
+                img.src = avatarImages[i];
+                item.appendChild(img);
+                item.onclick = function() {
+                    localStorage.setItem('userAvatar', avatarImages[i]);
+                    headerAvatar.src = avatarImages[i];
+                    modalPreview.src = avatarImages[i];
+                    closeModal();
+                };
+                row1.appendChild(item);
+            }
+            for(let i = 3; i < 6; i++) {
+                const item = document.createElement('div');
+                item.className = 'avatar-item';
+                const img = document.createElement('img');
+                img.src = avatarImages[i];
+                item.appendChild(img);
+                item.onclick = function() {
+                    localStorage.setItem('userAvatar', avatarImages[i]);
+                    headerAvatar.src = avatarImages[i];
+                    modalPreview.src = avatarImages[i];
+                    closeModal();
+                };
+                row2.appendChild(item);
+            }
+        }
+        generateAvatars();
+
+        const nameModalOverlay = document.getElementById('name-modal-overlay');
+        const nameInput = document.getElementById('name-input');
+        const profileNameDisplay = document.getElementById('profile-name-display');
+
+        function openNameModal() {
+            nameInput.value = profileNameDisplay.innerText;
+            nameModalOverlay.style.display = 'flex';
+            setTimeout(() => nameInput.focus(), 300);
+        }
+
+        function closeNameModal() {
+            nameModalOverlay.style.display = 'none';
+        }
+
+        function saveName() {
+            let raw = nameInput.value;
+            let cleaned = raw.replace(/[^\u0600-\u06FF\uFB8A\uFB8B\u067E\u0686\u06AF\u06A9\u06CCa-zA-Z0-9\s]/g, '').trim();
+            let finalName = cleaned.length > 0 ? cleaned : 'بدون نام';
+            localStorage.setItem('userName', finalName);
+            profileNameDisplay.innerText = finalName;
+            closeNameModal();
+        }
+
+        const modalOverlay = document.getElementById('modal-overlay');
+        
+        function openModal(modalId) {
+            document.querySelectorAll('.modal-box').forEach(el => el.classList.remove('active'));
+            document.getElementById(modalId).classList.add('active');
+            modalOverlay.classList.add('active');
+
+            if (modalId === 'challenge-modal') {
+                initDailyChallenge();
+            }
+            if (modalId === 'gift-modal') {
+                startGiftTimer();
+            }
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.querySelectorAll('.modal-box').forEach(el => el.classList.remove('active'));
+            if (giftInterval) clearInterval(giftInterval);
+            if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
+        }
+
         var coinCount = 100;
         var diamondCount = 50;
-        var totalStars = 0;
-        var currentLevel = 1;
-        var answeredLevels = {};
-        var correctAttempts = {};
+        var GIFT_KEY = 'gift_last_open_teal';
+        var giftInterval = null;
+        const giftTimerEl = document.getElementById('giftTimer');
 
-        var totalCorrect = 0;
-        var totalWrong = 0;
-        var totalAttempted = 0;
+        function updateCoinUI() {
+            document.getElementById('coins-text').innerText = coinCount;
+            localStorage.setItem('gameCoins', coinCount);
+        }
 
-        var SAVE_KEY = 'emoji_quiz_save_v5';
-        var THEME_KEY = 'emoji_quiz_theme';
-        var PURCHASED_KEY = 'purchased_themes';
-        var GIFT_KEY = 'gift_last_open';
+        function updateDiamondUI() {
+            document.getElementById('diamonds').innerText = diamondCount;
+            localStorage.setItem('diamondCount', diamondCount);
+        }
 
-        var questions = {
+        function startGiftTimer() {
+            if (giftInterval) clearInterval(giftInterval);
+            updateGiftTimer();
+            giftInterval = setInterval(updateGiftTimer, 1000);
+        }
+
+        function updateGiftTimer() {
+            var lastOpen = localStorage.getItem(GIFT_KEY);
+            if (!lastOpen) {
+                giftTimerEl.textContent = '--:--:--';
+                return;
+            }
+            var elapsed = Date.now() - parseInt(lastOpen);
+            var remaining = 24 * 60 * 60 * 1000 - elapsed;
+            if (remaining <= 0) {
+                giftTimerEl.textContent = '۰:۰۰:۰۰';
+                if (giftInterval) clearInterval(giftInterval);
+                return;
+            }
+            var hours = Math.floor(remaining / (60 * 60 * 1000));
+            var mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+            var secs = Math.floor((remaining % (60 * 1000)) / 1000);
+            var pad = function(n) { return String(n).padStart(2, '0'); };
+            giftTimerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+        }
+
+        function openGift(boxNumber) {
+            var lastOpen = localStorage.getItem(GIFT_KEY);
+            if (lastOpen) {
+                var elapsed = Date.now() - parseInt(lastOpen);
+                if (elapsed < 24 * 60 * 60 * 1000) {
+                    openModal('attention-modal');
+                    return;
+                }
+            }
+
+            const prizes = [
+                { type: 'coin', amount: 30, msg: 'تبریک! شما ۳۰ سکه برنده شدید.' },
+                { type: 'empty', amount: 0, msg: 'متاسفانه هیچ جایزه‌ای برنده نشدید.' },
+                { type: 'diamond', amount: 15, msg: 'تبریک! شما ۱۵ الماس برنده شدید.' }
+            ];
+            
+            var randomIndex = Math.floor(Math.random() * prizes.length);
+            var prize = prizes[randomIndex];
+            
+            if (prize.type === 'coin') {
+                coinCount += prize.amount;
+                updateCoinUI();
+                showGiftResult(prize.msg, '#4ade80');
+            } else if (prize.type === 'diamond') {
+                diamondCount += prize.amount;
+                updateDiamondUI();
+                showGiftResult(prize.msg, '#4ade80');
+            } else {
+                showGiftResult(prize.msg, '#f87171');
+            }
+            
+            localStorage.setItem(GIFT_KEY, Date.now().toString());
+        }
+
+        function showGiftResult(message, color) {
+            document.getElementById('giftResultMsg').textContent = message;
+            document.getElementById('giftResultMsg').style.color = color;
+            openModal('gift-result-modal');
+        }
+
+        function openShopItem(type) {
+            if (type === 'coin') {
+                openModal('shop-coin-modal');
+            } else if (type === 'theme') {
+                openModal('shop-theme-modal');
+            }
+        }
+
+        var dailyChallengeInterval = null;
+        
+        function initDailyChallenge() {
+            const dailyQuestions = [
+                { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌نما' },
+                { emoji1: '🧜‍♀️', emoji2: '🌊', answer: 'پری دریایی' },
+                { emoji1: '1️⃣', emoji2: '🦄', answer: 'تک شاخ' },
+                { emoji1: '🥷', emoji2: '🌊', answer: 'دزد دریایی' },
+                { emoji1: '🛤', emoji2: '🚂', answer: 'ریل قطار' },
+                { emoji1: '👶', emoji2: '👷', answer: 'بچه مهندس' },
+                { emoji1: '🌹', emoji2: '🪨', answer: 'گل سنگ' }
+            ];
+            var dayOfMonth = new Date().getDate();
+            var questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
+            var todayQuestion = dailyQuestions[questionIndex];
+            var container = document.getElementById('challengeContent');
+            
+            container.innerHTML =
+                '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span></div>' +
+                '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+                '<div class="challenge-input-row">' +
+                '    <input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
+                '    <button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
+                '</div>' +
+                '<div class="challenge-result" id="dailyResult"></div>';
+            
+            var dailyInput = document.getElementById('dailyInput');
+            var dailySubmit = document.getElementById('dailySubmitBtn');
+            var dailyResult = document.getElementById('dailyResult');
+            var timerEl = document.getElementById('dailyTimer');
+            var DAILY_KEY = 'emoji_daily_challenge_teal';
+
+            function getDailyState() {
+                var saved = localStorage.getItem(DAILY_KEY);
+                if (saved) {
+                    try {
+                        var data = JSON.parse(saved);
+                        var today = new Date().toDateString();
+                        if (data.date === today) return data;
+                    } catch (e) {}
+                }
+                return null;
+            }
+
+            function setDailyState(answered, correct) {
+                var today = new Date().toDateString();
+                localStorage.setItem(DAILY_KEY, JSON.stringify({ date: today, answered: answered, correct: correct }));
+            }
+
+            var state = getDailyState();
+            if (state && state.answered) {
+                dailyInput.disabled = true; dailySubmit.disabled = true;
+                if (state.correct) {
+                    dailyResult.textContent = 'امروز را پاسخ داده‌اید. (صحیح)';
+                    dailyResult.className = 'challenge-result success';
+                } else {
+                    dailyResult.textContent = 'امروز را پاسخ داده‌اید. (نادرست)';
+                    dailyResult.className = 'challenge-result fail';
+                }
+            } else {
+                dailyInput.disabled = false; dailySubmit.disabled = false; dailyResult.textContent = '';
+            }
+
+            function updateDailyTimer() {
+                var now = new Date();
+                var midnight = new Date(now);
+                midnight.setHours(24, 0, 0, 0);
+                var diff = midnight - now;
+                if (diff <= 0) { timerEl.textContent = '۰:۰۰:۰۰'; return; }
+                var hours = Math.floor(diff / (60 * 60 * 1000));
+                var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+                var secs = Math.floor((diff % (60 * 1000)) / 1000);
+                var pad = function(n) { return String(n).padStart(2, '0'); };
+                timerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+            }
+            updateDailyTimer();
+            if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
+            dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
+
+            dailySubmit.addEventListener('click', function() {
+                if (dailyInput.disabled) return;
+                var answer = dailyInput.value.trim();
+                if (!answer) {
+                    dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.';
+                    dailyResult.className = 'challenge-result';
+                    return;
+                }
+                var isCorrect = (answer === todayQuestion.answer);
+                setDailyState(true, isCorrect);
+                dailyInput.disabled = true; dailySubmit.disabled = true;
+                if (isCorrect) {
+                    coinCount += 10;
+                    diamondCount += 5;
+                    updateCoinUI();
+                    updateDiamondUI();
+                    dailyResult.textContent = 'درست! ۱۰ سکه + ۵ الماس دریافت کردید.';
+                    dailyResult.className = 'challenge-result success';
+                } else {
+                    dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
+                    dailyResult.className = 'challenge-result fail';
+                }
+            });
+            dailyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') dailySubmit.click();
+            });
+        }
+    </script>
+
+    <script>
+        (function() {
+            var coinIcon = document.querySelector('#header .coin-box .fa-coins');
+            if (coinIcon) {
+                var newCoinSvg = `<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/><text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text></svg>`;
+                var span = document.createElement('span');
+                span.style.display = 'inline-flex';
+                span.style.alignItems = 'center';
+                span.style.justifyContent = 'center';
+                span.innerHTML = newCoinSvg;
+                coinIcon.parentNode.replaceChild(span, coinIcon);
+            }
+
+            const app = document.getElementById('game-app');
+            const gameScreen = document.createElement('div');
+            gameScreen.id = 'game-screen';
+            gameScreen.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-top: 15px;">
+                    <div class="score-pill">
+                        <i class="fas fa-star" style="color: #ff9800; font-size: 24px; margin-left: -2px;"></i>
+                        <span class="score-num">0</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px; direction: ltr;">
+                        <div class="back-btn" id="new-game-back-btn">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 12H4" />
+                                <path d="M8 8l-4 4 4 4" />
+                            </svg>
+                        </div>
+                        <div class="stat-box">
+                            <span>50</span>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M4 4 L20 4 L22 10 L12 22 L2 10 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="stat-box">
+                            <span>130</span>
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                                <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="game-screen-title">Emoji Quiz</div>                
+            `;
+            app.appendChild(gameScreen);
+
+            document.querySelector('.btn-start').addEventListener('click', function() {
+                document.getElementById('main-menu').style.display = 'none';
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'flex';
+                if (typeof loadLevel === 'function') {
+                    loadLevel(currentLevel);
+                    syncGameStats();
+                }
+            });
+
+            document.querySelector('#new-game-back-btn').addEventListener('click', function() {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('main-menu').style.display = 'flex';
+            });
+        })();
+    </script>
+
+    <script>
+        const questions = {
             1: { emoji1: '🧑', emoji2: '🐬', answer: 'پسر دلفینی', category: 'کارتون و انیمیشن' },
             2: { emoji1: '🌅', emoji2: '🧊', answer: 'عصر یخبندان', category: 'کارتون و انیمیشن' },
             3: { emoji1: '🐁', emoji2: '👨‍🍳', answer: 'موش سرآشپز', category: 'کارتون و انیمیشن' },
@@ -1902,10 +1156,20 @@
             99: { emoji1: '😢', emoji2: '🐊', answer: 'اشک تمساح', category: 'اصطلاحات' },
             100: { emoji1: '4️⃣', emoji2: '🧱', answer: 'چار دیواری', category: 'فیلم و سریال' }
         };
-        var totalLevels = Object.keys(questions).length;
+        const totalLevels = Object.keys(questions).length;
+
+        let currentLevel = 1;
+        let answeredLevels = {};
+        let correctAttempts = {};
+        let totalStars = 0;
+        let totalCorrect = 0;
+        let totalWrong = 0;
+        let totalAttempted = 0;
+
+        const GAME_SAVE_KEY = 'my_emoji_quiz_save';
 
         function saveGame() {
-            localStorage.setItem(SAVE_KEY, JSON.stringify({
+            localStorage.setItem(GAME_SAVE_KEY, JSON.stringify({
                 currentLevel: currentLevel,
                 answeredLevels: answeredLevels,
                 correctAttempts: correctAttempts,
@@ -1919,7 +1183,7 @@
         }
 
         function loadGame() {
-            var saved = localStorage.getItem(SAVE_KEY);
+            var saved = localStorage.getItem(GAME_SAVE_KEY);
             if (saved) {
                 try {
                     var data = JSON.parse(saved);
@@ -1938,531 +1202,203 @@
             return false;
         }
 
-        var coinsSpan = document.getElementById('coins');
-        var diamondsSpan = document.getElementById('diamonds');
-        var starsSpan = document.getElementById('stars');
-        var levelText = document.getElementById('levelText');
-        var emoji1 = document.getElementById('emoji1');
-        var emoji2 = document.getElementById('emoji2');
-        var answerInput = document.getElementById('answerInput');
-        var inputContainer = document.getElementById('inputContainer');
-        var confirmBtn = document.getElementById('confirmBtn');
-        var cancelBtn = document.getElementById('cancelBtn');
-        var prevBtn = document.getElementById('prevBtn');
-        var nextBtn = document.getElementById('nextBtn');
-
-        var modalOverlay = document.getElementById('modalOverlay');
-        var modalTitle = document.getElementById('modalTitle');
-        var modalMessage = document.getElementById('modalMessage');
-        var modalBtn = document.getElementById('modalBtn');
-
-        var offlineModal = document.getElementById('offlineModal');
-        var infoModal = document.getElementById('infoModal');
-        var shopSelectionModal = document.getElementById('shopSelectionModal');
-        var coinShopModal = document.getElementById('coinShopModal');
-        var bgModal = document.getElementById('bgModal');
-        var buyThemeModal = document.getElementById('buyThemeModal');
-        var buyThemeMessage = document.getElementById('buyThemeMessage');
-        var hintModal = document.getElementById('hintModal');
-        var answerModal = document.getElementById('answerModal');
-        var answerMessage = document.getElementById('answerMessage');
-        var giftModal = document.getElementById('giftModal');
-        var giftTimer = document.getElementById('giftTimer');
-        var resultModal = document.getElementById('resultModal');
-        var resultMessage = document.getElementById('resultMessage');
-        var congratsModal = document.getElementById('congratsModal');
-        var congratsMessage = document.getElementById('congratsMessage');
-        var statsModal = document.getElementById('statsModal');
-        var statsContent = document.getElementById('statsContent');
-        var tipModal = document.getElementById('tipModal');
-        var tipCategoryText = document.getElementById('tipCategoryText');
-
-        var menuScreen = document.getElementById('menuScreen');
-        var gameScreen = document.getElementById('gameScreen');
-
-        var modalCallback = null;
-
-        function showMenu() {
-            menuScreen.classList.add('active');
-            gameScreen.classList.remove('active');
-        }
-
-        function showGame() {
-            menuScreen.classList.remove('active');
-            gameScreen.classList.add('active');
-            loadLevel(currentLevel);
-            updateStats();
-        }
-
-        document.getElementById('startGameBtn').addEventListener('click', showGame);
-
-        function goToMenu() {
-            showMenu();
-        }
-
-        function showModal(title, message, callback, buttonText) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalBtn.textContent = buttonText || 'قبول';
-            modalCallback = callback || null;
-            modalOverlay.classList.add('active');
-            document.body.appendChild(modalOverlay);
-        }
-
-        function closeModal() {
-            modalOverlay.classList.remove('active');
-            if (modalCallback) { var cb = modalCallback;
-                modalCallback = null;
-                cb(); }
-        }
-
-        function showInfoModal() { infoModal.classList.add('active'); }
-
-        function closeInfoModal() { infoModal.classList.remove('active'); }
-
-        function showOfflineModal() {
-            offlineModal.classList.add('active');
-            answerInput.disabled = true;
-            confirmBtn.disabled = true;
-            cancelBtn.disabled = true;
-        }
-
-        function hideOfflineModal() {
-            offlineModal.classList.remove('active');
-            if (!answeredLevels[currentLevel]) {
-                answerInput.disabled = false;
-                confirmBtn.disabled = false;
-                cancelBtn.disabled = false;
-            }
-        }
-
-        function checkConnection() {
-            if (navigator.onLine) hideOfflineModal();
-            else offlineModal.classList.add('active');
-        }
-        window.addEventListener('offline', showOfflineModal);
-        window.addEventListener('online', hideOfflineModal);
-        if (!navigator.onLine) showOfflineModal();
-
-        function showShopSelectionModal() {
-            shopSelectionModal.classList.add('active');
-        }
-
-        function closeShopSelectionModal() {
-            shopSelectionModal.classList.remove('active');
-        }
-
-        function openCoinShop() {
-            closeShopSelectionModal();
-            coinShopModal.classList.add('active');
-        }
-
-        function closeCoinShopModal() {
-            coinShopModal.classList.remove('active');
-        }
-
-        function openThemeShop() {
-            closeShopSelectionModal();
-            refreshThemes();
-            bgModal.classList.add('active');
-        }
-
-        function closeBgModal() {
-            bgModal.classList.remove('active');
-        }
-
-        function buyCoinsWithDiamonds(coins, diamonds) {
-            if (diamondCount < diamonds) {
-                showModal('خطا', 'الماس کافی ندارید!', null);
-                return;
-            }
-            diamondCount -= diamonds;
-            coinCount += coins;
-            updateStats();
-            saveGame();
-            showCongratsModal('شما ' + coins + ' سکه را با ' + diamonds + ' الماس خریدید.');
-        }
-
-        function showCongratsModal(msg) {
-            congratsMessage.textContent = msg;
-            congratsModal.classList.add('active');
-            document.body.appendChild(congratsModal);
-        }
-
-        function closeCongratsModal() { congratsModal.classList.remove('active'); }
-
-        var pendingTheme = null;
-        var purchasedThemes = ['default'];
-
-        function loadPurchased() {
-            var saved = localStorage.getItem(PURCHASED_KEY);
-            if (saved) {
-                try {
-                    purchasedThemes = JSON.parse(saved);
-                    if (!purchasedThemes.includes('default')) purchasedThemes.push('default');
-                } catch (e) {
-                    purchasedThemes = ['default'];
+        const originalCloseModal = window.closeModal;
+        window.closeModal = function() {
+            originalCloseModal();
+            const modalTitle = document.querySelector('#message-modal .modal-title');
+            if (modalTitle && (modalTitle.innerText === 'نادرست' || modalTitle.innerText === 'خطا')) {
+                const input = document.getElementById('answer-input');
+                if (input && !input.disabled) {
+                    input.value = '';
                 }
-            } else {
-                purchasedThemes = ['default'];
             }
-            document.querySelectorAll('.theme-square').forEach(function(sq) {
-                var theme = sq.dataset.theme;
-                var isPurchased = purchasedThemes.includes(theme);
-                sq.dataset.locked = isPurchased ? 'false' : 'true';
-                sq.classList.toggle('locked', !isPurchased);
-            });
-        }
+        };
 
-        function savePurchased() {
-            localStorage.setItem(PURCHASED_KEY, JSON.stringify(purchasedThemes));
-        }
-
-        function refreshThemes() {
-            loadPurchased();
-            updateThemeUI(currentTheme);
-        }
-
-        function selectTheme(theme) {
-            var square = document.querySelector('.theme-square[data-theme="' + theme + '"]');
-            if (!square) return;
-            var isLocked = square.dataset.locked === 'true';
-            if (isLocked) {
-                pendingTheme = theme;
-                buyThemeMessage.innerHTML =
-                    'آیا مایل به خرید این تم با <strong>۵ الماس</strong> هستید؟';
-                buyThemeModal.classList.add('active');
-                return;
-            }
-            currentTheme = theme;
-            localStorage.setItem(THEME_KEY, theme);
-            applyTheme(theme);
-            updateThemeUI(theme);
-            closeBgModal();
-        }
-
-        function confirmThemePurchase() {
-            var theme = pendingTheme;
-            buyThemeModal.classList.remove('active');
-            if (!theme) return;
-            if (diamondCount < 5) {
-                showModal('خطا', 'الماس کافی برای خرید تم ندارید!', null);
-                return;
-            }
-            diamondCount -= 5;
-            if (!purchasedThemes.includes(theme)) {
-                purchasedThemes.push(theme);
-                savePurchased();
-            }
-            currentTheme = theme;
-            localStorage.setItem(THEME_KEY, theme);
-            applyTheme(theme);
-            refreshThemes();
-            updateStats();
-            saveGame();
-            showCongratsModal('تم ' + theme + ' با موفقیت خریداری شد.');
-            pendingTheme = null;
-        }
-
-        function closeBuyThemeModal() {
-            buyThemeModal.classList.remove('active');
-            pendingTheme = null;
-        }
-
-        var currentTheme = 'default';
-
-        function loadTheme() {
-            var saved = localStorage.getItem(THEME_KEY);
-            if (saved && purchasedThemes.includes(saved)) {
-                currentTheme = saved;
-            } else {
-                currentTheme = 'default';
-                localStorage.setItem(THEME_KEY, 'default');
-            }
-            applyTheme(currentTheme);
-            updateThemeUI(currentTheme);
-        }
-
-        function applyTheme(theme) {
-            var body = document.body;
-            var menu = document.getElementById('menuScreen');
-            var card = document.querySelector('.card');
-            var splash = document.getElementById('splashScreen');
-            var bgColor, cardBg, borderColor, borderFocus, shadowColor;
-            switch (theme) {
-                case 'default':
-                    bgColor = '#1a2a4a';
-                    cardBg = '#1a2a4a';
-                    borderColor = '#60a5fa';
-                    borderFocus = '#93c5fd';
-                    shadowColor = 'rgba(96,165,250,0.25)';
-                    break;
-                case 'orange':
-                    bgColor = '#1a0e05';
-                    cardBg = '#2d1a0a';
-                    borderColor = '#fb923c';
-                    borderFocus = '#fdba74';
-                    shadowColor = 'rgba(251,146,60,0.3)';
-                    break;
-                case 'purple':
-                    bgColor = '#1a0b1f';
-                    cardBg = '#2d142b';
-                    borderColor = '#c084fc';
-                    borderFocus = '#d8b4fe';
-                    shadowColor = 'rgba(192,132,252,0.25)';
-                    break;
-                case 'green':
-                    bgColor = '#051a12';
-                    cardBg = '#0d2a1e';
-                    borderColor = '#34d399';
-                    borderFocus = '#6ee7b7';
-                    shadowColor = 'rgba(52,211,153,0.25)';
-                    break;
-                case 'red':
-                    bgColor = '#1a0505';
-                    cardBg = '#2d0d0d';
-                    borderColor = '#f87171';
-                    borderFocus = '#fca5a5';
-                    shadowColor = 'rgba(248,113,113,0.25)';
-                    break;
-                case 'pink':
-                    bgColor = '#1a0512';
-                    cardBg = '#2d0d22';
-                    borderColor = '#f472b6';
-                    borderFocus = '#f9a8d4';
-                    shadowColor = 'rgba(244,114,182,0.25)';
-                    break;
-                case 'cyan':
-                    bgColor = '#05151a';
-                    cardBg = '#0d222b';
-                    borderColor = '#22d3ee';
-                    borderFocus = '#67e8f9';
-                    shadowColor = 'rgba(34,211,238,0.25)';
-                    break;
-                case 'yellow':
-                    bgColor = '#1a1405';
-                    cardBg = '#2d240a';
-                    borderColor = '#facc15';
-                    borderFocus = '#fde047';
-                    shadowColor = 'rgba(250,204,21,0.25)';
-                    break;
-                default:
-                    bgColor = '#1a2a4a';
-                    cardBg = '#1a2a4a';
-                    borderColor = '#60a5fa';
-                    borderFocus = '#93c5fd';
-                    shadowColor = 'rgba(96,165,250,0.25)';
-            }
-            body.style.background = bgColor;
-            if (menu) {
-                menu.style.background = cardBg;
-                menu.style.borderColor = 'rgba(255,255,255,0.15)';
-            }
-            if (card) {
-                card.style.background = cardBg;
-                card.style.borderColor = 'rgba(255,255,255,0.15)';
-            }
-            if (splash) {
-                splash.style.background = bgColor;
-            }
-            document.documentElement.style.setProperty('--input-border', borderColor);
-            document.documentElement.style.setProperty('--input-border-focus', borderFocus);
-            document.documentElement.style.setProperty('--input-shadow', shadowColor);
-        }
-
-        function updateThemeUI(selectedTheme) {
-            var squares = document.querySelectorAll('.theme-square');
-            squares.forEach(function(sq) {
-                var theme = sq.dataset.theme;
-                var isPurchased = purchasedThemes.includes(theme);
-                var isSelected = theme === selectedTheme;
-                sq.classList.remove('selected', 'locked');
-                if (!isPurchased) {
-                    sq.classList.add('locked');
+        function syncGameStats() {
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen && gameScreen.style.display === 'flex') {
+                const stats = gameScreen.querySelectorAll('.stat-box span');
+                if (stats.length >= 2) {
+                    stats[0].innerText = diamondCount;
+                    stats[1].innerText = coinCount;
                 }
-                if (isSelected) {
-                    sq.classList.add('selected');
+                const starPill = gameScreen.querySelector('.score-pill .score-num');
+                if (starPill) {
+                    starPill.innerText = totalStars;
                 }
-                var statusEl = sq.querySelector('.theme-status');
-                if (statusEl) {
-                    if (isSelected) {
-                        statusEl.innerHTML =
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>';
-                        statusEl.style.borderColor = '#22c55e';
-                        statusEl.style.background = 'rgba(34,197,94,0.2)';
-                    } else {
-                        statusEl.innerHTML =
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-                        statusEl.style.borderColor = '#ef4444';
-                        statusEl.style.background = 'rgba(239,68,68,0.15)';
-                    }
-                }
-                var lockCenter = sq.querySelector('.lock-center');
-                if (!isPurchased) {
-                    if (!lockCenter) {
-                        lockCenter = document.createElement('div');
-                        lockCenter.className = 'lock-center';
-                        lockCenter.innerHTML =
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-                        sq.appendChild(lockCenter);
-                    }
-                } else {
-                    if (lockCenter) {
-                        lockCenter.remove();
-                    }
-                }
-            });
+            }
+        }
+
+        function updateTipContent(level) {
+            var q = questions[level];
+            var tipEl = document.getElementById('tipCategoryText');
+            if (q && tipEl) {
+                var category = q.category || 'متفرقه';
+                tipEl.textContent = 'این دو ایموجی در دسته‌بندی "' + category + '" قرار دارند.';
+            } else if (tipEl) {
+                tipEl.textContent = 'دسته‌بندی این مرحله مشخص نیست.';
+            }
+        }
+
+        function showStatsModal() {
+            var totalAnswered = Object.keys(answeredLevels).length;
+            var percent = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
+            var remaining = totalLevels - totalAnswered;
+            
+            document.getElementById('statsContent').innerHTML = `
+                <div class="stat-item"><span class="stat-label">درصد حدس :</span><span class="stat-value blue">${percent}%</span></div>
+                <div class="stat-item"><span class="stat-label">تعداد درست :</span><span class="stat-value green">${totalCorrect}</span></div>
+                <div class="stat-item"><span class="stat-label">تعداد نادرست :</span><span class="stat-value red">${totalWrong}</span></div>
+                <div class="stat-item"><span class="stat-label">مراحل تکمیل شده :</span><span class="stat-value yellow">${totalAnswered} از ${totalLevels}</span></div>
+                <div class="stat-item"><span class="stat-label">مراحل باقی‌مانده :</span><span class="stat-value">${remaining}</span></div>
+            `;
+            openModal('stats-modal');
         }
 
         function showHintModal() {
-            if (!navigator.onLine) { showOfflineModal(); return; }
             if (answeredLevels[currentLevel]) {
-                showModal('توجه', 'شما قبلاً به این سوال پاسخ داده‌اید.', null);
+                document.querySelector('#message-modal .modal-title').innerText = 'توجه';
+                document.querySelector('#message-modal .modal-message').innerText = 'شما قبلاً به این سوال پاسخ داده‌اید.';
+                openModal('message-modal');
                 return;
             }
-            hintModal.classList.add('active');
+            openModal('hint-modal');
         }
-
-        function closeHintModal() { hintModal.classList.remove('active'); }
 
         function confirmHint() {
             if (coinCount < 15) {
-                showModal('خطا', 'سکه کافی برای راهنمایی ندارید!', null);
-                closeHintModal();
+                document.querySelector('#message-modal .modal-title').innerText = 'خطا';
+                document.querySelector('#message-modal .modal-message').innerText = 'سکه کافی برای راهنمایی ندارید!';
+                openModal('message-modal');
+                closeModal();
                 return;
             }
             coinCount -= 15;
-            updateStats();
+            updateCoinUI();
             saveGame();
-            closeHintModal();
+            closeModal();
+            
             var q = questions[currentLevel];
-            answerMessage.textContent = 'پاسخ صحیح : « ' + q.answer + ' »';
-            answerModal.classList.add('active');
+            document.getElementById('answerMessage').innerText = 'پاسخ صحیح : « ' + q.answer + ' »';
+            openModal('answer-modal');
         }
 
-        function closeAnswerModal() { answerModal.classList.remove('active'); }
-
-        var giftInterval = null;
-
-        function showGiftModal() {
-            giftModal.classList.add('active');
-            startGiftTimer();
-        }
-
-        function closeGiftModal() {
-            giftModal.classList.remove('active');
-            if (giftInterval) clearInterval(giftInterval);
-        }
-
-        function startGiftTimer() {
-            if (giftInterval) clearInterval(giftInterval);
-            updateGiftTimer();
-            giftInterval = setInterval(updateGiftTimer, 1000);
-        }
-
-        function updateGiftTimer() {
-            var lastOpen = localStorage.getItem(GIFT_KEY);
-            if (!lastOpen) {
-                giftTimer.textContent = '--:--:--';
-                return;
-            }
-            var elapsed = Date.now() - parseInt(lastOpen);
-            var remaining = 24 * 60 * 60 * 1000 - elapsed;
-            if (remaining <= 0) {
-                giftTimer.textContent = '۰:۰۰:۰۰';
-                if (giftInterval) clearInterval(giftInterval);
-                return;
-            }
-            var hours = Math.floor(remaining / (60 * 60 * 1000));
-            var mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-            var secs = Math.floor((remaining % (60 * 1000)) / 1000);
-            var pad = function(n) { return String(n).padStart(2, '0'); };
-            giftTimer.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
-        }
-
-        function openGift(boxNumber) {
-            var lastOpen = localStorage.getItem(GIFT_KEY);
-            if (lastOpen) {
-                var elapsed = Date.now() - parseInt(lastOpen);
-                if (elapsed < 24 * 60 * 60 * 1000) {
-                    showModal('توجه', 'امکان باز کردن جعبه تا ۲۴ ساعت دیگر وجود ندارد.', null);
-                    return;
-                }
-            }
-            var prizes = [
-                { type: 'coin', amount: 30, label: '۳۰ سکه' },
-                { type: 'diamond', amount: 15, label: '۱۵ الماس' },
-                { type: 'empty', amount: 0, label: 'پوچ' }
-            ];
-            var randomIndex = Math.floor(Math.random() * prizes.length);
-            var prize = prizes[randomIndex];
-            var msg = '';
-            if (prize.type === 'coin') {
-                coinCount += prize.amount;
-                msg = 'تبریک! شما ' + prize.label + ' برنده شدید.';
-            } else if (prize.type === 'diamond') {
-                diamondCount += prize.amount;
-                msg = 'تبریک! شما ' + prize.label + ' برنده شدید.';
-            } else {
-                msg = 'متاسفانه هیچ جایزه‌ای برنده نشدید. <br> فردا دوباره امتحان کنید.';
-            }
-            updateStats();
-            saveGame();
-            localStorage.setItem(GIFT_KEY, Date.now().toString());
-            closeGiftModal();
-            showResultModal(msg);
-        }
-
-        function showResultModal(msg) {
-            resultMessage.innerHTML = msg;
-            resultModal.classList.add('active');
-            document.body.appendChild(resultModal);
-        }
-
-        function closeResultModal() { resultModal.classList.remove('active'); }
-
-        function openChallengeModal() {
-            document.getElementById('challengeModal').classList.add('active');
-        }
-
-        function closeChallengeModal() {
-            document.getElementById('challengeModal').classList.remove('active');
-        }
-
-        function updateButtons() {
-            prevBtn.classList.toggle('disabled', currentLevel === 1);
-            if (currentLevel === totalLevels) {
-                nextBtn.classList.add('disabled');
-            } else {
-                nextBtn.classList.toggle('disabled', !answeredLevels[currentLevel]);
-            }
-        }
-
-        function disableInput(level) {
-            var disabled = answeredLevels[level] || false;
-            inputContainer.classList.toggle('disabled', disabled);
-            answerInput.disabled = disabled;
-            confirmBtn.disabled = disabled;
-            cancelBtn.disabled = disabled;
-            if (disabled) {
-                var q = questions[level];
-                if (q) answerInput.value = q.answer;
-            } else {
-                answerInput.value = '';
-            }
+        function showTipModal() {
+            updateTipContent(currentLevel);
+            openModal('tip-modal');
         }
 
         function loadLevel(level) {
             var q = questions[level];
-            if (q) {
-                emoji1.textContent = q.emoji1;
-                emoji2.textContent = q.emoji2;
-                levelText.textContent = 'مرحله ' + level + ' از ' + totalLevels;
-                disableInput(level);
-                answerInput.placeholder = 'پاسخ را وارد کنید...';
-                updateButtons();
-                updateStats();
-                updateTipContent(level);
+            if (!q) return;
+
+            const gameScreen = document.getElementById('game-screen');
+            if (!gameScreen) return;
+
+            const titleEl = gameScreen.querySelector('#game-screen-title');
+            titleEl.style.marginTop = '40px';
+            titleEl.style.paddingBottom = '10px';
+            let nextEl = titleEl.nextElementSibling;
+            while (nextEl) {
+                const temp = nextEl.nextElementSibling;
+                nextEl.remove();
+                nextEl = temp;
+            }
+
+            const isAnswered = answeredLevels[level] || false;
+            
+            const gameHtml = `
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:space-evenly; width:100%;">
+                    <div class="game-section" style="margin: 15 auto; background: rgba(255, 255, 255, 0.08); border-radius: 50px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; width:100%;">
+                        <span style="cursor: pointer; font-size: 22px;" id="prev-btn" onclick="changeLevel(-1)">▶</span>
+                        <span style="font-size: 18px;">مرحله ${level} از ${totalLevels}</span>
+                        <span style="cursor: pointer; font-size: 22px;" id="next-btn" onclick="changeLevel(1)">◀</span>
+                    </div>
+
+                    <div class="game-section" style="margin:0 auto; background: rgba(255, 255, 255, 0.08); border-radius: 50px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; justify-content: center; box-sizing: border-box; width:80%;">
+                        <span style="font-size: 30px; line-height: 1;">${q.emoji1}</span>
+                        <span style="font-size: 30px; line-height: 1;">${q.emoji2}</span>
+                    </div>
+
+                    <div class="game-section" style="margin:0 auto; background: transparent; border: 2px solid #3b82f6; border-radius: 30px; padding: 12px 15px; font-size: 16px; color: white; font-family: 'Vazirmatn', sans-serif; text-align: center; box-sizing: border-box; width:95%;">
+                        <input id="answer-input" type="text" placeholder="پاسخ را وارد کنید..." style="width:100%; background:transparent; border:none; outline:none; color:white; font-family:'Vazirmatn'; text-align:center; font-size:16px;" ${isAnswered ? 'disabled' : ''}>
+                    </div>
+
+                    <div class="game-section" style="margin:0 auto; display: flex; gap: 10px; justify-content: space-between; align-items: center; box-sizing: border-box; width:90%;">
+                        <button id="confirm-btn" ${isAnswered ? 'disabled' : ''} style="background: #22c55e; color: white; border: none; border-radius: 30px; padding: 8px 0; font-size: 14px; font-weight: bold; font-family: 'Vazirmatn', sans-serif; flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer;">
+                            <span>تایید</span> <span style="font-size: 16px;">✓</span>
+                        </button>
+                        <button id="cancel-btn" ${isAnswered ? 'disabled' : ''} style="background: #ef4444; color: white; border: none; border-radius: 30px; padding: 8px 0; font-size: 14px; font-weight: bold; font-family: 'Vazirmatn', sans-serif; flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer;">
+                            <span>لغو</span> <span style="font-size: 16px;">✕</span>
+                        </button>
+                    </div>
+
+                    <div class="action-bar" style="display: flex; justify-content: center; gap: 8px; width: 90%; margin: 0 auto;">
+                        <button class="action-btn" onclick="showStatsModal()">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="2" y="14" width="4" height="8" rx="0.5" />
+                                <rect x="10" y="8" width="4" height="14" rx="0.5" />
+                                <rect x="18" y="2" width="4" height="20" rx="0.5" />
+                            </svg>
+                            <span class="label">آمار</span>
+                        </button>
+                        <button class="action-btn" onclick="showHintModal()">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="10" cy="10" r="7" />
+                                <line x1="15" y1="15" x2="21" y2="21" />
+                            </svg>
+                            <span class="label">جواب</span>
+                        </button>
+                        <button class="action-btn" onclick="showTipModal()">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <circle cx="12" cy="16" r="1" fill="currentColor" stroke="none" />
+                            </svg>
+                            <span class="label">نکته</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            titleEl.insertAdjacentHTML('afterend', gameHtml);
+
+            if (isAnswered) {
+                const ansInput = document.getElementById('answer-input');
+                if (ansInput) ansInput.value = q.answer;
+            }
+
+            const confirmBtn = document.getElementById('confirm-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            if (confirmBtn) confirmBtn.onclick = checkAnswer;
+            if (cancelBtn) cancelBtn.onclick = clearAll;
+            const answerInput = document.getElementById('answer-input');
+            if (answerInput) {
+                answerInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') checkAnswer();
+                });
+            }
+
+            updateButtons(level);
+            syncGameStats();
+        }
+
+        function updateButtons(level) {
+            const gameScreen = document.getElementById('game-screen');
+            if (!gameScreen) return;
+            const prevBtn = gameScreen.querySelector('#prev-btn');
+            const nextBtn = gameScreen.querySelector('#next-btn');
+
+            if (prevBtn) {
+                const isActive = level !== 1;
+                prevBtn.className = isActive ? 'active' : 'inactive';
+                prevBtn.style.pointerEvents = isActive ? 'auto' : 'none';
+            }
+            if (nextBtn) {
+                const isLast = level === totalLevels;
+                const canGoNext = answeredLevels[level];
+                const isActive = !isLast && canGoNext;
+                nextBtn.className = isActive ? 'active' : 'inactive';
+                nextBtn.style.pointerEvents = isActive ? 'auto' : 'none';
             }
         }
 
@@ -2475,22 +1411,15 @@
             }
         }
 
-        function updateStats() {
-            coinsSpan.textContent = coinCount;
-            diamondsSpan.textContent = diamondCount;
-            starsSpan.textContent = totalStars;
-        }
-
         function checkAnswer() {
-            if (!navigator.onLine) { showOfflineModal(); return; }
-            if (answeredLevels[currentLevel]) {
-                showModal('توجه', 'شما قبلاً به این سوال پاسخ داده‌اید.', null);
-                return;
-            }
-            var userAnswer = answerInput.value.trim();
+            var input = document.getElementById('answer-input');
+            if (!input || input.disabled) return;
+            var userAnswer = input.value.trim();
             var q = questions[currentLevel];
             if (userAnswer === '') {
-                showModal('خطا', 'لطفا پاسخ را وارد کنید.', null);
+                document.querySelector('#message-modal .modal-title').innerText = 'خطا';
+                document.querySelector('#message-modal .modal-message').innerText = 'لطفا پاسخ را وارد کنید.';
+                openModal('message-modal');
                 return;
             }
             if (!answeredLevels[currentLevel]) {
@@ -2500,224 +1429,35 @@
                 var attempts = correctAttempts[currentLevel] || 0;
                 var change = attempts === 0 ? 30 : attempts === 1 ? 20 : attempts === 2 ? 10 : -5;
                 totalStars += change;
-                starsSpan.textContent = totalStars;
                 correctAttempts[currentLevel] = attempts + 1;
                 answeredLevels[currentLevel] = true;
                 totalCorrect++;
                 saveGame();
-                disableInput(currentLevel);
-                updateButtons();
-                saveGame();
-                showModal('درست', 'جواب شما کاملا صحیح بود.', function() {
-                    if (currentLevel < totalLevels) {
-                        currentLevel++;
-                        loadLevel(currentLevel);
-                        saveGame();
-                    } else {
-                        showModal('تبریک', 'شما همه مراحل را کامل کردید.', null);
-                    }
-                });
+                
+                loadLevel(currentLevel);
+                syncGameStats();
+
+                document.querySelector('#message-modal .modal-title').innerText = 'درست';
+                document.querySelector('#message-modal .modal-message').innerText = 'جواب شما کاملا صحیح بود.';
+                openModal('message-modal');
             } else {
                 totalWrong++;
                 correctAttempts[currentLevel] = (correctAttempts[currentLevel] || 0) + 1;
                 saveGame();
-                showModal('نادرست', 'لطفا دوباره تلاش کنید.', function() {
-                    answerInput.value = '';
-                    answerInput.focus();
-                });
+                
+                document.querySelector('#message-modal .modal-title').innerText = 'نادرست';
+                document.querySelector('#message-modal .modal-message').innerText = 'لطفا دوباره تلاش کنید.';
+                openModal('message-modal');
             }
         }
 
         function clearAll() {
-            if (answeredLevels[currentLevel] || !navigator.onLine) return;
-            answerInput.value = '';
-            answerInput.focus();
-        }
-
-        function showStatsModal() {
-            updateStatsModal();
-            statsModal.classList.add('active');
-        }
-
-        function closeStatsModal() {
-            statsModal.classList.remove('active');
-        }
-
-        function updateStatsModal() {
-            var totalAnswered = Object.keys(answeredLevels).length;
-            var percent = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
-            var remaining = totalLevels - totalAnswered;
-
-            var html = '';
-            html += '<div class="stat-item"><span class="stat-label">درصد حدس :</span><span class="stat-value blue">' + percent + '%</span></div>';
-            html += '<div class="stat-item"><span class="stat-label">تعداد درست :</span><span class="stat-value green">' + totalCorrect + '</span></div>';
-            html += '<div class="stat-item"><span class="stat-label">تعداد نادرست :</span><span class="stat-value red">' + totalWrong + '</span></div>';
-            html += '<div class="stat-item"><span class="stat-label">مراحل تکمیل شده :</span><span class="stat-value yellow">' + totalAnswered + ' از ' + totalLevels + '</span></div>';
-            html += '<div class="stat-item"><span class="stat-label">مراحل باقی‌مانده :</span><span class="stat-value">' + remaining + '</span></div>';
-            statsContent.innerHTML = html;
-        }
-
-        // تابع نکته بدون تایمر
-        function showTipModal() {
-            updateTipContent(currentLevel);
-            tipModal.classList.add('active');
-        }
-
-        function closeTipModal() {
-            tipModal.classList.remove('active');
-        }
-
-        function updateTipContent(level) {
-            var q = questions[level];
-            if (q) {
-                var category = q.category || 'متفرقه';
-                tipCategoryText.textContent = 'این دو ایموجی در دسته‌بندی "' + category + '" قرار دارند.';
-            } else {
-                tipCategoryText.textContent = 'دسته‌بندی این مرحله مشخص نیست.';
+            var input = document.getElementById('answer-input');
+            if (input && !input.disabled) {
+                input.value = '';
+                input.focus();
             }
         }
-
-        function init() {
-            loadGame();
-            loadPurchased();
-            loadTheme();
-            updateStats();
-            updateTipContent(currentLevel);
-        }
-
-        init();
-
-        document.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) closeModal();
-            if (e.target === infoModal) closeInfoModal();
-            if (e.target === shopSelectionModal) closeShopSelectionModal();
-            if (e.target === coinShopModal) closeCoinShopModal();
-            if (e.target === bgModal) closeBgModal();
-            if (e.target === buyThemeModal) closeBuyThemeModal();
-            if (e.target === hintModal) closeHintModal();
-            if (e.target === answerModal) closeAnswerModal();
-            if (e.target === giftModal) closeGiftModal();
-            if (e.target === resultModal) closeResultModal();
-            if (e.target === congratsModal) closeCongratsModal();
-            if (e.target === document.getElementById('challengeModal')) closeChallengeModal();
-            if (e.target === statsModal) closeStatsModal();
-            if (e.target === tipModal) closeTipModal();
-        });
-
-        answerInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkAnswer(); });
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(function() {});
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var dailyQuestions = [
-                { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌ نما', category: 'حیوانات' },
-                { emoji1: '🧜‍♀️', emoji2: '🌊', answer: 'پری دریایی', category: 'فیلم و انیمیشن' },
-                { emoji1: '1️⃣', emoji2: '🦄', answer: 'تک شاخ', category: 'حیوانات' },
-                { emoji1: '🥷', emoji2: '🌊', answer: 'دزد دریایی', category: 'فیلم و انیمیشن' },
-                { emoji1: '🛤', emoji2: '🚂', answer: 'ریل قطار', category: 'وسایل نقلیه' },
-            ];
-            var dayOfMonth = new Date().getDate();
-            var questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
-            var todayQuestion = dailyQuestions[questionIndex];
-            var container = document.getElementById('challengeContent');
-            if (!container) return;
-            container.innerHTML =
-                '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion
-                .emoji2 + '</span></div>' +
-                '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
-                '<div class="challenge-input-row"><input type="text" id="dailyInput" placeholder="پاسخ..."><button class="challenge-btn" id="dailySubmitBtn">ثبت</button></div>' +
-                '<div class="challenge-result" id="dailyResult"></div>';
-            var dailyInput = document.getElementById('dailyInput');
-            var dailySubmit = document.getElementById('dailySubmitBtn');
-            var dailyResult = document.getElementById('dailyResult');
-            var timerEl = document.getElementById('dailyTimer');
-            var DAILY_KEY = 'emoji_daily_challenge';
-
-            function getDailyState() {
-                var saved = localStorage.getItem(DAILY_KEY);
-                if (saved) {
-                    try {
-                        var data = JSON.parse(saved);
-                        var today = new Date().toDateString();
-                        if (data.date === today) return data;
-                    } catch (e) {}
-                }
-                return null;
-            }
-
-            function setDailyState(answered, correct) {
-                var today = new Date().toDateString();
-                localStorage.setItem(DAILY_KEY, JSON.stringify({
-                    date: today,
-                    answered: answered,
-                    correct: correct
-                }));
-            }
-            var state = getDailyState();
-            if (state && state.answered) {
-                dailyInput.disabled = true;
-                dailySubmit.disabled = true;
-                if (state.correct) {
-                    dailyResult.textContent = ' امروز را پاسخ داده‌اید. (صحیح)';
-                    dailyResult.className = 'challenge-result success';
-                } else {
-                    dailyResult.textContent = ' امروز را پاسخ داده‌اید. (نادرست)';
-                    dailyResult.className = 'challenge-result fail';
-                }
-            } else {
-                dailyInput.disabled = false;
-                dailySubmit.disabled = false;
-                dailyResult.textContent = '';
-            }
-
-            function updateDailyTimer() {
-                var now = new Date();
-                var midnight = new Date(now);
-                midnight.setHours(24, 0, 0, 0);
-                var diff = midnight - now;
-                if (diff <= 0) {
-                    timerEl.textContent = '۰:۰۰:۰۰';
-                    return;
-                }
-                var hours = Math.floor(diff / (60 * 60 * 1000));
-                var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-                var secs = Math.floor((diff % (60 * 1000)) / 1000);
-                var pad = function(n) { return String(n).padStart(2, '0'); };
-                timerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
-            }
-            updateDailyTimer();
-            setInterval(updateDailyTimer, 1000);
-
-            dailySubmit.addEventListener('click', function() {
-                if (dailyInput.disabled) return;
-                var answer = dailyInput.value.trim();
-                if (!answer) {
-                    dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.';
-                    dailyResult.className = 'challenge-result';
-                    return;
-                }
-                var isCorrect = (answer === todayQuestion.answer);
-                setDailyState(true, isCorrect);
-                dailyInput.disabled = true;
-                dailySubmit.disabled = true;
-                if (isCorrect) {
-                    coinCount += 10;
-                    diamondCount += 5;
-                    updateStats();
-                    saveGame();
-                    dailyResult.textContent = ' درست! ۱۰ سکه + ۵ الماس دریافت کردید.';
-                    dailyResult.className = 'challenge-result success';
-                } else {
-                    dailyResult.textContent = ' نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
-                    dailyResult.className = 'challenge-result fail';
-                }
-            });
-            dailyInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') dailySubmit.click();
-            });
-        });
     </script>
 </body>
-    </html>
+</html>
