@@ -639,6 +639,16 @@
         </div>
     </div>
 
+    <!-- ====== پنجره‌ی آفلاین (کاملاً مستقل) ====== -->
+    <div id="offline-overlay" style="position: fixed; top:0; left:0; width:100%; height:100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 99999; display: none; justify-content: center; align-items: center; font-family: 'Vazirmatn', sans-serif;">
+        <div id="offline-modal" style="width: 340px; max-width: 90%; background-color: #1a2a4a; border-radius: 24px; padding: 30px 20px 25px; box-sizing: border-box; box-shadow: 0 20px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; border: 1px solid rgba(255,255,255,0.15);">
+            <div style="color: white; font-size: 22px; font-weight: 900; margin-bottom: 16px; text-shadow: 1px 1px 0 rgba(0,0,0,0.3);">آفلاین</div>
+            <div style="color: white; font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 6px; line-height: 1.4; font-family: inherit;">اینترنت شما قطع است.</div>
+            <div style="color: white; font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 22px; line-height: 1.5; font-family: inherit;">لطفا اینترنت خود را بررسی کنید.</div>
+            <button id="offline-close-btn" style="background: rgba(255, 255, 255, 0.15); border: none; border-radius: 14px; padding: 10px 40px; color: white; font-weight: bold; font-size: 16px; font-family: 'Vazirmatn', sans-serif; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.15);">تلاش مجدد</button>
+        </div>
+    </div>
+
     <script>
         var coinCount = 100;
         var diamondCount = 50;
@@ -1481,6 +1491,41 @@
         })();
 
         console.log('بازی کاملاً ریست شد و اکنون همه پیشرفت‌ها به صورت دائمی ذخیره می‌شوند.');
+
+        // ====== مدیریت آفلاین (کاملاً مستقل از بقیه کدها) ======
+        const offlineOverlay = document.getElementById('offline-overlay');
+        const offlineCloseBtn = document.getElementById('offline-close-btn');
+
+        function showOfflineModal() {
+            offlineOverlay.style.display = 'flex';
+        }
+
+        function hideOfflineModal() {
+            offlineOverlay.style.display = 'none';
+        }
+
+        // رفتار دکمه تلاش مجدد
+        offlineCloseBtn.addEventListener('click', function() {
+            if (navigator.onLine) {
+                hideOfflineModal();
+            } else {
+                // اگر هنوز آفلاین است، پنجره را دوباره نشان بده (تلاش مجدد)
+                // برای اثر بصری، یک flicker ایجاد می‌کنیم
+                hideOfflineModal();
+                setTimeout(showOfflineModal, 50);
+            }
+        });
+
+        // در صورت قطع اینترنت، پنجره را نمایش بده
+        window.addEventListener('offline', showOfflineModal);
+
+        // در صورت وصل شدن اینترنت، پنجره را مخفی کن
+        window.addEventListener('online', hideOfflineModal);
+
+        // اگر در لحظه‌ی بارگذاری صفحه اینترنت قطع بود، پنجره را نشان بده
+        if (!navigator.onLine) {
+            showOfflineModal();
+        }
     </script>
 </body>
     </html>
