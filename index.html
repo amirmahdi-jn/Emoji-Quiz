@@ -640,9 +640,101 @@
     </div>
 
     <script>
+        // ===== متغیرهای اصلی =====
+        var coinCount = 100;
+        var diamondCount = 50;
+        var currentLevel = 1;
+        var answeredLevels = {};
+        var correctAttempts = {};
+        var totalStars = 0;
+        var totalCorrect = 0;
+        var totalWrong = 0;
+        var totalAttempted = 0;
+
+        const GAME_SAVE_KEY = 'my_emoji_quiz_save';
+        const GIFT_KEY = 'gift_last_open_teal';
+        const DAILY_KEY = 'emoji_daily_challenge_teal';
+        var giftInterval = null;
+        var dailyChallengeInterval = null;
+        const giftTimerEl = document.getElementById('giftTimer');
+
+        // ===== توابع ذخیره و بازیابی =====
+        function saveGame() {
+            localStorage.setItem(GAME_SAVE_KEY, JSON.stringify({
+                currentLevel: currentLevel,
+                answeredLevels: answeredLevels,
+                correctAttempts: correctAttempts,
+                totalStars: totalStars,
+                coinCount: coinCount,
+                diamondCount: diamondCount,
+                totalCorrect: totalCorrect,
+                totalWrong: totalWrong,
+                totalAttempted: totalAttempted
+            }));
+        }
+
+        function loadGame() {
+            var saved = localStorage.getItem(GAME_SAVE_KEY);
+            if (saved) {
+                try {
+                    var data = JSON.parse(saved);
+                    currentLevel = data.currentLevel || 1;
+                    answeredLevels = data.answeredLevels || {};
+                    correctAttempts = data.correctAttempts || {};
+                    totalStars = data.totalStars || 0;
+                    coinCount = data.coinCount || 100;
+                    diamondCount = data.diamondCount || 50;
+                    totalCorrect = data.totalCorrect || 0;
+                    totalWrong = data.totalWrong || 0;
+                    totalAttempted = data.totalAttempted || 0;
+                    return true;
+                } catch (e) {}
+            }
+            return false;
+        }
+
+        // ===== به‌روزرسانی UI =====
+        function updateCoinUI() {
+            document.getElementById('coins-text').innerText = coinCount;
+            localStorage.setItem('gameCoins', coinCount);
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen && gameScreen.style.display === 'flex') {
+                const statBoxes = gameScreen.querySelectorAll('.stat-box span');
+                if (statBoxes.length >= 2) {
+                    statBoxes[1].innerText = coinCount;
+                }
+            }
+        }
+
+        function updateDiamondUI() {
+            document.getElementById('diamonds').innerText = diamondCount;
+            localStorage.setItem('diamondCount', diamondCount);
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen && gameScreen.style.display === 'flex') {
+                const statBoxes = gameScreen.querySelectorAll('.stat-box span');
+                if (statBoxes.length >= 2) {
+                    statBoxes[0].innerText = diamondCount;
+                }
+            }
+        }
+
+        function syncGameStats() {
+            const gameScreen = document.getElementById('game-screen');
+            if (gameScreen && gameScreen.style.display === 'flex') {
+                const stats = gameScreen.querySelectorAll('.stat-box span');
+                if (stats.length >= 2) {
+                    stats[0].innerText = diamondCount;
+                    stats[1].innerText = coinCount;
+                }
+                const starPill = gameScreen.querySelector('.score-pill .score-num');
+                if (starPill) {
+                    starPill.innerText = totalStars;
+                }
+            }
+        }
+
+        // ===== ریست بازی (فقط در صورت نیاز) =====
         function resetGame() {
-            const keys = ['gameCoins', 'diamondCount', 'gift_last_open_teal', 'emoji_daily_challenge_teal', 'my_emoji_quiz_save'];
-            keys.forEach(key => localStorage.removeItem(key));
             coinCount = 100;
             diamondCount = 50;
             currentLevel = 1;
@@ -652,33 +744,36 @@
             totalCorrect = 0;
             totalWrong = 0;
             totalAttempted = 0;
+            localStorage.removeItem(GAME_SAVE_KEY);
+            localStorage.removeItem('gameCoins');
+            localStorage.removeItem('diamondCount');
+            // کلیدهای چالش و جایزه را پاک نمی‌کنیم تا کاربر از دست ندهد، اما اگر بخواهیم ریست کامل شود می‌توانیم پاک کنیم
+            // localStorage.removeItem(GIFT_KEY);
+            // localStorage.removeItem(DAILY_KEY);
             updateCoinUI();
             updateDiamondUI();
             saveGame();
         }
 
+        // ===== بارگذاری اولیه =====
         window.addEventListener('load', function() {
-            const hasSaved = loadGame();
+            // بازیابی داده‌ها
+            var hasSaved = loadGame();
             if (!hasSaved) {
-                coinCount = 100;
-                diamondCount = 50;
-                currentLevel = 1;
-                answeredLevels = {};
-                correctAttempts = {};
-                totalStars = 0;
-                totalCorrect = 0;
-                totalWrong = 0;
-                totalAttempted = 0;
+                // اگر داده‌ای نبود، مقدار پیش‌فرض را ذخیره کن
                 saveGame();
             }
+            // به‌روزرسانی UI
             updateCoinUI();
             updateDiamondUI();
 
+            // بازیابی نام و آواتار
             const savedName = localStorage.getItem('userName');
             const savedAvatar = localStorage.getItem('userAvatar');
             if (savedName) { document.getElementById('profile-name-display').innerText = savedName; }
             if (savedAvatar) { document.getElementById('header-avatar').src = savedAvatar; }
 
+            // اسپلش اسکرین
             var blocks = document.querySelectorAll('.progress-block');
             var step = 0;
             var splash = document.getElementById('splash-screen');
@@ -697,6 +792,7 @@
             var timer = setInterval(activateNextBlock, 1200);
         });
 
+        // ===== آواتارها =====
         const avatarImages = [
             'https://uploadkon.ir/uploads/190f08_26InShot-20260709-000258602.jpg',
             'https://uploadkon.ir/uploads/19c008_26InShot-20260709-000451814.jpg',
@@ -744,6 +840,7 @@
         }
         generateAvatars();
 
+        // ===== تغییر نام =====
         const nameModalOverlay = document.getElementById('name-modal-overlay');
         const nameInput = document.getElementById('name-input');
         const profileNameDisplay = document.getElementById('profile-name-display');
@@ -767,6 +864,7 @@
             closeNameModal();
         }
 
+        // ===== مودال‌ها =====
         const modalOverlay = document.getElementById('modal-overlay');
         
         function openModal(modalId) {
@@ -789,22 +887,7 @@
             if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
         }
 
-        var coinCount = 100;
-        var diamondCount = 50;
-        var GIFT_KEY = 'gift_last_open_teal';
-        var giftInterval = null;
-        const giftTimerEl = document.getElementById('giftTimer');
-
-        function updateCoinUI() {
-            document.getElementById('coins-text').innerText = coinCount;
-            localStorage.setItem('gameCoins', coinCount);
-        }
-
-        function updateDiamondUI() {
-            document.getElementById('diamonds').innerText = diamondCount;
-            localStorage.setItem('diamondCount', diamondCount);
-        }
-
+        // ===== جایزه روزانه =====
         function startGiftTimer() {
             if (giftInterval) clearInterval(giftInterval);
             updateGiftTimer();
@@ -863,6 +946,7 @@
             }
             
             localStorage.setItem(GIFT_KEY, Date.now().toString());
+            saveGame(); // ذخیره کامل
         }
 
         function showGiftResult(message, color) {
@@ -879,8 +963,7 @@
             }
         }
 
-        var dailyChallengeInterval = null;
-        
+        // ===== چالش روزانه =====
         function initDailyChallenge() {
             const dailyQuestions = [
                 { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌نما' },
@@ -909,7 +992,6 @@
             var dailySubmit = document.getElementById('dailySubmitBtn');
             var dailyResult = document.getElementById('dailyResult');
             var timerEl = document.getElementById('dailyTimer');
-            var DAILY_KEY = 'emoji_daily_challenge_teal';
 
             function getDailyState() {
                 var saved = localStorage.getItem(DAILY_KEY);
@@ -980,80 +1062,14 @@
                     dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
                     dailyResult.className = 'challenge-result fail';
                 }
+                saveGame(); // ذخیره بعد از چالش
             });
             dailyInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') dailySubmit.click();
             });
         }
-    </script>
 
-    <script>
-        (function() {
-            var coinIcon = document.querySelector('#header .coin-box .fa-coins');
-            if (coinIcon) {
-                var newCoinSvg = `<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/><text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text></svg>`;
-                var span = document.createElement('span');
-                span.style.display = 'inline-flex';
-                span.style.alignItems = 'center';
-                span.style.justifyContent = 'center';
-                span.innerHTML = newCoinSvg;
-                coinIcon.parentNode.replaceChild(span, coinIcon);
-            }
-
-            const app = document.getElementById('game-app');
-            const gameScreen = document.createElement('div');
-            gameScreen.id = 'game-screen';
-            gameScreen.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-top: 15px;">
-                    <div class="score-pill">
-                        <i class="fas fa-star" style="color: #ff9800; font-size: 24px; margin-left: -2px;"></i>
-                        <span class="score-num">0</span>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 10px; direction: ltr;">
-                        <div class="back-btn" id="new-game-back-btn">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 12H4" />
-                                <path d="M8 8l-4 4 4 4" />
-                            </svg>
-                        </div>
-                        <div class="stat-box">
-                            <span>50</span>
-                            <svg viewBox="0 0 24 24">
-                                <path d="M4 4 L20 4 L22 10 L12 22 L2 10 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
-                            </svg>
-                        </div>
-                        <div class="stat-box">
-                            <span>130</span>
-                            <svg viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-                                <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div id="game-screen-title">Emoji Quiz</div>                
-            `;
-            app.appendChild(gameScreen);
-
-            document.querySelector('.btn-start').addEventListener('click', function() {
-                document.getElementById('main-menu').style.display = 'none';
-                document.getElementById('splash-screen').style.display = 'none';
-                document.getElementById('game-screen').style.display = 'flex';
-                if (typeof loadLevel === 'function') {
-                    loadLevel(currentLevel);
-                    syncGameStats();
-                }
-            });
-
-            document.querySelector('#new-game-back-btn').addEventListener('click', function() {
-                document.getElementById('game-screen').style.display = 'none';
-                document.getElementById('main-menu').style.display = 'flex';
-            });
-        })();
-    </script>
-
-    <script>
+        // ===== ساختار سوالات =====
         const questions = {
             1: { emoji1: '🧑', emoji2: '🐬', answer: 'پسر دلفینی', category: 'کارتون و انیمیشن' },
             2: { emoji1: '🌅', emoji2: '🧊', answer: 'عصر یخبندان', category: 'کارتون و انیمیشن' },
@@ -1158,50 +1174,7 @@
         };
         const totalLevels = Object.keys(questions).length;
 
-        let currentLevel = 1;
-        let answeredLevels = {};
-        let correctAttempts = {};
-        let totalStars = 0;
-        let totalCorrect = 0;
-        let totalWrong = 0;
-        let totalAttempted = 0;
-
-        const GAME_SAVE_KEY = 'my_emoji_quiz_save';
-
-        function saveGame() {
-            localStorage.setItem(GAME_SAVE_KEY, JSON.stringify({
-                currentLevel: currentLevel,
-                answeredLevels: answeredLevels,
-                correctAttempts: correctAttempts,
-                totalStars: totalStars,
-                coinCount: coinCount,
-                diamondCount: diamondCount,
-                totalCorrect: totalCorrect,
-                totalWrong: totalWrong,
-                totalAttempted: totalAttempted
-            }));
-        }
-
-        function loadGame() {
-            var saved = localStorage.getItem(GAME_SAVE_KEY);
-            if (saved) {
-                try {
-                    var data = JSON.parse(saved);
-                    currentLevel = data.currentLevel || 1;
-                    answeredLevels = data.answeredLevels || {};
-                    correctAttempts = data.correctAttempts || {};
-                    totalStars = data.totalStars || 0;
-                    coinCount = data.coinCount || 100;
-                    diamondCount = data.diamondCount || 50;
-                    totalCorrect = data.totalCorrect || 0;
-                    totalWrong = data.totalWrong || 0;
-                    totalAttempted = data.totalAttempted || 0;
-                    return true;
-                } catch (e) {}
-            }
-            return false;
-        }
-
+        // ===== توابع صفحه بازی =====
         const originalCloseModal = window.closeModal;
         window.closeModal = function() {
             originalCloseModal();
@@ -1213,21 +1186,6 @@
                 }
             }
         };
-
-        function syncGameStats() {
-            const gameScreen = document.getElementById('game-screen');
-            if (gameScreen && gameScreen.style.display === 'flex') {
-                const stats = gameScreen.querySelectorAll('.stat-box span');
-                if (stats.length >= 2) {
-                    stats[0].innerText = diamondCount;
-                    stats[1].innerText = coinCount;
-                }
-                const starPill = gameScreen.querySelector('.score-pill .score-num');
-                if (starPill) {
-                    starPill.innerText = totalStars;
-                }
-            }
-        }
 
         function updateTipContent(level) {
             var q = questions[level];
@@ -1458,6 +1416,75 @@
                 input.focus();
             }
         }
+
+        // ===== راه‌اندازی صفحه بازی =====
+        (function() {
+            var coinIcon = document.querySelector('#header .coin-box .fa-coins');
+            if (coinIcon) {
+                var newCoinSvg = `<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/><text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text></svg>`;
+                var span = document.createElement('span');
+                span.style.display = 'inline-flex';
+                span.style.alignItems = 'center';
+                span.style.justifyContent = 'center';
+                span.innerHTML = newCoinSvg;
+                coinIcon.parentNode.replaceChild(span, coinIcon);
+            }
+
+            const app = document.getElementById('game-app');
+            const gameScreen = document.createElement('div');
+            gameScreen.id = 'game-screen';
+            gameScreen.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-top: 15px;">
+                    <div class="score-pill">
+                        <i class="fas fa-star" style="color: #ff9800; font-size: 24px; margin-left: -2px;"></i>
+                        <span class="score-num">0</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px; direction: ltr;">
+                        <div class="back-btn" id="new-game-back-btn">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 12H4" />
+                                <path d="M8 8l-4 4 4 4" />
+                            </svg>
+                        </div>
+                        <div class="stat-box">
+                            <span>50</span>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M4 4 L20 4 L22 10 L12 22 L2 10 Z" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="stat-box">
+                            <span>130</span>
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                                <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="game-screen-title">Emoji Quiz</div>                
+            `;
+            app.appendChild(gameScreen);
+
+            document.querySelector('.btn-start').addEventListener('click', function() {
+                document.getElementById('main-menu').style.display = 'none';
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('game-screen').style.display = 'flex';
+                if (typeof loadLevel === 'function') {
+                    loadLevel(currentLevel);
+                    syncGameStats();
+                }
+            });
+
+            document.querySelector('#new-game-back-btn').addEventListener('click', function() {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('main-menu').style.display = 'flex';
+            });
+        })();
+
+        // ===== ریست بازی (دسترسی از کنسول برای تست) =====
+        // برای ریست کردن بازی از کنسول می‌توانید تابع resetGame() را صدا بزنید.
+        console.log('برای ریست بازی: resetGame() را در کنسول وارد کنید.');
     </script>
 </body>
 </html>
