@@ -865,7 +865,7 @@
             { id: 13, emojis: ['🇮🇷', '🔧'], answer: 'ساخت ایران', letters: ['س','ا','خ','ت',' ','ا','ی','ر','ا','ن'] },
             { id: 14, emojis: ['💧', '🌹'], answer: 'گلاب', letters: ['گ','ل','ا','ب'] },
             { id: 15, emojis: ['🥶', '🩸'], answer: 'خون سرد', letters: ['خ','و','ن',' ','س','ر','د'] },
-            { id: 16, emojis: ['🍗', '🛶'], answer: 'قایقران', letters: ['ق','ا','ی','ق','ر','ا','ن'] },
+            { id: 16, emojis: ['🐴', '🩸'], answer: 'خرخون', letters: ['خ','ر','خ','و','ن'] },
             { id: 17, emojis: ['💧', '👔'], answer: 'کتاب', letters: ['ک','ت','ا','ب'] },
             { id: 18, emojis: ['🥓', '🎲'], answer: 'تاس کباب', letters: ['ت','ا','س',' ','ک','ب','ا','ب'] },
             { id: 19, emojis: ['🏔', '🍜'], answer: 'رشته کوه', letters: ['ر','ش','ت','ه',' ','ک','و','ه'] },
@@ -908,7 +908,7 @@
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
 
-        const STORAGE_KEY = 'emojiQuizProgress_v2';
+        const STORAGE_KEY = 'emojiQuizProgress_v3';
 
         function saveProgress() {
             const progress = {
@@ -1000,6 +1000,10 @@
 
         function isChapterUnlocked(chapterNum) {
             if (chapterNum === 1) return true;
+            const prevChapterStart = (chapterNum - 2) * LEVELS_PER_CHAPTER;
+            for (let i = prevChapterStart; i < prevChapterStart + LEVELS_PER_CHAPTER; i++) {
+                if (solvedLevels[i]) return true;
+            }
             return false;
         }
 
@@ -1213,7 +1217,9 @@
         function nextLevel() {
             document.getElementById('win-modal').classList.remove('active');
             
-            if (currentLevelIndex === 14) {
+            const chapterLastLevel = currentChapter * LEVELS_PER_CHAPTER - 1;
+            
+            if (currentLevelIndex === chapterLastLevel) {
                 document.getElementById('chapter-complete-modal').classList.add('active');
                 return;
             }
@@ -1221,7 +1227,6 @@
             if (currentLevelIndex < TOTAL_LEVELS - 1) {
                 startLevel(currentLevelIndex + 1);
             } else {
-                currentChapter = Math.min(TOTAL_CHAPTERS, currentChapter);
                 showScreen('levels-screen');
             }
         }
