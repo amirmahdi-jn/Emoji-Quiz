@@ -779,7 +779,7 @@
 
     <div id="chapter-complete-modal" class="modal">
         <div class="modal-content">
-            <h2>تبریک!</h2>
+            <h2>تبریک! 👏</h2>
             <p class="modal-subtitle" style="margin-bottom: 5px;">این فصل را به اتمام رساندید.</p>
             <p class="modal-subtitle">اکنون می‌توانید به فصل بعدی بروید.</p>
             <button class="btn-primary" onclick="goToNextChapter()">بزن بریم!</button>
@@ -843,7 +843,7 @@
                 </div>
             </div>
             <div class="guide-footer">
-                <button class="btn-primary" onclick="document.getElementById('guide-modal').classList.remove('active')">متوجه شدم</button>
+                <button class="btn-primary" onclick="document.getElementById('guide-modal').classList.remove('active')">متوجه شدم.</button>
             </div>
         </div>
     </div>
@@ -865,7 +865,7 @@
             { id: 13, emojis: ['🇮🇷', '🔧'], answer: 'ساخت ایران', letters: ['س','ا','خ','ت',' ','ا','ی','ر','ا','ن'] },
             { id: 14, emojis: ['💧', '🌹'], answer: 'گلاب', letters: ['گ','ل','ا','ب'] },
             { id: 15, emojis: ['🥶', '🩸'], answer: 'خون سرد', letters: ['خ','و','ن',' ','س','ر','د'] },
-            { id: 16, emojis: ['🐴', '🩸'], answer: 'خرخون', letters: ['خ','ر','خ','و','ن'] },
+            { id: 16, emojis: ['🍗', '🛶'], answer: 'قایقران', letters: ['ق','ا','ی','ق','ر','ا','ن'] },
             { id: 17, emojis: ['💧', '👔'], answer: 'کتاب', letters: ['ک','ت','ا','ب'] },
             { id: 18, emojis: ['🥓', '🎲'], answer: 'تاس کباب', letters: ['ت','ا','س',' ','ک','ب','ا','ب'] },
             { id: 19, emojis: ['🏔', '🍜'], answer: 'رشته کوه', letters: ['ر','ش','ت','ه',' ','ک','و','ه'] },
@@ -880,7 +880,7 @@
             { id: 28, emojis: ['🍌', '🥛'], answer: 'شیر موز', letters: ['ش','ی','ر',' ','م','و','ز'] },
             { id: 29, emojis: ['🐔', '🥚'], answer: 'تخم مرغ', letters: ['ت','خ','م',' ','م','ر','غ'] },
             { id: 30, emojis: ['🥩', '🔩'], answer: 'پیچ گوشتی', letters: ['پ','ی','چ',' ','گ','و','ش','ت','ی'] },
-            { id: 31, emojis: ['🌻', '🌞'], answer: 'آفتابگردان', letters: ['آ','ف','ت','ا','ب','گ','ر','د','ا','ن'] },
+            { id: 31, emojis: ['🩸', '🐴'], answer: 'خرخون', letters: ['خ','ر','خ','و','ن'] },
             { id: 32, emojis: ['🗝', '🤴'], answer: 'شاه کلید', letters: ['ش','ا','ه',' ','ک','ل','ی','د'] },
             { id: 33, emojis: ['🏠', '🌹'], answer: 'گلخانه', letters: ['گ','ل','خ','ا','ن','ه'] },
             { id: 34, emojis: ['🏔', '💧'], answer: 'آب معدنی', letters: ['آ','ب',' ','م','ع','د','ن','ی'] },
@@ -908,7 +908,7 @@
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
 
-        const STORAGE_KEY = 'emojiQuizProgress_v3';
+        const STORAGE_KEY = 'emojiQuizProgress_v4';
 
         function saveProgress() {
             const progress = {
@@ -1002,9 +1002,9 @@
             if (chapterNum === 1) return true;
             const prevChapterStart = (chapterNum - 2) * LEVELS_PER_CHAPTER;
             for (let i = prevChapterStart; i < prevChapterStart + LEVELS_PER_CHAPTER; i++) {
-                if (solvedLevels[i]) return true;
+                if (!solvedLevels[i]) return false;
             }
-            return false;
+            return true;
         }
 
         function renderChapters() {
