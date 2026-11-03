@@ -537,6 +537,13 @@
         .reward { color: var(--coin-color); font-size: 1.2rem; margin-bottom: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .reward svg { width: 18px; height: 18px; }
 
+        .no-coin-line {
+            white-space: nowrap;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
         @keyframes popIn {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -681,14 +688,13 @@
     <div id="no-coin-modal" class="modal">
         <div class="modal-content">
             <h2 style="color: #f1c40f;">سکه کافی نداری!</h2>
-            <p class="modal-subtitle">برای استفاده از این قابلیت به سکه بیشتری نیاز داری.</p>
+            <p class="no-coin-line">برای استفاده از این قابلیت به سکه بیشتری نیاز داری.</p>
+            <p class="no-coin-line">لطفا جهت خرید سکه به فروشگاه مراجعه کنید.</p>
             <button class="btn-primary" onclick="document.getElementById('no-coin-modal').classList.remove('active')">باشه</button>
         </div>
     </div>
 
     <script>
-        localStorage.clear();
-
         const gameData = [
             { id: 1, emojis: ['🐬', '🧑'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
             { id: 2, emojis: ['🧊', '🌅'], answer: 'عصر یخبندان', letters: ['ع','ص','ر',' ','ی','خ','ب','ن','د','ا','ن'] },
@@ -748,6 +754,39 @@
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
 
+        const STORAGE_KEY = 'emojiQuizProgress';
+
+        function saveProgress() {
+            const progress = {
+                currentCoins: currentCoins,
+                unlockedLevels: unlockedLevels,
+                solvedLevels: solvedLevels,
+                currentChapter: currentChapter,
+                currentLevelIndex: currentLevelIndex
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const progress = JSON.parse(saved);
+                    currentCoins = progress.currentCoins ?? 50;
+                    unlockedLevels = progress.unlockedLevels ?? 1;
+                    solvedLevels = progress.solvedLevels ?? {};
+                    currentChapter = progress.currentChapter ?? 1;
+                    currentLevelIndex = progress.currentLevelIndex ?? 0;
+                } catch (e) {
+                    currentCoins = 50;
+                    unlockedLevels = 1;
+                    solvedLevels = {};
+                    currentChapter = 1;
+                    currentLevelIndex = 0;
+                }
+            }
+        }
+
         const ICONS = {
             lock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>`,
             check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>`
@@ -797,7 +836,7 @@
                 
                 let solvedInChapter = 0;
                 for (let lvl = chapterStart + 1; lvl <= chapterStart + LEVELS_PER_CHAPTER; lvl++) {
-                    if (lvl < unlockedLevels) solvedInChapter++;
+                    if (lvl < unlockedLevels || solvedLevels[lvl - 1]) solvedInChapter++;
                 }
                 const percent = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
                 
@@ -848,7 +887,7 @@
                     levelDiv.classList.add('locked');
                     levelDiv.innerHTML = `<span>${i}</span><span class="lock-icon">${ICONS.lock}</span>`;
                 } else {
-                    if (i < unlockedLevels) {
+                    if (i < unlockedLevels || solvedLevels[i - 1]) {
                         levelDiv.classList.add('completed');
                         levelDiv.innerHTML = `<span>${i}</span><span class="level-completed-icon">${ICONS.check}</span>`;
                     } else {
@@ -862,7 +901,7 @@
             
             let solvedInChapter = 0;
             for (let lvl = chapterStart; lvl <= chapterEnd; lvl++) {
-                if (lvl < unlockedLevels) solvedInChapter++;
+                if (solvedLevels[lvl - 1] || lvl < unlockedLevels) solvedInChapter++;
             }
             const progress = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
             document.getElementById('progress-fill').style.width = `${progress}%`;
@@ -885,6 +924,7 @@
             renderSlots();
             renderKeyboard();
             
+            saveProgress();
             showScreen('game-screen');
         }
 
@@ -984,6 +1024,7 @@
                     unlockedLevels++;
                 }
                 updateCoinsUI();
+                saveProgress();
                 
                 document.getElementById('correct-answer-text').innerText = gameData[currentLevelIndex].answer;
                 document.getElementById('win-modal').classList.add('active');
@@ -1017,6 +1058,7 @@
             if(currentCoins >= cost) {
                 currentCoins -= cost;
                 updateCoinsUI();
+                saveProgress();
                 
                 if(type === 'reveal') {
                     currentGuess = [...currentWord];
@@ -1055,6 +1097,7 @@
             }
         }
 
+        loadProgress();
         renderChapters();
         updateCoinsUI();
     </script>
