@@ -754,7 +754,7 @@
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
 
-        const STORAGE_KEY = 'emojiQuizProgress';
+        const STORAGE_KEY = 'emojiQuizProgress_v2';
 
         function saveProgress() {
             const progress = {
@@ -764,26 +764,28 @@
                 currentChapter: currentChapter,
                 currentLevelIndex: currentLevelIndex
             };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            } catch (e) {}
         }
 
         function loadProgress() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
                     const progress = JSON.parse(saved);
-                    currentCoins = progress.currentCoins ?? 50;
-                    unlockedLevels = progress.unlockedLevels ?? 1;
-                    solvedLevels = progress.solvedLevels ?? {};
-                    currentChapter = progress.currentChapter ?? 1;
-                    currentLevelIndex = progress.currentLevelIndex ?? 0;
-                } catch (e) {
-                    currentCoins = 50;
-                    unlockedLevels = 1;
-                    solvedLevels = {};
-                    currentChapter = 1;
-                    currentLevelIndex = 0;
+                    currentCoins = typeof progress.currentCoins === 'number' ? progress.currentCoins : 50;
+                    unlockedLevels = typeof progress.unlockedLevels === 'number' ? progress.unlockedLevels : 1;
+                    solvedLevels = progress.solvedLevels && typeof progress.solvedLevels === 'object' ? progress.solvedLevels : {};
+                    currentChapter = typeof progress.currentChapter === 'number' ? progress.currentChapter : 1;
+                    currentLevelIndex = typeof progress.currentLevelIndex === 'number' ? progress.currentLevelIndex : 0;
                 }
+            } catch (e) {
+                currentCoins = 50;
+                unlockedLevels = 1;
+                solvedLevels = {};
+                currentChapter = 1;
+                currentLevelIndex = 0;
             }
         }
 
@@ -800,6 +802,9 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             
+            if(screenId === 'chapters-screen') {
+                renderChapters();
+            }
             if(screenId === 'levels-screen') {
                 renderLevels();
             }
@@ -826,18 +831,31 @@
             `;
         }
 
+        function getSolvedInChapter(chapterNum) {
+            const chapterStart = (chapterNum - 1) * LEVELS_PER_CHAPTER;
+            let count = 0;
+            for (let i = chapterStart; i < chapterStart + LEVELS_PER_CHAPTER; i++) {
+                if (solvedLevels[i]) count++;
+            }
+            return count;
+        }
+
+        function isChapterUnlocked(chapterNum) {
+            if (chapterNum === 1) return true;
+            const prevChapterStart = (chapterNum - 2) * LEVELS_PER_CHAPTER;
+            for (let i = prevChapterStart; i < prevChapterStart + LEVELS_PER_CHAPTER; i++) {
+                if (unlockedLevels > i + 1) return true;
+            }
+            return false;
+        }
+
         function renderChapters() {
             const chaptersGrid = document.getElementById('chapters-grid');
             let html = '';
             
             for(let i = 1; i <= TOTAL_CHAPTERS; i++) {
-                const chapterStart = (i - 1) * LEVELS_PER_CHAPTER;
-                const isUnlocked = (i === 1) || (unlockedLevels > chapterStart);
-                
-                let solvedInChapter = 0;
-                for (let lvl = chapterStart + 1; lvl <= chapterStart + LEVELS_PER_CHAPTER; lvl++) {
-                    if (lvl < unlockedLevels || solvedLevels[lvl - 1]) solvedInChapter++;
-                }
+                const isUnlocked = isChapterUnlocked(i);
+                const solvedInChapter = getSolvedInChapter(i);
                 const percent = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
                 
                 let stageText = "";
@@ -869,6 +887,7 @@
         function openChapter(chapterNum) {
             currentChapter = chapterNum;
             document.getElementById('level-header-title').innerText = `فصل ${chapterNum}`;
+            saveProgress();
             showScreen('levels-screen');
         }
 
@@ -887,7 +906,7 @@
                     levelDiv.classList.add('locked');
                     levelDiv.innerHTML = `<span>${i}</span><span class="lock-icon">${ICONS.lock}</span>`;
                 } else {
-                    if (i < unlockedLevels || solvedLevels[i - 1]) {
+                    if (solvedLevels[i - 1]) {
                         levelDiv.classList.add('completed');
                         levelDiv.innerHTML = `<span>${i}</span><span class="level-completed-icon">${ICONS.check}</span>`;
                     } else {
@@ -899,10 +918,7 @@
                 levelsGrid.appendChild(levelDiv);
             }
             
-            let solvedInChapter = 0;
-            for (let lvl = chapterStart; lvl <= chapterEnd; lvl++) {
-                if (solvedLevels[lvl - 1] || lvl < unlockedLevels) solvedInChapter++;
-            }
+            const solvedInChapter = getSolvedInChapter(currentChapter);
             const progress = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
             document.getElementById('progress-fill').style.width = `${progress}%`;
             document.getElementById('progress-text').innerText = `${solvedInChapter} از ${LEVELS_PER_CHAPTER} مرحله حل شده`;
@@ -1016,9 +1032,11 @@
             const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
             
             if (guessClean === answerClean) {
+                let firstSolve = false;
                 if (!solvedLevels[currentLevelIndex]) {
                     currentCoins += 10;
                     solvedLevels[currentLevelIndex] = true;
+                    firstSolve = true;
                 }
                 if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) {
                     unlockedLevels++;
@@ -1045,6 +1063,7 @@
             if (currentLevelIndex < TOTAL_LEVELS - 1) {
                 startLevel(currentLevelIndex + 1);
             } else {
+                currentChapter = Math.min(TOTAL_CHAPTERS, currentChapter);
                 showScreen('levels-screen');
             }
         }
@@ -1096,6 +1115,17 @@
                 document.getElementById('no-coin-modal').classList.add('active');
             }
         }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY && e.newValue) {
+                loadProgress();
+                updateCoinsUI();
+                renderChapters();
+                if (document.getElementById('levels-screen').classList.contains('active')) {
+                    renderLevels();
+                }
+            }
+        });
 
         loadProgress();
         renderChapters();
