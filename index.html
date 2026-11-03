@@ -435,13 +435,21 @@
 
         .answer-slots {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+            overflow-y: auto;
+            padding-bottom: 5px;
+        }
+
+        .word-row {
+            display: flex;
             gap: 8px;
             justify-content: center;
             flex-wrap: nowrap;
-            flex-shrink: 0;
-            overflow-x: auto;
-            padding-bottom: 5px;
         }
+
         .slot {
             width: 48px;
             height: 48px;
@@ -458,13 +466,6 @@
             transition: all 0.2s;
         }
         .slot:active { background: rgba(255,255,255,0.1); }
-
-        .slot-spacer {
-            width: 20px;
-            height: 48px;
-            min-width: 20px;
-            flex-shrink: 0;
-        }
 
         .keyboard {
             background: #0d0518;
@@ -522,7 +523,7 @@
         }
         .modal-icon { font-size: 5rem; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
         .modal-content h2 { color: var(--coin-color); font-size: 1.3rem; margin-bottom: 15px; }
-        .modal-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; }
+        .modal-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
         .correct-answer {
             background: rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
@@ -668,13 +669,21 @@
     </div>
 
     <div id="win-modal" class="modal">
-    <div class="modal-content">
-        <h2>درست حدس زدی! 🎉</h2>
-        <p class="modal-subtitle">پاسخ صحیح:</p>
-        <div class="correct-answer" id="correct-answer-text"></div>
-        <div class="reward" style="color: var(--success-color);">10 سکه دریافت کردید.</div>
-        <button class="btn-primary" onclick="nextLevel()">مرحله بعدی ⬅</button>
+        <div class="modal-content">
+            <h2>درست حدس زدی! 🎉</h2>
+            <p class="modal-subtitle">پاسخ صحیح:</p>
+            <div class="correct-answer" id="correct-answer-text"></div>
+            <div class="reward" style="color: var(--success-color);">10 سکه دریافت کردید.</div>
+            <button class="btn-primary" onclick="nextLevel()">مرحله بعدی ⬅</button>
+        </div>
     </div>
+
+    <div id="no-coin-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #f1c40f;">سکه کافی نداری!</h2>
+            <p class="modal-subtitle">برای استفاده از این قابلیت به سکه بیشتری نیاز داری.</p>
+            <button class="btn-primary" onclick="document.getElementById('no-coin-modal').classList.remove('active')">باشه</button>
+        </div>
     </div>
 
     <script>
@@ -733,6 +742,7 @@
         let currentWord = [];
         let currentGuess = [];
         let unlockedLevels = 1;
+        let solvedLevels = {};
         const TOTAL_LEVELS = 45;
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
@@ -871,19 +881,24 @@
         function renderSlots() {
             const slotsContainer = document.getElementById('answer-slots');
             slotsContainer.innerHTML = '';
-            currentGuess.forEach((letter, index) => {
-                if (currentWord[index] === ' ') {
-                    const spacer = document.createElement('div');
-                    spacer.className = 'slot-spacer';
-                    slotsContainer.appendChild(spacer);
+            
+            let row = document.createElement('div');
+            row.className = 'word-row';
+            
+            currentWord.forEach((char, index) => {
+                if (char === ' ') {
+                    slotsContainer.appendChild(row);
+                    row = document.createElement('div');
+                    row.className = 'word-row';
                 } else {
                     const slot = document.createElement('div');
                     slot.className = 'slot';
-                    slot.innerText = letter;
+                    slot.innerText = currentGuess[index];
                     slot.onclick = () => removeLetter(index);
-                    slotsContainer.appendChild(slot);
+                    row.appendChild(slot);
                 }
             });
+            slotsContainer.appendChild(row);
         }
 
         function getAvailableLetters(wordArr) {
@@ -946,13 +961,11 @@
             }
         }
 
-        let solvedLevels = {};
-
         function checkAnswer() {
-            const guessString = currentGuess.join('');
-            const correctAnswer = gameData[currentLevelIndex].answer;
+            const guessClean = currentGuess.join('').replace(/\s+/g, '');
+            const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
             
-            if (guessString === correctAnswer) {
+            if (guessClean === answerClean) {
                 if (!solvedLevels[currentLevelIndex]) {
                     currentCoins += 10;
                     solvedLevels[currentLevelIndex] = true;
@@ -962,7 +975,7 @@
                 }
                 updateCoinsUI();
                 
-                document.getElementById('correct-answer-text').innerText = correctAnswer;
+                document.getElementById('correct-answer-text').innerText = gameData[currentLevelIndex].answer;
                 document.getElementById('win-modal').classList.add('active');
             } else {
                 const board = document.querySelector('.emoji-board');
@@ -1028,7 +1041,7 @@
                     });
                 }
             } else {
-                alert('سکه کافی نداری!');
+                document.getElementById('no-coin-modal').classList.add('active');
             }
         }
 
