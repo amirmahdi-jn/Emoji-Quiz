@@ -599,7 +599,7 @@
         </div>
         <div class="progress-container">
             <div class="progress-text">
-                <span>پیشرفت کل:</span>
+                <span>پیشرفت فصل:</span>
                 <span id="progress-text">0 از 15 مرحله حل شده</span>
             </div>
             <div class="progress-bar">
@@ -738,6 +738,7 @@
         ];
 
         let currentLevelIndex = 0;
+        let currentChapter = 1;
         let currentCoins = 50;
         let currentWord = [];
         let currentGuess = [];
@@ -827,6 +828,7 @@
         }
 
         function openChapter(chapterNum) {
+            currentChapter = chapterNum;
             document.getElementById('level-header-title').innerText = `فصل ${chapterNum}`;
             showScreen('levels-screen');
         }
@@ -835,7 +837,10 @@
             const levelsGrid = document.getElementById('levels-grid');
             levelsGrid.innerHTML = '';
             
-            for (let i = 1; i <= TOTAL_LEVELS; i++) {
+            const chapterStart = (currentChapter - 1) * LEVELS_PER_CHAPTER + 1;
+            const chapterEnd = currentChapter * LEVELS_PER_CHAPTER;
+            
+            for (let i = chapterStart; i <= chapterEnd; i++) {
                 const levelDiv = document.createElement('div');
                 levelDiv.className = 'level-card';
                 
@@ -855,9 +860,13 @@
                 levelsGrid.appendChild(levelDiv);
             }
             
-            const progress = ((unlockedLevels - 1) / TOTAL_LEVELS) * 100;
+            let solvedInChapter = 0;
+            for (let lvl = chapterStart; lvl <= chapterEnd; lvl++) {
+                if (lvl < unlockedLevels) solvedInChapter++;
+            }
+            const progress = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
             document.getElementById('progress-fill').style.width = `${progress}%`;
-            document.getElementById('progress-text').innerText = `${unlockedLevels - 1} از ${TOTAL_LEVELS} مرحله حل شده`;
+            document.getElementById('progress-text').innerText = `${solvedInChapter} از ${LEVELS_PER_CHAPTER} مرحله حل شده`;
         }
 
         function startLevel(index) {
@@ -865,6 +874,7 @@
             const levelData = gameData[index];
             
             document.getElementById('game-level').innerText = `مرحله ${index + 1}`;
+            document.getElementById('game-chapter').innerText = `فصل ${Math.ceil((index + 1) / LEVELS_PER_CHAPTER)}`;
             
             const emojiContainer = document.getElementById('emoji-question');
             emojiContainer.innerHTML = levelData.emojis.map(e => `<span>${e}</span>`).join('');
@@ -904,7 +914,7 @@
         function getAvailableLetters(wordArr) {
             let letters = wordArr.filter(c => c !== ' ');
             const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب'];
-            let extraCount = 3; 
+            let extraCount = 5; 
             let shuffled = extraPool.sort(() => 0.5 - Math.random());
             for(let char of shuffled) {
                 if(!letters.includes(char) && extraCount > 0) {
