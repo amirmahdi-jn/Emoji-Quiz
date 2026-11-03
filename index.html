@@ -69,8 +69,8 @@
 
         .detective-container {
             position: relative;
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -89,12 +89,18 @@
             box-shadow: 0 0 15px rgba(199, 36, 255, 0.3);
         }
 
-        .detective-emoji {
-            font-size: 5rem;
+        /* استایل جدید برای تصویر با کیفیت بالا */
+        .detective-img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
             z-index: 2;
             transform: translateY(0);
             animation: float 3s ease-in-out infinite;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+            /* افزایش وضوح تصویر */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         @keyframes pulse {
@@ -656,7 +662,8 @@
             <div class="logo-area">
                 <div class="detective-container">
                     <div class="pulse-circle"></div>
-                    <div class="detective-emoji">🕵️</div>
+                    <!-- تصویر جدید با کلاس detective-img جایگزین ایموجی شد -->
+                    <img src="magnifier-eye.png" alt="Detective Icon" class="detective-img">
                 </div>
                 <h1>Emoji Quiz</h1>
                 <p>ذهن خود را به چالش بکشید!</p>
