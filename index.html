@@ -437,12 +437,15 @@
             display: flex;
             gap: 8px;
             justify-content: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             flex-shrink: 0;
+            overflow-x: auto;
+            padding-bottom: 5px;
         }
         .slot {
             width: 48px;
             height: 48px;
+            min-width: 48px;
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -459,6 +462,7 @@
         .slot-spacer {
             width: 20px;
             height: 48px;
+            min-width: 20px;
             flex-shrink: 0;
         }
 
@@ -674,63 +678,61 @@
     </div>
 
     <script>
+        localStorage.clear();
+
         const gameData = [
-            // ===== فصل ۱: مراحل ۱ تا ۱۵ =====
-            { id: 1, emojis: ['🧑', '🐬'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
-            { id: 2, emojis: ['🌅', '🧊'], answer: 'عصر یخبندان', letters: ['ع','ص','ر',' ','ی','خ','ب','ن','د','ا','ن'] },
-            { id: 3, emojis: ['🐁', '👨‍🍳'], answer: 'موش سرآشپز', letters: ['م','و','ش',' ','س','ر','آ','ش','پ','ز'] },
-            { id: 4, emojis: ['🐈‍⬛', '👢'], answer: 'گربه چکمه پوش', letters: ['گ','ر','ب','ه',' ','چ','ک','م','ه',' ','پ','و','ش'] },
-            { id: 5, emojis: ['📚', '🌾'], answer: 'دانشجو', letters: ['د','ا','ن','ش','ج','و'] },
-            { id: 6, emojis: ['✋️', '💰'], answer: 'دستمال', letters: ['د','س','ت','م','ا','ل'] },
-            { id: 7, emojis: ['🏙', '✉️'], answer: 'روزنامه', letters: ['ر','و','ز','ن','ا','م','ه'] },
-            { id: 8, emojis: ['🦷', '🍞'], answer: 'دندان', letters: ['د','ن','د','ا','ن'] },
-            { id: 9, emojis: ['🧊', '🕳'], answer: 'یخچال', letters: ['ی','خ','چ','ا','ل'] },
-            { id: 10, emojis: ['🦶', '🛏'], answer: 'پایتخت', letters: ['پ','ا','ی','ت','خ','ت'] },
-            { id: 11, emojis: ['🚕', '👫'], answer: 'آژانس دوستی', letters: ['آ','ژ','ا','ن','س',' ','د','و','س','ت','ی'] },
-            { id: 12, emojis: ['🎶', '🌧'], answer: 'آوای باران', letters: ['آ','و','ا','ی',' ','ب','ا','ر','ا','ن'] },
-            { id: 13, emojis: ['🔧', '🇮🇷'], answer: 'ساخت ایران', letters: ['س','ا','خ','ت',' ','ا','ی','ر','ا','ن'] },
-            { id: 14, emojis: ['🌹', '💧'], answer: 'گلاب', letters: ['گ','ل','ا','ب'] },
-            { id: 15, emojis: ['🩸', '🥶'], answer: 'خون سرد', letters: ['خ','و','ن',' ','س','ر','د'] },
-            // ===== فصل ۲: مراحل ۱۶ تا ۳۰ =====
-            { id: 16, emojis: ['🛶', '🍗'], answer: 'قایقران', letters: ['ق','ا','ی','ق','ر','ا','ن'] },
-            { id: 17, emojis: ['👔', '💧'], answer: 'کتاب', letters: ['ک','ت','ا','ب'] },
-            { id: 18, emojis: ['🎲', '🥓'], answer: 'تاس کباب', letters: ['ت','ا','س',' ','ک','ب','ا','ب'] },
-            { id: 19, emojis: ['🍜', '🏔'], answer: 'رشته کوه', letters: ['ر','ش','ت','ه',' ','ک','و','ه'] },
-            { id: 20, emojis: ['🚗', '🛁'], answer: 'کاروان', letters: ['ک','ا','ر','و','ا','ن'] },
-            { id: 21, emojis: ['💧', '🍋'], answer: 'آبلیمو', letters: ['آ','ب','ل','ی','م','و'] },
-            { id: 22, emojis: ['🗣', '🍗'], answer: 'سخنران', letters: ['س','خ','ن','ر','ا','ن'] },
-            { id: 23, emojis: ['👖', '🛁'], answer: 'لیوان', letters: ['ل','ی','و','ا','ن'] },
-            { id: 24, emojis: ['🌷', '😭'], answer: 'لاله زار', letters: ['ل','ا','ل','ه',' ','ز','ا','ر'] },
-            { id: 25, emojis: ['👨‍🦯', '🎨'], answer: 'کور رنگی', letters: ['ک','و','ر',' ','ر','ن','گ','ی'] },
-            { id: 26, emojis: ['🪵', '🧂'], answer: 'چوب شور', letters: ['چ','و','ب',' ','ش','و','ر'] },
-            { id: 27, emojis: ['🚪', '🚚'], answer: 'دربار', letters: ['د','ر','ب','ا','ر'] },
-            { id: 28, emojis: ['🥛', '🍌'], answer: 'شیر موز', letters: ['ش','ی','ر',' ','م','و','ز'] },
-            { id: 29, emojis: ['🥚', '🐔'], answer: 'تخم مرغ', letters: ['ت','خ','م',' ','م','ر','غ'] },
-            { id: 30, emojis: ['🔩', '🥩'], answer: 'پیچ گوشتی', letters: ['پ','ی','چ',' ','گ','و','ش','ت','ی'] },
-            // ===== فصل ۳: مراحل ۳۱ تا ۴۵ =====
-            { id: 31, emojis: ['🌞', '🌻'], answer: 'آفتابگردان', letters: ['آ','ف','ت','ا','ب','گ','ر','د','ا','ن'] },
-            { id: 32, emojis: ['🤴', '🗝'], answer: 'شاه کلید', letters: ['ش','ا','ه',' ','ک','ل','ی','د'] },
-            { id: 33, emojis: ['🌹', '🏠'], answer: 'گلخانه', letters: ['گ','ل','خ','ا','ن','ه'] },
-            { id: 34, emojis: ['💧', '🏔'], answer: 'آب معدنی', letters: ['آ','ب',' ','م','ع','د','ن','ی'] },
-            { id: 35, emojis: ['👞', '🪡'], answer: 'کفشدوزک', letters: ['ک','ف','ش','د','و','ز','ک'] },
-            { id: 36, emojis: ['🪨', '🪦'], answer: 'سنگ قبر', letters: ['س','ن','گ',' ','ق','ب','ر'] },
-            { id: 37, emojis: ['🫀', '📜'], answer: 'دل نوشته', letters: ['د','ل',' ','ن','و','ش','ت','ه'] },
-            { id: 38, emojis: ['🛞', '🧵'], answer: 'چرخ خیاطی', letters: ['چ','ر','خ',' ','خ','ی','ا','ط','ی'] },
-            { id: 39, emojis: ['👓', '🌞'], answer: 'عینک آفتابی', letters: ['ع','ی','ن','ک',' ','آ','ف','ت','ا','ب','ی'] },
-            { id: 40, emojis: ['🔦', '💪'], answer: 'چراغ قوه', letters: ['چ','ر','ا','غ',' ','ق','و','ه'] },
-            { id: 41, emojis: ['🧹', '⚡️'], answer: 'جارو برقی', letters: ['ج','ا','ر','و',' ','ب','ر','ق','ی'] },
-            { id: 42, emojis: ['💡', '😴'], answer: 'چراغ خواب', letters: ['چ','ر','ا','غ',' ','خ','و','ا','ب'] },
-            { id: 43, emojis: ['☕️', '🔥'], answer: 'قهوه جوش', letters: ['ق','ه','و','ه',' ','ج','و','ش'] },
-            { id: 44, emojis: ['🌹', '🧑'], answer: 'گل پسر', letters: ['گ','ل',' ','پ','س','ر'] },
-            { id: 45, emojis: ['🕒', '🧱'], answer: 'ساعت دیواری', letters: ['س','ا','ع','ت',' ','د','ی','و','ا','ر','ی'] }
+            { id: 1, emojis: ['🐬', '🧑'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
+            { id: 2, emojis: ['🧊', '🌅'], answer: 'عصر یخبندان', letters: ['ع','ص','ر',' ','ی','خ','ب','ن','د','ا','ن'] },
+            { id: 3, emojis: ['👨‍🍳', '🐁'], answer: 'موش سرآشپز', letters: ['م','و','ش',' ','س','ر','آ','ش','پ','ز'] },
+            { id: 4, emojis: ['👢', '🐈‍⬛'], answer: 'گربه چکمه پوش', letters: ['گ','ر','ب','ه',' ','چ','ک','م','ه',' ','پ','و','ش'] },
+            { id: 5, emojis: ['🌾', '📚'], answer: 'دانشجو', letters: ['د','ا','ن','ش','ج','و'] },
+            { id: 6, emojis: ['💰', '✋️'], answer: 'دستمال', letters: ['د','س','ت','م','ا','ل'] },
+            { id: 7, emojis: ['✉️', '🏙'], answer: 'روزنامه', letters: ['ر','و','ز','ن','ا','م','ه'] },
+            { id: 8, emojis: ['🍞', '🦷'], answer: 'دندان', letters: ['د','ن','د','ا','ن'] },
+            { id: 9, emojis: ['🕳', '🧊'], answer: 'یخچال', letters: ['ی','خ','چ','ا','ل'] },
+            { id: 10, emojis: ['🛏', '🦶'], answer: 'پایتخت', letters: ['پ','ا','ی','ت','خ','ت'] },
+            { id: 11, emojis: ['👫', '🚕'], answer: 'آژانس دوستی', letters: ['آ','ژ','ا','ن','س',' ','د','و','س','ت','ی'] },
+            { id: 12, emojis: ['🌧', '🎶'], answer: 'آوای باران', letters: ['آ','و','ا','ی',' ','ب','ا','ر','ا','ن'] },
+            { id: 13, emojis: ['🇮🇷', '🔧'], answer: 'ساخت ایران', letters: ['س','ا','خ','ت',' ','ا','ی','ر','ا','ن'] },
+            { id: 14, emojis: ['💧', '🌹'], answer: 'گلاب', letters: ['گ','ل','ا','ب'] },
+            { id: 15, emojis: ['🥶', '🩸'], answer: 'خون سرد', letters: ['خ','و','ن',' ','س','ر','د'] },
+            { id: 16, emojis: ['🍗', '🛶'], answer: 'قایقران', letters: ['ق','ا','ی','ق','ر','ا','ن'] },
+            { id: 17, emojis: ['💧', '👔'], answer: 'کتاب', letters: ['ک','ت','ا','ب'] },
+            { id: 18, emojis: ['🥓', '🎲'], answer: 'تاس کباب', letters: ['ت','ا','س',' ','ک','ب','ا','ب'] },
+            { id: 19, emojis: ['🏔', '🍜'], answer: 'رشته کوه', letters: ['ر','ش','ت','ه',' ','ک','و','ه'] },
+            { id: 20, emojis: ['🛁', '🚗'], answer: 'کاروان', letters: ['ک','ا','ر','و','ا','ن'] },
+            { id: 21, emojis: ['🍋', '💧'], answer: 'آبلیمو', letters: ['آ','ب','ل','ی','م','و'] },
+            { id: 22, emojis: ['🍗', '🗣'], answer: 'سخنران', letters: ['س','خ','ن','ر','ا','ن'] },
+            { id: 23, emojis: ['🛁', '👖'], answer: 'لیوان', letters: ['ل','ی','و','ا','ن'] },
+            { id: 24, emojis: ['😭', '🌷'], answer: 'لاله زار', letters: ['ل','ا','ل','ه',' ','ز','ا','ر'] },
+            { id: 25, emojis: ['🎨', '👨‍🦯'], answer: 'کور رنگی', letters: ['ک','و','ر',' ','ر','ن','گ','ی'] },
+            { id: 26, emojis: ['🧂', '🪵'], answer: 'چوب شور', letters: ['چ','و','ب',' ','ش','و','ر'] },
+            { id: 27, emojis: ['🚚', '🚪'], answer: 'دربار', letters: ['د','ر','ب','ا','ر'] },
+            { id: 28, emojis: ['🍌', '🥛'], answer: 'شیر موز', letters: ['ش','ی','ر',' ','م','و','ز'] },
+            { id: 29, emojis: ['🐔', '🥚'], answer: 'تخم مرغ', letters: ['ت','خ','م',' ','م','ر','غ'] },
+            { id: 30, emojis: ['🥩', '🔩'], answer: 'پیچ گوشتی', letters: ['پ','ی','چ',' ','گ','و','ش','ت','ی'] },
+            { id: 31, emojis: ['🌻', '🌞'], answer: 'آفتابگردان', letters: ['آ','ف','ت','ا','ب','گ','ر','د','ا','ن'] },
+            { id: 32, emojis: ['🗝', '🤴'], answer: 'شاه کلید', letters: ['ش','ا','ه',' ','ک','ل','ی','د'] },
+            { id: 33, emojis: ['🏠', '🌹'], answer: 'گلخانه', letters: ['گ','ل','خ','ا','ن','ه'] },
+            { id: 34, emojis: ['🏔', '💧'], answer: 'آب معدنی', letters: ['آ','ب',' ','م','ع','د','ن','ی'] },
+            { id: 35, emojis: ['🪡', '👞'], answer: 'کفشدوزک', letters: ['ک','ف','ش','د','و','ز','ک'] },
+            { id: 36, emojis: ['🪦', '🪨'], answer: 'سنگ قبر', letters: ['س','ن','گ',' ','ق','ب','ر'] },
+            { id: 37, emojis: ['📜', '🫀'], answer: 'دل نوشته', letters: ['د','ل',' ','ن','و','ش','ت','ه'] },
+            { id: 38, emojis: ['🧵', '🛞'], answer: 'چرخ خیاطی', letters: ['چ','ر','خ',' ','خ','ی','ا','ط','ی'] },
+            { id: 39, emojis: ['🌞', '👓'], answer: 'عینک آفتابی', letters: ['ع','ی','ن','ک',' ','آ','ف','ت','ا','ب','ی'] },
+            { id: 40, emojis: ['💪', '🔦'], answer: 'چراغ قوه', letters: ['چ','ر','ا','غ',' ','ق','و','ه'] },
+            { id: 41, emojis: ['⚡️', '🧹'], answer: 'جارو برقی', letters: ['ج','ا','ر','و',' ','ب','ر','ق','ی'] },
+            { id: 42, emojis: ['😴', '💡'], answer: 'چراغ خواب', letters: ['چ','ر','ا','غ',' ','خ','و','ا','ب'] },
+            { id: 43, emojis: ['🔥', '☕️'], answer: 'قهوه جوش', letters: ['ق','ه','و','ه',' ','ج','و','ش'] },
+            { id: 44, emojis: ['🧑', '🌹'], answer: 'گل پسر', letters: ['گ','ل',' ','پ','س','ر'] },
+            { id: 45, emojis: ['🧱', '🕒'], answer: 'ساعت دیواری', letters: ['س','ا','ع','ت',' ','د','ی','و','ا','ر','ی'] }
         ];
 
         let currentLevelIndex = 0;
-        let storedCoins = localStorage.getItem('emojiGameCoins');
-        let currentCoins = storedCoins !== null ? parseInt(storedCoins) : 50;
+        let currentCoins = 50;
         let currentWord = [];
         let currentGuess = [];
-        let unlockedLevels = parseInt(localStorage.getItem('emojiGameUnlocked')) || 1;
+        let unlockedLevels = 1;
         const TOTAL_LEVELS = 45;
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 3;
@@ -944,21 +946,20 @@
             }
         }
 
+        let solvedLevels = {};
+
         function checkAnswer() {
             const guessString = currentGuess.join('');
             const correctAnswer = gameData[currentLevelIndex].answer;
             
             if (guessString === correctAnswer) {
-                const alreadySolved = localStorage.getItem('emojiGameSolved_' + currentLevelIndex) === '1';
-                if (!alreadySolved) {
+                if (!solvedLevels[currentLevelIndex]) {
                     currentCoins += 10;
-                    localStorage.setItem('emojiGameSolved_' + currentLevelIndex, '1');
+                    solvedLevels[currentLevelIndex] = true;
                 }
                 if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) {
                     unlockedLevels++;
                 }
-                localStorage.setItem('emojiGameCoins', currentCoins);
-                localStorage.setItem('emojiGameUnlocked', unlockedLevels);
                 updateCoinsUI();
                 
                 document.getElementById('correct-answer-text').innerText = correctAnswer;
@@ -993,7 +994,6 @@
             if(currentCoins >= cost) {
                 currentCoins -= cost;
                 updateCoinsUI();
-                localStorage.setItem('emojiGameCoins', currentCoins);
                 
                 if(type === 'reveal') {
                     currentGuess = [...currentWord];
