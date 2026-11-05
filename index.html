@@ -89,7 +89,6 @@
             box-shadow: 0 0 15px rgba(199, 36, 255, 0.3);
         }
 
-        /* استایل جدید برای SVG کارآگاه */
         .detective-svg {
             width: 110px;
             height: 110px;
@@ -97,7 +96,7 @@
             transform: translateY(0);
             animation: float 3s ease-in-out infinite;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
-            color: #0d47a1; /* رنگ آیکون را با تم هماهنگ می‌کند */
+            color: #1e40af;
         }
 
         @keyframes pulse {
@@ -639,6 +638,121 @@
             padding-top: 15px;
         }
 
+        .settings-modal-content {
+            background: #1e1233;
+            padding: 20px;
+            border-radius: 30px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            width: 85%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .settings-info-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 15px;
+        }
+        .settings-info-btn:active { background: rgba(255, 255, 255, 0.08); }
+        .settings-info-btn .right-side { display: flex; align-items: center; gap: 8px; }
+        .settings-info-btn .info-icon { stroke: #f44336; }
+        .settings-info-btn .arrow-svg { width: 18px; height: 18px; opacity: 0.7; stroke: var(--text-color); }
+
+        .settings-close-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #d022ff, #a31ad6);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px var(--primary-glow);
+            transition: transform 0.1s;
+        }
+        .settings-close-btn:active { transform: scale(0.97); }
+
+        .info-modal-content {
+            background: #1e1233;
+            padding: 20px;
+            border-radius: 30px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            width: 85%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .info-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        .info-row svg { width: 22px; height: 22px; flex-shrink: 0; }
+        .info-row .icon-dev { stroke: #9C27B0; }
+        .info-row .icon-id { stroke: #2196F3; }
+        .info-row .icon-phone { stroke: #4CAF50; stroke-width: 2.5; }
+        .info-row .value { color: var(--text-color); font-weight: bold; direction: ltr; }
+
+        .info-back-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #d022ff, #a31ad6);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px var(--primary-glow);
+            transition: transform 0.1s;
+        }
+        .info-back-btn:active { transform: scale(0.97); }
+
         @keyframes popIn {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -659,7 +773,6 @@
             <div class="logo-area">
                 <div class="detective-container">
                     <div class="pulse-circle"></div>
-                    <!-- کد SVG کارآگاه جایگزین شد -->
                     <svg class="detective-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-label="detective trench coat" viewBox="0 0 176 214"><path d="M101.5 10.7a35 35 0 0 0-6.9 4l-4.8 3.5-6.9-2.2c-8-2.6-13-2.3-18.5 1.1-5.3 3.2-8.2 10.3-10.2 24.9l-1.6 12-5.6 2.1c-11.1 4.1-16.8 8.7-15.4 12.3.9 2.4 6.6 4.5 13.4 4.8 7.2.3 8.6 1.3 6.6 4.3-3.8 5.8-2.5 14.6 3.1 20.2L58 101l-4.7 2.4c-7 3.5-13.3 8.4-13.3 10.2 0 .8 2.3 3.9 5 6.8l5 5.3-6.1 2.4a51 51 0 0 0-19.5 12.6c-3.3 4.4-7 12.2-8.7 18.3-4 14-8.3 41.8-6.7 43.4 1.8 1.8 2.6-.6 3.9-10.4 3.4-26.2 7.8-41.2 14.6-49.5a49 49 0 0 1 20.8-12.4l5.3-1.9 5.2 5c2.9 2.7 5.2 5.1 5.2 5.2s-2.3 2.6-5 5.3c-2.8 2.8-5 5.5-5 6.1 0 1.2 17.3 20.3 27.8 30.6 10.9 10.7 9.2 6.3-2.5-6.4l-16.1-17.8-5.5-6.3 5.1-5.2c2.9-2.9 5.2-5.6 5.2-6s-5.4-6-12-12.4c-6.6-6.3-12-11.9-12-12.4 0-1.7 16.9-11.9 19.9-11.9.6 0 2.2 2.2 3.6 4.9a26 26 0 0 0 3.4 5.6c.6.3.7 2.7.4 5.4-.8 6.7 4.2 20.5 22 60.6 5.2 11.8 6.7 16.1 6.7 19.9 0 6.1 2.4 5.8 2.8-.4.2-2.3 1.1-5 1.9-5.9 5.4-5.3 31.3-42 31.3-44.3 0-.7-2.1-3.4-4.7-6l-4.6-4.7 2.7-3.5c1.5-2 3.3-3.6 4-3.6 2.4 0 13.6 6.1 16.5 9 6.4 6.5 9.7 18.4 12.7 46.8 1.3 11.9 2.1 16.2 3.1 16.2 1.8 0 1.7-5.9-.7-24.2-4.1-32.4-7.9-40.2-23-47.8-3.3-1.7-6-3.2-6-3.5a79 79 0 0 1 5.5-7.6c3-3.9 5.5-7.5 5.5-8 0-1.2-6.9-6.1-11.8-8.3-3.8-1.7-4.1-2.1-3.4-4.5.4-1.4.6-10.3.5-19.6l-.2-17 8.2-4c4.5-2.2 8.6-4.8 9.2-5.8q3.4-6.2-16.5-8.2l-6.6-.6-2.8-7.7c-7.4-19.9-13.6-26.8-22.1-24.5M111 17a62 62 0 0 1 8.8 18.4c-.2.2-6.1.8-13.2 1.5A272 272 0 0 0 65.1 44c-4 1.2-7.6 1.9-7.8 1.6-.7-.7 2.4-15.9 4.1-19.9 3-7.3 11.5-10.1 20.5-6.8 7.8 2.8 9.3 2.7 14.7-1.4 6-4.6 10.4-4.7 14.4-.5m22.5 30.1c14.3 1.8 15.5 3.7 5 8.5q-8.5 4-8.5 1c0-1.2 7.7-4.6 13.5-5.9q1.7-.4-1.6-.6c-1.9 0-7.1 1-11.5 2.3-9.5 2.8-32 6-57.9 8.1-21.9 1.7-26.3 2.3-27.1 3.6-.3.5 1.1.9 3 .9 3.4 0 3.6.2 3.6 3.1v3.1l-5.7-.6C40.2 69.9 35 68.2 35 67q.2-2.4 10.9-7a256 256 0 0 1 52.9-11l18.7-2.3c5.6-.7 7-.7 16 .4m-6.1 11.5c.4.9 1.1 7.3 1.7 14.2 1.8 21.5-1.2 34.3-10.1 42.6a26 26 0 0 1-21.5 7.1q-5.4-.8-5.5.3c0 1.6 2.7 2.2 9.1 2.2 5.4 0 5.8.1 4.8 1.8-.6 1-2.6 2.8-4.5 4L98 133l-7.3-3.3c-8.9-4.1-16.2-10.6-15.4-13.7q.5-2.1-2.4-6.4c-1.7-2.3-3.6-6-4.4-8.1-1.3-3.8-1.5-4-4.9-3.7-3 .3-4.2-.2-7.1-3.1-3.2-3.2-3.5-4-3.5-9 0-4.8.4-5.8 2.6-7.6 3.5-2.8 3.9-2.7 8.1 1.4 2 1.9 4 3.5 4.4 3.5 2 0 3.8-5 4.5-12.1l.6-7.5 15.7-1.3c8.6-.7 20.1-2 25.6-3 12.8-2.4 12.2-2.4 12.9-.5m9.3 48.4a29 29 0 0 1 5.7 3.9c.6.9-3.1 6.1-13.3 18.4l-6.4 7.8 5.3 5.4 5.3 5.3-2 2.9a700 700 0 0 1-27.9 39.1c-.2-.2.8-4 2.2-8.3a212 212 0 0 0 10.9-49.3l.4-10.4 3.9-3.3c2.1-1.9 5.2-5.9 6.8-8.9 1.6-3.1 3.1-5.6 3.4-5.6s2.8 1.4 5.7 3m-48.5 24.8 5.7 2.7-4.2 5.2a19 19 0 0 1-5.4 5.2c-.7.1-2.1-1.6-3.2-3.7-1.7-3.4-7.1-17.7-7.1-18.8 0-.3 1.9 1.1 4.2 3.1a57 57 0 0 0 10 6.3m25.4-5.2a39 39 0 0 1-1.4 15c-.6 1.1-1.9.3-5.2-3.2l-4.5-4.5 3.6-3.2c2-1.8 3.9-4 4.2-5 .9-2.5 2.6-2.1 3.3.9m-2.6 23.8-2.1 8.1-1.3 5-2.2-7.3c-2.1-6.7-2.1-7.6-.8-10.8l1.5-3.5 2.8 2.7c2.4 2.2 2.7 3.1 2.1 5.8m-19-6.2c0 .6.7 1.9 1.6 2.9 1.4 1.6 1.4 2.5-.1 10.1-1 4.6-1.8 8.4-2 8.6a63 63 0 0 1-3.9-8.3l-3.5-8.6 3.2-2.9c3.5-3.2 4.7-3.7 4.7-1.8"></path><path d="M117.2 71.2c-2.8 2.8-.4 10.1 2.5 7.7.7-.7 1.3-2.4 1.3-3.9 0-3.4-2.1-5.5-3.8-3.8m-25.5 1.4c-1.1 1.1-.8 7.2.3 7.9 1.9 1.2 4.1-1.7 3.8-4.9-.3-2.9-2.5-4.6-4.1-3m18.9 8.1c3.7 8.6 3.8 9.1 2.5 10.7-.7.8-2.5 1.6-3.9 1.8-3.7.4-3.4 2.2.5 2.6 3.6.4 7.3-2.5 7.3-5.8 0-2.9-5.2-13-6.7-13-1 0-1 .8.3 3.7M94 103c0 3.1 11 6.2 14.9 4.1 3.4-1.9 2.5-3.2-1.7-2.5q-3.8.5-7.6-1c-4.4-1.9-5.6-2-5.6-.6m50 80.3c0 10.1.3 18.7.7 19s1.2.2 1.8-.3c.9-.7 1.1-5.1.8-15.8-.4-16.5-1-21.2-2.3-21.2-.6 0-1 7.4-1 18.3m-101.3-5.6c-.3 2.1-.9 8.6-1.3 14.5-.6 9.2-.5 10.8.8 10.8q2.8 0 2.8-19.8c0-9.3-1.3-12.3-2.3-5.5"></path></svg>
                 </div>
                 <h1>Emoji Quiz</h1>
@@ -671,7 +784,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/><path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>
                     فروشگاه
                 </button>
-                <button class="btn-secondary btn-settings">
+                <button class="btn-secondary btn-settings" onclick="document.getElementById('settings-modal').classList.add('active')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>
                     تنظیمات
                 </button>
@@ -852,6 +965,45 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal">
+        <div class="settings-modal-content">
+            <div class="settings-title">تنظیمات</div>
+            <button class="settings-info-btn" onclick="document.getElementById('settings-modal').classList.remove('active'); document.getElementById('info-modal').classList.add('active');">
+                <div class="right-side">
+                    <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    <span>اطلاعات</span>
+                </div>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-svg"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="settings-close-btn" onclick="document.getElementById('settings-modal').classList.remove('active')">بستن</button>
+        </div>
+    </div>
+
+    <div id="info-modal" class="modal">
+        <div class="info-modal-content">
+            <div class="info-title">اطلاعات</div>
+            <div class="info-list">
+                <div class="info-row">
+                    <svg class="icon-dev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>توسعه دهنده :</span> <span class="value">AmirMahdi.JN</span>
+                </div>
+                <div class="info-row">
+                    <svg class="icon-id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19a4 4 0 00-8 0"/><path d="M16 10h2"/><path d="M16 14h2"/><circle cx="9" cy="12" r="3"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+                    <span>تلگرام :</span> <span class="value">@AmirMahdi_2023</span>
+                </div>
+                <div class="info-row">
+                    <svg class="icon-id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 19a4 4 0 00-8 0"/><path d="M16 10h2"/><path d="M16 14h2"/><circle cx="9" cy="12" r="3"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+                    <span>روبیکا :</span> <span class="value">@AmirMahdi_2018</span>
+                </div>
+                <div class="info-row">
+                    <svg class="icon-phone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
+                    <span>موبایل :</span> <span class="value">09918659151</span>
+                </div>
+            </div>
+            <button class="info-back-btn" onclick="document.getElementById('info-modal').classList.remove('active'); document.getElementById('settings-modal').classList.add('active');">بازگشت</button>
+        </div>
+    </div>
+
     <script>
         const gameData = [
             { id: 1, emojis: ['🐬', '🧑'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
@@ -943,7 +1095,52 @@
             { id: 87, emojis: ['🍓', '🚽'], answer: 'توالت فرنگی', letters: ['ت','و','ا','ل','ت',' ','ف','ر','ن','گ','ی'] },
             { id: 88, emojis: ['🍫', '🥛'], answer: 'شیر کاکائو', letters: ['ش','ی','ر',' ','ک','ا','ک','ا','ئ','و'] },
             { id: 89, emojis: ['📚', '🧮'], answer: 'حساب کتاب', letters: ['ح','س','ا','ب',' ','ک','ت','ا','ب'] },
-            { id: 90, emojis: ['🪏', '🍎'], answer: 'سیبیل', letters: ['س','ی','ب','ی','ل'] }
+            { id: 90, emojis: ['🪏', '🍎'], answer: 'سیبیل', letters: ['س','ی','ب','ی','ل'] },
+            { id: 91, emojis: ['🐍', '🅱️'], answer: 'بیمار', letters: ['ب','ی','م','ا','ر'] },
+            { id: 92, emojis: ['⛽️', '🛏'], answer: 'تخته گاز', letters: ['ت','خ','ت','ه',' ','گ','ا','ز'] },
+            { id: 93, emojis: ['🛁', '🧄'], answer: 'سیروان', letters: ['س','ی','ر','و','ا','ن'] },
+            { id: 94, emojis: ['🌍', '🏆'], answer: 'جام جهانی', letters: ['ج','ا','م',' ','ج','ه','ا','ن','ی'] },
+            { id: 95, emojis: ['🐛', '👨'], answer: 'بابا کرم', letters: ['ب','ا','ب','ا',' ','ک','ر','م'] },
+            { id: 96, emojis: ['🔥', '💧'], answer: 'آب جوش', letters: ['آ','ب',' ','ج','و','ش'] },
+            { id: 97, emojis: ['🔵', '🦈'], answer: 'نهنگ آبی', letters: ['ن','ه','ن','گ',' ','آ','ب','ی'] },
+            { id: 98, emojis: ['👂', '🤴'], answer: 'شاهگوش', letters: ['ش','ا','ه','گ','و','ش'] },
+            { id: 99, emojis: ['🐊', '😢'], answer: 'اشک تمساح', letters: ['ا','ش','ک',' ','ت','م','س','ا','ح'] },
+            { id: 100, emojis: ['🧱', '4️⃣'], answer: 'چار دیواری', letters: ['چ','ا','ر',' ','د','ی','و','ا','ر','ی'] },
+            { id: 101, emojis: ['🦁', '🦷'], answer: 'دندان شیری', letters: ['د','ن','د','ا','ن',' ','ش','ی','ر','ی'] },
+            { id: 102, emojis: ['🧂', '🥒'], answer: 'خیار شور', letters: ['خ','ی','ا','ر',' ','ش','و','ر'] },
+            { id: 103, emojis: ['🌳', '👑'], answer: 'سلطان جنگل', letters: ['س','ل','ط','ا','ن',' ','ج','ن','گ','ل'] },
+            { id: 104, emojis: ['🪢', '📘'], answer: 'کتابدار', letters: ['ک','ت','ا','ب','د','ا','ر'] },
+            { id: 105, emojis: ['👅', '🩹'], answer: 'زخم زبان', letters: ['ز','خ','م',' ','ز','ب','ا','ن'] },
+            { id: 106, emojis: ['🧑', '👖'], answer: 'لیمو', letters: ['ل','ی','م','و'] },
+            { id: 107, emojis: ['🇨🇳', '🔚'], answer: 'ته چین', letters: ['ت','ه',' ','چ','ی','ن'] },
+            { id: 108, emojis: ['🏐', '🧺'], answer: 'بسکتبال', letters: ['ب','س','ک','ت','ب','ا','ل'] },
+            { id: 109, emojis: ['🕸', '3️⃣'], answer: 'سه تار', letters: ['س','ه',' ','ت','ا','ر'] },
+            { id: 110, emojis: ['🖊', '🥒'], answer: 'خیار قلمی', letters: ['خ','ی','ا','ر',' ','ق','ل','م','ی'] },
+            { id: 111, emojis: ['🇨🇳', '🪶'], answer: 'پرچین', letters: ['پ','ر','چ','ی','ن'] },
+            { id: 112, emojis: ['🦄', '1️⃣'], answer: 'تک شاخ', letters: ['ت','ک',' ','ش','ا','خ'] },
+            { id: 113, emojis: ['🌊', '🥷'], answer: 'دزد دریایی', letters: ['د','ز','د',' ','د','ر','ی','ا','ی','ی'] },
+            { id: 114, emojis: ['👷', '👶'], answer: 'بچه مهندس', letters: ['ب','چ','ه',' ','م','ه','ن','د','س'] },
+            { id: 115, emojis: ['🪨', '7️⃣'], answer: 'هفت سنگ', letters: ['ه','ف','ت',' ','س','ن','گ'] },
+            { id: 116, emojis: ['🏹', '🎨'], answer: 'رنگین کمان', letters: ['ر','ن','گ','ی','ن',' ','ک','م','ا','ن'] },
+            { id: 117, emojis: ['🔫', '7️⃣'], answer: 'هفت تیر', letters: ['ه','ف','ت',' ','ت','ی','ر'] },
+            { id: 118, emojis: ['🖊', '🔋'], answer: 'باتری قلمی', letters: ['ب','ا','ت','ر','ی',' ','ق','ل','م','ی'] },
+            { id: 119, emojis: ['🪨', '🌷'], answer: 'گل سنگ', letters: ['گ','ل',' ','س','ن','گ'] },
+            { id: 120, emojis: ['🌕', '🐺'], answer: 'گرگینه', letters: ['گ','ر','گ','ی','ن','ه'] },
+            { id: 121, emojis: ['🪨', '🥖'], answer: 'نان سنگک', letters: ['ن','ا','ن',' ','س','ن','گ','ک'] },
+            { id: 122, emojis: ['🪜', '🐍'], answer: 'مار پله', letters: ['م','ا','ر',' ','پ','ل','ه'] },
+            { id: 123, emojis: ['🔭', '⭐️'], answer: 'ستاره شناس', letters: ['س','ت','ا','ر','ه',' ','ش','ن','ا','س'] },
+            { id: 124, emojis: ['🍹', '🍋'], answer: 'لیموناد', letters: ['ل','ی','م','و','ن','ا','د'] },
+            { id: 125, emojis: ['🐻', '🧸'], answer: 'عروسک خرسی', letters: ['ع','ر','و','س','ک',' ','خ','ر','س','ی'] },
+            { id: 126, emojis: ['🧿', '👁'], answer: 'چشم نظر', letters: ['چ','ش','م',' ','ن','ظ','ر'] },
+            { id: 127, emojis: ['🦸', '☁️'], answer: 'ابر قهرمان', letters: ['ا','ب','ر',' ','ق','ه','ر','م','ا','ن'] },
+            { id: 128, emojis: ['🥀', '🌹'], answer: 'گل پژمرده', letters: ['گ','ل',' ','پ','ژ','م','ر','د','ه'] },
+            { id: 129, emojis: ['🏅', '🔥'], answer: 'آتش نشان', letters: ['آ','ت','ش',' ','ن','ش','ا','ن'] },
+            { id: 130, emojis: ['🧮', '🚙'], answer: 'ماشین حساب', letters: ['م','ا','ش','ی','ن',' ','ح','س','ا','ب'] },
+            { id: 131, emojis: ['❄️', '🧍'], answer: 'آدم برفی', letters: ['آ','د','م',' ','ب','ر','ف','ی'] },
+            { id: 132, emojis: ['👻', '🏠'], answer: 'خانه ارواح', letters: ['خ','ا','ن','ه',' ','ا','ر','و','ا','ح'] },
+            { id: 133, emojis: ['🏐', '🦶'], answer: 'فوتبال', letters: ['ف','و','ت','ب','ا','ل'] },
+            { id: 134, emojis: ['👂', '🦓'], answer: 'خرگوش', letters: ['خ','ر','گ','و','ش'] },
+            { id: 135, emojis: ['🐁', '🪤'], answer: 'تله موش', letters: ['ت','ل','ه',' ','م','و','ش'] }
         ];
 
         let currentLevelIndex = 0;
@@ -953,9 +1150,9 @@
         let currentGuess = [];
         let unlockedLevels = 1;
         let solvedLevels = {};
-        const TOTAL_LEVELS = 90;
+        const TOTAL_LEVELS = 135;
         const LEVELS_PER_CHAPTER = 15;
-        const TOTAL_CHAPTERS = 6;
+        const TOTAL_CHAPTERS = 9;
 
         const STORAGE_KEY = 'emojiQuizProgress_v4';
 
@@ -1072,6 +1269,9 @@
                 else if (i === 4) stageText = "مرحله ۴۶ تا ۶۰";
                 else if (i === 5) stageText = "مرحله ۶۱ تا ۷۵";
                 else if (i === 6) stageText = "مرحله ۷۶ تا ۹۰";
+                else if (i === 7) stageText = "مرحله ۹۱ تا ۱۰۵";
+                else if (i === 8) stageText = "مرحله ۱۰۶ تا ۱۲۰";
+                else if (i === 9) stageText = "مرحله ۱۲۱ تا ۱۳۵";
                 
                 if (isUnlocked) {
                     html += `
@@ -1356,4 +1556,4 @@
         updateCoinsUI();
     </script>
 </body>
-    </html>
+</html>
