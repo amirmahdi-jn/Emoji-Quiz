@@ -944,7 +944,7 @@
                         <h3>استفاده از راهنما ها</h3>
                         <p>اگر جایی گیر کردی، از سکه‌هات استفاده کن:</p>
                         <p>• حرف اول (5 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): اولین حرف درست رو فاش می‌کنه.</p>
-                        <p>• حذف اضافی (25 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): حروف بیهوده کیبورد رو حذف می‌کنه.</p>
+                        <p>• حذف اضافی (25 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): حروف بیهوده کیبورد رو حذف می‌کنه (تا ۳ بار در هر مرحله).</p>
                         <p>• نمایش جواب (50 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): کل پاسخ رو نشون میده و مرحله رو رد می‌کنه.</p>
                     </div>
                 </div>
@@ -1068,7 +1068,7 @@
             { id: 60, emojis: ['👨', '🦇'], answer: 'بتمن', letters: ['ب','ت','م','ن'] },
             { id: 61, emojis: ['☝️', '🫆'], answer: 'اثر انگشت', letters: ['ا','ث','ر',' ','ا','ن','گ','ش','ت'] },
             { id: 62, emojis: ['👀', '🤏'], answer: 'ذره بین', letters: ['ذ','ر','ه',' ','ب','ی','ن'] },
-            { id: 63, emojis: ['🪵', '🕵‍♂️'], answer: 'کارگاه درختی', letters: ['ک','ا','ر','گ','ا','ه',' ','د','ر','خ','ت','ی'] },
+            { id: 63, emojis: ['🪵', '🕵‍♂️'], answer: 'کارآگاه درختی', letters: ['ک','ا','ر','آ','گ','ا','ه',' ','د','ر','خ','ت','ی'] },
             { id: 64, emojis: ['📎', '✋️'], answer: 'دستگیره', letters: ['د','س','ت','گ','ی','ر','ه'] },
             { id: 65, emojis: ['🧛‍♂️', '🩸'], answer: 'خون آشام', letters: ['خ','و','ن',' ','آ','ش','ا','م'] },
             { id: 66, emojis: ['⛺️', '🆕️'], answer: 'نیوکمپ', letters: ['ن','ی','و','ک','م','پ'] },
@@ -1150,6 +1150,7 @@
         let currentGuess = [];
         let unlockedLevels = 1;
         let solvedLevels = {};
+        let removeHintUses = 0;
         const TOTAL_LEVELS = 135;
         const LEVELS_PER_CHAPTER = 15;
         const TOTAL_CHAPTERS = 9;
@@ -1336,6 +1337,7 @@
 
         function startLevel(index) {
             currentLevelIndex = index;
+            removeHintUses = 0;
             const levelData = gameData[index];
             
             document.getElementById('game-level').innerText = `مرحله ${index + 1}`;
@@ -1380,7 +1382,7 @@
         function getAvailableLetters(wordArr) {
             let letters = wordArr.filter(c => c !== ' ');
             const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب'];
-            let extraCount = 5; 
+            let extraCount = 6; 
             let shuffled = extraPool.sort(() => 0.5 - Math.random());
             for(let char of shuffled) {
                 if(!letters.includes(char) && extraCount > 0) {
@@ -1498,6 +1500,10 @@
             if(type === 'letter') cost = 5;
             if(type === 'reveal') cost = 50;
             
+            if(type === 'remove' && removeHintUses >= 3) {
+                return;
+            }
+
             if(currentCoins >= cost) {
                 currentCoins -= cost;
                 updateCoinsUI();
@@ -1526,10 +1532,11 @@
                         if (allFilled) checkAnswer();
                     }
                 } else if (type === 'remove') {
+                    removeHintUses++;
                     const keys = document.querySelectorAll('.key:not(.used)');
                     let removed = 0;
                     keys.forEach(k => {
-                        if(removed < 3 && !currentWord.includes(k.innerText)) {
+                        if(removed < 2 && !currentWord.includes(k.innerText)) {
                             k.classList.add('used');
                             removed++;
                         }
