@@ -206,8 +206,14 @@ function loadProfile() {
             const data = JSON.parse(saved);
             currentName = data.name || 'بدون نام';
             currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
+        } else {
+            currentName = 'بدون نام';
+            currentAvatarIndex = -1;
         }
-    } catch (e) {}
+    } catch (e) {
+        currentName = 'بدون نام';
+        currentAvatarIndex = -1;
+    }
 }
 
 function updateProfileUI() {
@@ -215,7 +221,11 @@ function updateProfileUI() {
     const avatarEl = document.getElementById('headerAvatar');
     if (nameEl) nameEl.innerText = currentName;
     if (avatarEl) {
-        avatarEl.src = (currentAvatarIndex >= 0) ? avatarImages[currentAvatarIndex] : defaultAvatar;
+        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) {
+            avatarEl.src = avatarImages[currentAvatarIndex];
+        } else {
+            avatarEl.src = defaultAvatar;
+        }
     }
 }
 
