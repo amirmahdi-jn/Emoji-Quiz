@@ -454,12 +454,12 @@ body {
 }
 
 .challenge-emoji-row {
-    font-size: 36px;
-    letter-spacing: 6px;
+    font-size: 28px;
+    letter-spacing: 4px;
     margin: 10px 0 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 30px;
-    padding: 10px 20px;
+    padding: 8px 14px;
     display: inline-block;
     color: var(--text-color);
 }
