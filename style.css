@@ -64,7 +64,7 @@ body {
     border-radius: 30px;
     border: 1px solid var(--border-color);
     z-index: 10;
-    min-width: 140px;
+    min-width: 120px;
 }
 
 .profile-name {
