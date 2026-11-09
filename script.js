@@ -378,13 +378,13 @@ function openGift(boxNumber) {
 }
 
 const dailyQuestions = [
-    { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌نما' },
-    { emoji1: '🧜‍♀️', emoji2: '🌊', answer: 'پری دریایی' },
-    { emoji1: '1️⃣', emoji2: '🦄', answer: 'تک شاخ' },
-    { emoji1: '🥷', emoji2: '🌊', answer: 'دزد دریایی' },
-    { emoji1: '🛤', emoji2: '🚂', answer: 'ریل قطار' },
-    { emoji1: '👶', emoji2: '👷', answer: 'بچه مهندس' },
-    { emoji1: '🌹', emoji2: '🪨', answer: 'گل سنگ' }
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' },
+    { emoji1: '', emoji2: '', answer: '' }
 ];
 
 function initDailyChallenge() {
