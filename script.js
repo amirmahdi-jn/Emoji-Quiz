@@ -378,13 +378,13 @@ function openGift(boxNumber) {
 }
 
 const dailyQuestions = [
+    { emoji1: '🦶', emoji2: '🛌', emoji3: '☕', answer: 'پاتختی' },
+    { emoji1: '🅾', emoji2: '2️⃣', emoji3: '😘', answer: 'اتوبوس' },
+    { emoji1: '🏠', emoji2: '🆕', emoji3: '🎻', answer: 'خلنه نو ساز' },
+    { emoji1: '🌹', emoji2: '', emoji3: 'ی', answer: 'گلپری' },
     { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' }
+    { emoji1: '👩', emoji2: 'ج', emoji3: '', answer: 'زنجبیل' },
+    { emoji1: '🧹', emoji2: '✋', emoji3: '☕', answer: 'جارو دستی' }
 ];
 
 function initDailyChallenge() {
