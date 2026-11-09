@@ -378,13 +378,13 @@ function openGift(boxNumber) {
 }
 
 const dailyQuestions = [
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' },
-    { emoji1: '', emoji2: '', answer: '' }
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '', emoji2: '', emoji3: '', answer: '' }
 ];
 
 function initDailyChallenge() {
