@@ -13,7 +13,7 @@
         <div class="menu-content">
             <div class="profile-bar">
                 <div class="profile-avatar" onclick="openModal('profile-modal')">
-                    <img id="headerAvatar" src="avatar1.jpg" alt="Avatar">
+                    <img id="headerAvatar" src="avatar0.jpg" alt="Avatar">
                 </div>
                 <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">بدون نام</div>
             </div>
@@ -173,9 +173,9 @@
     <div id="modal-overlay" onclick="closeModal()">
         <div id="profile-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">انتخاب پروفایل</div>
-            <div class="preview-circle"><img id="modalPreview" src="avatar1.jpg" alt="Preview"></div>
+            <div class="preview-circle"><img id="modalPreview" src="avatar0.jpg" alt="Preview"></div>
             <div class="avatar-grid"><div class="avatar-row" id="row1"></div><div class="avatar-row" id="row2"></div></div>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
 
         <div id="settings-modal" class="modal-box" onclick="event.stopPropagation()">
@@ -187,7 +187,7 @@
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-svg"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
 
         <div id="info-modal" class="modal-box" onclick="event.stopPropagation()">
@@ -241,9 +241,9 @@
                     <div class="guide-text">
                         <h3>استفاده از راهنما ها</h3>
                         <p>اگر جایی گیر کردی، از سکه‌هات استفاده کن:</p>
-                        <p>• حرف اول (5 سکه): اولین حرف درست رو فاش می‌کنه.</p>
-                        <p>• حذف اضافی (25 سکه): حروف بیهوده کیبورد رو حذف می‌کنه (تا ۳ بار در هر مرحله).</p>
-                        <p>• نمایش جواب (50 سکه): کل پاسخ رو نشون میده و مرحله رو رد می‌کنه.</p>
+                        <p>• حرف اول (5 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): اولین حرف درست رو فاش می‌کنه.</p>
+                        <p>• حذف اضافی (25 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): حروف بیهوده کیبورد رو حذف می‌کنه (تا ۳ بار در هر مرحله).</p>
+                        <p>• نمایش جواب (50 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): کل پاسخ رو نشون میده و مرحله رو رد می‌کنه.</p>
                     </div>
                 </div>
                 <div class="guide-item">
@@ -257,14 +257,14 @@
                 </div>
             </div>
             <div class="guide-footer">
-                <button class="btn-primary" onclick="closeModal()">فهمیدم.</button>
+                <button class="btn-primary" onclick="closeModal()">فهمیدم</button>
             </div>
         </div>
 
         <div id="challenge-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">چالش</div>
             <div id="challengeContent" style="text-align:center; width:100%;"></div>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
 
         <div id="gift-modal" class="modal-box" onclick="event.stopPropagation()">
@@ -284,19 +284,19 @@
                 </div>
             </div>
             <div class="gift-timer" id="giftTimer">--:--:--</div>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
 
         <div id="gift-result-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">نتیجه</div>
             <div class="result-message" id="giftResultMsg">پیام نتیجه</div>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
 
         <div id="attention-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">توجه</div>
             <div class="attention-text" style="white-space: nowrap;">امکان باز کردن جعبه تا ۲۴ ساعت دیگر وجود ندارد.</div>
-            <button class="close-btn close-btn-gray" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
     </div>
 
@@ -319,4 +319,4 @@
 
     <script src="script.js"></script>
 </body>
-                    </html>
+                                                                                                                                                                   </html>
