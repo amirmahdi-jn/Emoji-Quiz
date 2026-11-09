@@ -394,7 +394,7 @@ function initDailyChallenge() {
     const questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
     const todayQuestion = dailyQuestions[questionIndex];
     container.innerHTML =
-        '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span></div>' +
+        '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 +<span>' + todayQuestion.emoji3 +  '</span></div>' +
         '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
         '<div class="challenge-input-row">' +
         '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
@@ -426,7 +426,7 @@ function initDailyChallenge() {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
         if (state.correct) {
-            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (صحیح)';
+            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (درست)';
             dailyResult.className = 'challenge-result success';
         } else {
             dailyResult.textContent = 'امروز را پاسخ داده‌اید. (نادرست)';
