@@ -1,3 +1,12 @@
+const avatarImages = [
+    'avatar1.jpg',
+    'avatar2.jpg',
+    'avatar3.jpg',
+    'avatar4.jpg',
+    'avatar5.jpg',
+    'avatar6.jpg'
+];
+
 const gameData = [
     { id: 1, emojis: ['🐬', '🧑'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
     { id: 2, emojis: ['🧊', '🌅'], answer: 'عصر یخبندان', letters: ['ع','ص','ر',' ','ی','خ','ب','ن','د','ا','ن'] },
@@ -148,7 +157,16 @@ const TOTAL_LEVELS = 135;
 const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 9;
 
-const STORAGE_KEY = 'emojiQuizProgress_v4';
+let currentAvatarIndex = 0;
+let currentName = 'بدون نام';
+
+const GIFT_KEY = 'gift_last_open_v6';
+const DAILY_KEY = 'emoji_daily_challenge_v6';
+const PROFILE_KEY = 'emoji_profile_v6';
+const STORAGE_KEY = 'emojiQuizProgress_v6';
+
+let giftInterval = null;
+let dailyChallengeInterval = null;
 
 function saveProgress() {
     const progress = {
@@ -158,29 +176,43 @@ function saveProgress() {
         currentChapter: currentChapter,
         currentLevelIndex: currentLevelIndex
     };
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    } catch (e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
 
 function loadProgress() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            const progress = JSON.parse(saved);
-            currentCoins = typeof progress.currentCoins === 'number' ? progress.currentCoins : 50;
-            unlockedLevels = typeof progress.unlockedLevels === 'number' ? progress.unlockedLevels : 1;
-            solvedLevels = progress.solvedLevels && typeof progress.solvedLevels === 'object' ? progress.solvedLevels : {};
-            currentChapter = typeof progress.currentChapter === 'number' ? progress.currentChapter : 1;
-            currentLevelIndex = typeof progress.currentLevelIndex === 'number' ? progress.currentLevelIndex : 0;
+            const p = JSON.parse(saved);
+            currentCoins = typeof p.currentCoins === 'number' ? p.currentCoins : 50;
+            unlockedLevels = typeof p.unlockedLevels === 'number' ? p.unlockedLevels : 1;
+            solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
+            currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
+            currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
         }
-    } catch (e) {
-        currentCoins = 50;
-        unlockedLevels = 1;
-        solvedLevels = {};
-        currentChapter = 1;
-        currentLevelIndex = 0;
-    }
+    } catch (e) {}
+}
+
+function saveProfile() {
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
+}
+
+function loadProfile() {
+    try {
+        const saved = localStorage.getItem(PROFILE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            currentName = data.name || 'بدون نام';
+            currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : 0;
+        }
+    } catch (e) {}
+}
+
+function updateProfileUI() {
+    const nameEl = document.getElementById('profileNameDisplay');
+    const avatarEl = document.getElementById('headerAvatar');
+    if (nameEl) nameEl.innerText = currentName;
+    if (avatarEl) avatarEl.src = avatarImages[currentAvatarIndex];
 }
 
 const ICONS = {
@@ -189,29 +221,240 @@ const ICONS = {
 };
 
 function updateCoinsUI() {
-    document.getElementById('game-coins').innerText = currentCoins;
+    const el = document.getElementById('game-coins');
+    if (el) el.innerText = currentCoins;
 }
 
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    
-    if(screenId === 'chapters-screen') {
-        renderChapters();
-    }
-    if(screenId === 'levels-screen') {
-        renderLevels();
-    }
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
+    if (screenId === 'chapters-screen') renderChapters();
+    if (screenId === 'levels-screen') renderLevels();
 }
 
-document.getElementById('btn-start').addEventListener('click', () => {
-    renderChapters();
-    showScreen('chapters-screen');
-});
+function openModal(modalId) {
+    const overlay = document.getElementById('modal-overlay');
+    if (!overlay) return;
+    document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(modalId);
+    if (target) {
+        target.classList.add('active');
+        overlay.classList.add('active');
+    }
+    if (modalId === 'challenge-modal') initDailyChallenge();
+    if (modalId === 'gift-modal') startGiftTimer();
+    if (modalId === 'profile-modal') renderAvatars();
+}
 
-document.getElementById('btn-help-menu').addEventListener('click', () => {
-    document.getElementById('guide-modal').classList.add('active');
-});
+function closeModal() {
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+    document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
+    if (giftInterval) { clearInterval(giftInterval); giftInterval = null; }
+    if (dailyChallengeInterval) { clearInterval(dailyChallengeInterval); dailyChallengeInterval = null; }
+}
+
+function openNameModal() {
+    const overlay = document.getElementById('name-modal-overlay');
+    const input = document.getElementById('nameInput');
+    if (!overlay || !input) return;
+    input.value = currentName === 'بدون نام' ? '' : currentName;
+    overlay.classList.add('active');
+    setTimeout(() => input.focus(), 200);
+}
+
+function closeNameModal() {
+    const overlay = document.getElementById('name-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function saveName() {
+    const input = document.getElementById('nameInput');
+    if (!input) return;
+    let raw = input.value.trim();
+    currentName = raw.length > 0 ? raw : 'بدون نام';
+    saveProfile();
+    updateProfileUI();
+    closeNameModal();
+}
+
+function renderAvatars() {
+    const row1 = document.getElementById('row1');
+    const row2 = document.getElementById('row2');
+    const preview = document.getElementById('modalPreview');
+    if (!row1 || !row2) return;
+    row1.innerHTML = '';
+    row2.innerHTML = '';
+    avatarImages.forEach((src, idx) => {
+        const item = document.createElement('div');
+        item.className = 'avatar-item';
+        const img = document.createElement('img');
+        img.src = src;
+        item.appendChild(img);
+        item.onclick = () => {
+            currentAvatarIndex = idx;
+            if (preview) preview.src = src;
+            saveProfile();
+            updateProfileUI();
+        };
+        if (idx < 3) row1.appendChild(item);
+        else row2.appendChild(item);
+    });
+    if (preview) preview.src = avatarImages[currentAvatarIndex];
+}
+
+function startGiftTimer() {
+    const giftTimerEl = document.getElementById('giftTimer');
+    if (!giftTimerEl) return;
+    if (giftInterval) clearInterval(giftInterval);
+    updateGiftTimer();
+    giftInterval = setInterval(updateGiftTimer, 1000);
+}
+
+function updateGiftTimer() {
+    const giftTimerEl = document.getElementById('giftTimer');
+    if (!giftTimerEl) return;
+    const lastOpen = localStorage.getItem(GIFT_KEY);
+    if (!lastOpen) { giftTimerEl.textContent = '--:--:--'; return; }
+    const elapsed = Date.now() - parseInt(lastOpen);
+    const remaining = 24 * 60 * 60 * 1000 - elapsed;
+    if (remaining <= 0) {
+        giftTimerEl.textContent = '۰:۰۰:۰۰';
+        if (giftInterval) { clearInterval(giftInterval); giftInterval = null; }
+        return;
+    }
+    const hours = Math.floor(remaining / (60 * 60 * 1000));
+    const mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+    const secs = Math.floor((remaining % (60 * 1000)) / 1000);
+    const pad = (n) => String(n).padStart(2, '0');
+    giftTimerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+}
+
+function openGift(boxNumber) {
+    const lastOpen = localStorage.getItem(GIFT_KEY);
+    if (lastOpen) {
+        const elapsed = Date.now() - parseInt(lastOpen);
+        if (elapsed < 24 * 60 * 60 * 1000) { openModal('attention-modal'); return; }
+    }
+
+    const today = new Date().toDateString();
+    let seed = 0;
+    for (let i = 0; i < today.length; i++) seed += today.charCodeAt(i);
+    const amounts = [5, 10, 15];
+    const shuffled = amounts.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = (seed + i * 7) % (i + 1);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const prizeAmount = shuffled[boxNumber - 1] || shuffled[0];
+    currentCoins += prizeAmount;
+    updateCoinsUI();
+
+    const msgEl = document.getElementById('giftResultMsg');
+    if (msgEl) {
+        msgEl.textContent = 'تبریک! شما ' + prizeAmount + ' سکه برنده شدید.';
+        msgEl.style.color = '#4ade80';
+    }
+
+    localStorage.setItem(GIFT_KEY, Date.now().toString());
+    saveProgress();
+    openModal('gift-result-modal');
+}
+
+const dailyQuestions = [
+    { emoji1: '🌙', emoji2: '🐺', answer: 'ماه‌نما' },
+    { emoji1: '🧜‍♀️', emoji2: '🌊', answer: 'پری دریایی' },
+    { emoji1: '1️⃣', emoji2: '🦄', answer: 'تک شاخ' },
+    { emoji1: '🥷', emoji2: '🌊', answer: 'دزد دریایی' },
+    { emoji1: '🛤', emoji2: '🚂', answer: 'ریل قطار' },
+    { emoji1: '👶', emoji2: '👷', answer: 'بچه مهندس' },
+    { emoji1: '🌹', emoji2: '🪨', answer: 'گل سنگ' }
+];
+
+function initDailyChallenge() {
+    const container = document.getElementById('challengeContent');
+    if (!container) return;
+    const dayOfMonth = new Date().getDate();
+    const questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
+    const todayQuestion = dailyQuestions[questionIndex];
+    container.innerHTML =
+        '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span></div>' +
+        '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+        '<div class="challenge-input-row">' +
+        '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
+        '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
+        '</div>' +
+        '<div class="challenge-result" id="dailyResult"></div>';
+    const dailyInput = document.getElementById('dailyInput');
+    const dailySubmit = document.getElementById('dailySubmitBtn');
+    const dailyResult = document.getElementById('dailyResult');
+    const timerEl = document.getElementById('dailyTimer');
+
+    function getDailyState() {
+        const saved = localStorage.getItem(DAILY_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                const today = new Date().toDateString();
+                if (data.date === today) return data;
+            } catch (e) {}
+        }
+        return null;
+    }
+    function setDailyState(answered, correct) {
+        const today = new Date().toDateString();
+        localStorage.setItem(DAILY_KEY, JSON.stringify({ date: today, answered: answered, correct: correct }));
+    }
+    const state = getDailyState();
+    if (state && state.answered) {
+        dailyInput.disabled = true;
+        dailySubmit.disabled = true;
+        if (state.correct) {
+            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (صحیح)';
+            dailyResult.className = 'challenge-result success';
+        } else {
+            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (نادرست)';
+            dailyResult.className = 'challenge-result fail';
+        }
+    }
+    function updateDailyTimer() {
+        const now = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        const diff = midnight - now;
+        if (diff <= 0) { timerEl.textContent = '۰:۰۰:۰۰'; return; }
+        const hours = Math.floor(diff / (60 * 60 * 1000));
+        const mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+        const secs = Math.floor((diff % (60 * 1000)) / 1000);
+        const pad = (n) => String(n).padStart(2, '0');
+        timerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+    }
+    updateDailyTimer();
+    if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
+    dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
+    dailySubmit.addEventListener('click', () => {
+        if (dailyInput.disabled) return;
+        const answer = dailyInput.value.trim();
+        if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
+        const isCorrect = (answer === todayQuestion.answer);
+        setDailyState(true, isCorrect);
+        dailyInput.disabled = true;
+        dailySubmit.disabled = true;
+        if (isCorrect) {
+            currentCoins += 10;
+            updateCoinsUI();
+            dailyResult.textContent = 'درست! ۱۰ سکه دریافت کردید.';
+            dailyResult.className = 'challenge-result success';
+        } else {
+            dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
+            dailyResult.className = 'challenge-result fail';
+        }
+        saveProgress();
+    });
+    dailyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') dailySubmit.click(); });
+}
 
 function buildProgressRing(percent) {
     const radius = 18;
@@ -249,13 +492,12 @@ function isChapterUnlocked(chapterNum) {
 
 function renderChapters() {
     const chaptersGrid = document.getElementById('chapters-grid');
+    if (!chaptersGrid) return;
     let html = '';
-    
-    for(let i = 1; i <= TOTAL_CHAPTERS; i++) {
+    for (let i = 1; i <= TOTAL_CHAPTERS; i++) {
         const isUnlocked = isChapterUnlocked(i);
         const solvedInChapter = getSolvedInChapter(i);
         const percent = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
-        
         let stageText = "";
         if (i === 1) stageText = "مرحله ۱ تا ۱۵";
         else if (i === 2) stageText = "مرحله ۱۶ تا ۳۰";
@@ -266,23 +508,10 @@ function renderChapters() {
         else if (i === 7) stageText = "مرحله ۹۱ تا ۱۰۵";
         else if (i === 8) stageText = "مرحله ۱۰۶ تا ۱۲۰";
         else if (i === 9) stageText = "مرحله ۱۲۱ تا ۱۳۵";
-        
         if (isUnlocked) {
-            html += `
-                <div class="chapter-card" onclick="openChapter(${i})">
-                    <h3>فصل ${i}</h3>
-                    <p>${stageText}</p>
-                    ${buildProgressRing(percent)}
-                </div>
-            `;
+            html += `<div class="chapter-card" onclick="openChapter(${i})"><h3>فصل ${i}</h3><p>${stageText}</p>${buildProgressRing(percent)}</div>`;
         } else {
-            html += `
-                <div class="chapter-card locked">
-                    <h3>فصل ${i}</h3>
-                    <p>${stageText}</p>
-                    <span class="lock-icon">${ICONS.lock}</span>
-                </div>
-            `;
+            html += `<div class="chapter-card locked"><h3>فصل ${i}</h3><p>${stageText}</p><span class="lock-icon">${ICONS.lock}</span></div>`;
         }
     }
     chaptersGrid.innerHTML = html;
@@ -290,22 +519,21 @@ function renderChapters() {
 
 function openChapter(chapterNum) {
     currentChapter = chapterNum;
-    document.getElementById('level-header-title').innerText = `فصل ${chapterNum}`;
+    const title = document.getElementById('level-header-title');
+    if (title) title.innerText = `فصل ${chapterNum}`;
     saveProgress();
     showScreen('levels-screen');
 }
 
 function renderLevels() {
     const levelsGrid = document.getElementById('levels-grid');
+    if (!levelsGrid) return;
     levelsGrid.innerHTML = '';
-    
     const chapterStart = (currentChapter - 1) * LEVELS_PER_CHAPTER + 1;
     const chapterEnd = currentChapter * LEVELS_PER_CHAPTER;
-    
     for (let i = chapterStart; i <= chapterEnd; i++) {
         const levelDiv = document.createElement('div');
         levelDiv.className = 'level-card';
-        
         if (i > unlockedLevels) {
             levelDiv.classList.add('locked');
             levelDiv.innerHTML = `<span>${i}</span><span class="lock-icon">${ICONS.lock}</span>`;
@@ -321,41 +549,39 @@ function renderLevels() {
         }
         levelsGrid.appendChild(levelDiv);
     }
-    
     const solvedInChapter = getSolvedInChapter(currentChapter);
     const progress = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
-    document.getElementById('progress-fill').style.width = `${progress}%`;
-    document.getElementById('progress-text').innerText = `${solvedInChapter} از ${LEVELS_PER_CHAPTER} مرحله حل شده`;
+    const fill = document.getElementById('progress-fill');
+    if (fill) fill.style.width = `${progress}%`;
+    const ptext = document.getElementById('progress-text');
+    if (ptext) ptext.innerText = `${solvedInChapter} از ${LEVELS_PER_CHAPTER} مرحله حل شده`;
 }
 
 function startLevel(index) {
     currentLevelIndex = index;
     removeHintUses = 0;
     const levelData = gameData[index];
-    
-    document.getElementById('game-level').innerText = `مرحله ${index + 1}`;
-    document.getElementById('game-chapter').innerText = `فصل ${Math.ceil((index + 1) / LEVELS_PER_CHAPTER)}`;
-    
+    if (!levelData) return;
+    const gameLevel = document.getElementById('game-level');
+    if (gameLevel) gameLevel.innerText = `مرحله ${index + 1}`;
+    const gameChapter = document.getElementById('game-chapter');
+    if (gameChapter) gameChapter.innerText = `فصل ${Math.ceil((index + 1) / LEVELS_PER_CHAPTER)}`;
     const emojiContainer = document.getElementById('emoji-question');
-    emojiContainer.innerHTML = levelData.emojis.map(e => `<span>${e}</span>`).join('');
-    
+    if (emojiContainer) emojiContainer.innerHTML = levelData.emojis.map(e => `<span>${e}</span>`).join('');
     currentWord = levelData.letters;
     currentGuess = new Array(currentWord.length).fill('');
-    
     renderSlots();
     renderKeyboard();
-    
     saveProgress();
     showScreen('game-screen');
 }
 
 function renderSlots() {
     const slotsContainer = document.getElementById('answer-slots');
+    if (!slotsContainer) return;
     slotsContainer.innerHTML = '';
-    
     let row = document.createElement('div');
     row.className = 'word-row';
-    
     currentWord.forEach((char, index) => {
         if (char === ' ') {
             slotsContainer.appendChild(row);
@@ -375,22 +601,19 @@ function renderSlots() {
 function getAvailableLetters(wordArr) {
     let letters = wordArr.filter(c => c !== ' ');
     const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب'];
-    let extraCount = 6; 
+    let extraCount = 6;
     let shuffled = extraPool.sort(() => 0.5 - Math.random());
-    for(let char of shuffled) {
-        if(!letters.includes(char) && extraCount > 0) {
-            letters.push(char);
-            extraCount--;
-        }
+    for (let char of shuffled) {
+        if (!letters.includes(char) && extraCount > 0) { letters.push(char); extraCount--; }
     }
     return letters.sort(() => 0.5 - Math.random());
 }
 
 function renderKeyboard() {
     const keyboard = document.getElementById('keyboard');
+    if (!keyboard) return;
     keyboard.innerHTML = '';
     const keys = getAvailableLetters(currentWord);
-    
     keys.forEach(key => {
         const btn = document.createElement('button');
         btn.className = 'key';
@@ -403,20 +626,14 @@ function renderKeyboard() {
 function handleKeyPress(letter, btnElement) {
     let emptyIndex = -1;
     for (let i = 0; i < currentGuess.length; i++) {
-        if (currentGuess[i] === '' && currentWord[i] !== ' ') {
-            emptyIndex = i;
-            break;
-        }
+        if (currentGuess[i] === '' && currentWord[i] !== ' ') { emptyIndex = i; break; }
     }
     if (emptyIndex !== -1) {
         currentGuess[emptyIndex] = letter;
         renderSlots();
         btnElement.classList.add('used');
-        
         const allFilled = currentGuess.every((g, i) => g !== '' || currentWord[i] === ' ');
-        if (allFilled) {
-            checkAnswer();
-        }
+        if (allFilled) checkAnswer();
     }
 }
 
@@ -425,35 +642,27 @@ function removeLetter(index) {
         const letter = currentGuess[index];
         currentGuess[index] = '';
         renderSlots();
-        
-        document.querySelectorAll('.key').forEach(k => {
-            if(k.innerText === letter) k.classList.remove('used');
-        });
+        document.querySelectorAll('.key').forEach(k => { if (k.innerText === letter) k.classList.remove('used'); });
     }
 }
 
 function checkAnswer() {
     const guessClean = currentGuess.join('').replace(/\s+/g, '');
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
-    
     if (guessClean === answerClean) {
-        if (!solvedLevels[currentLevelIndex]) {
-            currentCoins += 10;
-            solvedLevels[currentLevelIndex] = true;
-        }
-        if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) {
-            unlockedLevels++;
-        }
+        if (!solvedLevels[currentLevelIndex]) { currentCoins += 10; solvedLevels[currentLevelIndex] = true; }
+        if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
         saveProgress();
-        
-        document.getElementById('correct-answer-text').innerText = gameData[currentLevelIndex].answer;
-        document.getElementById('win-modal').classList.add('active');
+        const correctEl = document.getElementById('correct-answer-text');
+        if (correctEl) correctEl.innerText = gameData[currentLevelIndex].answer;
+        const winModal = document.getElementById('win-modal');
+        if (winModal) winModal.classList.add('active');
     } else {
         const board = document.querySelector('.emoji-board');
-        board.classList.add('shake-anim');
+        if (board) board.classList.add('shake-anim');
         setTimeout(() => {
-            board.classList.remove('shake-anim');
+            if (board) board.classList.remove('shake-anim');
             currentGuess = new Array(currentWord.length).fill('');
             renderSlots();
             document.querySelectorAll('.key').forEach(k => k.classList.remove('used'));
@@ -462,24 +671,21 @@ function checkAnswer() {
 }
 
 function nextLevel() {
-    document.getElementById('win-modal').classList.remove('active');
-    
+    const winModal = document.getElementById('win-modal');
+    if (winModal) winModal.classList.remove('active');
     const chapterLastLevel = currentChapter * LEVELS_PER_CHAPTER - 1;
-    
     if (currentLevelIndex === chapterLastLevel) {
-        document.getElementById('chapter-complete-modal').classList.add('active');
+        const ccModal = document.getElementById('chapter-complete-modal');
+        if (ccModal) ccModal.classList.add('active');
         return;
     }
-
-    if (currentLevelIndex < TOTAL_LEVELS - 1) {
-        startLevel(currentLevelIndex + 1);
-    } else {
-        showScreen('levels-screen');
-    }
+    if (currentLevelIndex < TOTAL_LEVELS - 1) startLevel(currentLevelIndex + 1);
+    else showScreen('levels-screen');
 }
 
 function goToNextChapter() {
-    document.getElementById('chapter-complete-modal').classList.remove('active');
+    const ccModal = document.getElementById('chapter-complete-modal');
+    if (ccModal) ccModal.classList.remove('active');
     if (currentChapter < TOTAL_CHAPTERS) {
         currentChapter++;
         saveProgress();
@@ -488,39 +694,29 @@ function goToNextChapter() {
 }
 
 function buyHint(type) {
-    if(type === 'remove' && removeHintUses >= 3) {
-        return;
-    }
-
+    if (type === 'remove' && removeHintUses >= 3) return;
     let cost = 0;
-    if(type === 'remove') cost = 25;
-    if(type === 'letter') cost = 5;
-    if(type === 'reveal') cost = 50;
-    
-    if(currentCoins >= cost) {
+    if (type === 'remove') cost = 25;
+    if (type === 'letter') cost = 5;
+    if (type === 'reveal') cost = 50;
+    if (currentCoins >= cost) {
         currentCoins -= cost;
         updateCoinsUI();
         saveProgress();
-        
-        if(type === 'reveal') {
+        if (type === 'reveal') {
             currentGuess = [...currentWord];
             renderSlots();
             checkAnswer();
         } else if (type === 'letter') {
             let emptyIndex = -1;
             for (let i = 0; i < currentGuess.length; i++) {
-                if (currentGuess[i] === '' && currentWord[i] !== ' ') {
-                    emptyIndex = i;
-                    break;
-                }
+                if (currentGuess[i] === '' && currentWord[i] !== ' ') { emptyIndex = i; break; }
             }
-            if(emptyIndex !== -1) {
+            if (emptyIndex !== -1) {
                 const correctLetter = currentWord[emptyIndex];
                 currentGuess[emptyIndex] = correctLetter;
                 renderSlots();
-                document.querySelectorAll('.key').forEach(k => {
-                    if(k.innerText === correctLetter) k.classList.add('used');
-                });
+                document.querySelectorAll('.key').forEach(k => { if (k.innerText === correctLetter) k.classList.add('used'); });
                 const allFilled = currentGuess.every((g, i) => g !== '' || currentWord[i] === ' ');
                 if (allFilled) checkAnswer();
             }
@@ -529,28 +725,46 @@ function buyHint(type) {
             const keys = document.querySelectorAll('.key:not(.used)');
             let removed = 0;
             keys.forEach(k => {
-                if(removed < 2 && !currentWord.includes(k.innerText)) {
-                    k.classList.add('used');
-                    removed++;
-                }
+                if (removed < 2 && !currentWord.includes(k.innerText)) { k.classList.add('used'); removed++; }
             });
         }
     } else {
-        document.getElementById('no-coin-modal').classList.add('active');
+        const ncModal = document.getElementById('no-coin-modal');
+        if (ncModal) ncModal.classList.add('active');
     }
 }
 
-window.addEventListener('storage', (e) => {
-    if (e.key === STORAGE_KEY && e.newValue) {
-        loadProgress();
-        updateCoinsUI();
-        renderChapters();
-        if (document.getElementById('levels-screen').classList.contains('active')) {
-            renderLevels();
-        }
+function checkOnlineStatus() {
+    const overlay = document.getElementById('offline-overlay');
+    if (!overlay) return;
+    if (!navigator.onLine) overlay.classList.add('active');
+    else overlay.classList.remove('active');
+}
+
+window.addEventListener('load', () => {
+    loadProgress();
+    loadProfile();
+    updateProfileUI();
+    updateCoinsUI();
+    renderChapters();
+    checkOnlineStatus();
+
+    const startBtn = document.getElementById('btn-start');
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            renderChapters();
+            showScreen('chapters-screen');
+        });
+    }
+
+    const offlineBtn = document.getElementById('offline-close-btn');
+    if (offlineBtn) {
+        offlineBtn.addEventListener('click', () => {
+            if (navigator.onLine) checkOnlineStatus();
+            else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
+        });
     }
 });
 
-loadProgress();
-renderChapters();
-updateCoinsUI();
+window.addEventListener('offline', checkOnlineStatus);
+window.addEventListener('online', checkOnlineStatus);
