@@ -11,6 +11,13 @@
 
     <div id="main-menu" class="screen active">
         <div class="menu-content">
+            <div class="profile-bar">
+                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">بدون نام</div>
+                <div class="profile-avatar" onclick="openModal('profile-modal')">
+                    <img id="headerAvatar" src="avatar1.jpg" alt="Avatar">
+                </div>
+            </div>
+
             <div class="logo-area">
                 <div class="detective-container">
                     <div class="pulse-circle"></div>
@@ -20,18 +27,30 @@
                 <p>ذهن خود را به چالش بکشید!</p>
             </div>
             <button id="btn-start" class="btn-primary">شروع بازی</button>
+            
             <div class="menu-buttons">
-                <button class="btn-secondary btn-shop">
+                <button class="btn-secondary btn-shop" onclick="openModal('shop-modal')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/><path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>
                     فروشگاه
                 </button>
-                <button class="btn-secondary btn-settings" onclick="document.getElementById('settings-modal').classList.add('active')">
+                <button class="btn-secondary btn-settings" onclick="openModal('settings-modal')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>
                     تنظیمات
                 </button>
-                <button class="btn-secondary btn-help" id="btn-help-menu">
+                <button class="btn-secondary btn-help" onclick="openModal('guide-modal')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg>
                     راهنما
+                </button>
+            </div>
+
+            <div class="menu-buttons">
+                <button class="btn-secondary btn-daily-challenge" onclick="openModal('challenge-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    چالش روزانه
+                </button>
+                <button class="btn-secondary btn-daily-gift" onclick="openModal('gift-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
+                    جایزه روزانه
                 </button>
             </div>
         </div>
@@ -85,7 +104,6 @@
 
         <div class="game-main">
             <div class="emoji-board" id="emoji-question"></div>
-
             <div class="hints-row">
                 <button class="btn-hint" data-hint="reveal" onclick="buyHint('reveal')">
                     <span class="hint-icon">
@@ -118,7 +136,6 @@
                     </span>
                 </button>
             </div>
-
             <div class="answer-slots" id="answer-slots"></div>
         </div>
 
@@ -153,76 +170,28 @@
         </div>
     </div>
 
-    <div id="guide-modal" class="modal">
-        <div class="guide-modal-content">
-            <div class="guide-modal-title">راهنما</div>
-            <div class="guide-content">
-                <div class="guide-item">
-                    <div class="guide-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
-                    </div>
-                    <div class="guide-text">
-                        <h3>حدس کلمه با ایموجی</h3>
-                        <p>به ایموجی‌ها با دقت نگاه کن و معنی اون‌ها رو با هم ترکیب کن تا کلمه یا اصطلاح مورد نظر رو حدس بزنی. برای مثال: (خر 🐴) + (خون 🩸) = خرخون!</p>
-                    </div>
-                </div>
-                
-                <div class="guide-item">
-                    <div class="guide-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></svg>
-                    </div>
-                    <div class="guide-text">
-                        <h3>نوشتن پاسخ</h3>
-                        <p>حروف روی کیبورد رو لمس کن تا توی خونه‌های خالی قرار بگیرن. اگر خواستی حرفی رو حذف کنی، کافیه روی همون خونه توی پاسخ ضربه بزنی تا برگرده به کیبورد.</p>
-                    </div>
-                </div>
-
-                <div class="guide-item">
-                    <div class="guide-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
-                    </div>
-                    <div class="guide-text">
-                        <h3>استفاده از راهنما ها</h3>
-                        <p>اگر جایی گیر کردی، از سکه‌هات استفاده کن:</p>
-                        <p>• حرف اول (5 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): اولین حرف درست رو فاش می‌کنه.</p>
-                        <p>• حذف اضافی (25 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): حروف بیهوده کیبورد رو حذف می‌کنه (تا ۳ بار در هر مرحله).</p>
-                        <p>• نمایش جواب (50 <span class="inline-coin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></span>): کل پاسخ رو نشون میده و مرحله رو رد می‌کنه.</p>
-                    </div>
-                </div>
-
-                <div class="guide-item">
-                    <div class="guide-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
-                    </div>
-                    <div class="guide-text">
-                        <h3>قفل مرحله ها و فصل‌ ها</h3>
-                        <p>مراحل هر فصل به ترتیب باز میشن. برای رفتن به فصل بعدی باید تمام ۱۵ مرحله فعلی رو حل کنی. با حل هر مرحله جدید 10 سکه جایزه می‌گیری!</p>
-                    </div>
-                </div>
-            </div>
-            <div class="guide-footer">
-                <button class="btn-primary" onclick="document.getElementById('guide-modal').classList.remove('active')">متوجه شدم.</button>
-            </div>
+    <div id="modal-overlay" onclick="closeModal()">
+        <div id="profile-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">انتخاب پروفایل</div>
+            <div class="preview-circle"><img id="modalPreview" src="avatar1.jpg" alt="Preview"></div>
+            <div class="avatar-grid"><div class="avatar-row" id="row1"></div><div class="avatar-row" id="row2"></div></div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div id="settings-modal" class="modal">
-        <div class="settings-modal-content">
-            <div class="settings-title">تنظیمات</div>
-            <button class="settings-info-btn" onclick="document.getElementById('settings-modal').classList.remove('active'); document.getElementById('info-modal').classList.add('active');">
+        <div id="settings-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">تنظیمات</div>
+            <button class="settings-info-btn" onclick="closeModal(); openModal('info-modal');">
                 <div class="right-side">
                     <svg class="info-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                     <span>اطلاعات</span>
                 </div>
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-svg"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
-            <button class="settings-close-btn" onclick="document.getElementById('settings-modal').classList.remove('active')">بستن</button>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
-    </div>
 
-    <div id="info-modal" class="modal">
-        <div class="info-modal-content">
-            <div class="info-title">اطلاعات</div>
+        <div id="info-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">اطلاعات</div>
             <div class="info-list">
                 <div class="info-row">
                     <svg class="icon-dev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -241,10 +210,109 @@
                     <span>کانال :</span> <span class="value">@MyApp2026</span>
                 </div>
             </div>
-            <button class="info-back-btn" onclick="document.getElementById('info-modal').classList.remove('active'); document.getElementById('settings-modal').classList.add('active');">بازگشت</button>
+            <button class="close-btn" onclick="closeModal();">بستن</button>
+        </div>
+
+        <div id="guide-modal" class="guide-modal-content" onclick="event.stopPropagation()">
+            <div class="guide-modal-title">راهنما</div>
+            <div class="guide-content">
+                <div class="guide-item">
+                    <div class="guide-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
+                    </div>
+                    <div class="guide-text">
+                        <h3>حدس کلمه با ایموجی</h3>
+                        <p>به ایموجی‌ها با دقت نگاه کن و معنی اون‌ها رو با هم ترکیب کن تا کلمه یا اصطلاح مورد نظر رو حدس بزنی.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.01"/><path d="M10 8h.01"/><path d="M14 8h.01"/><path d="M18 8h.01"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M7 16h10"/></svg>
+                    </div>
+                    <div class="guide-text">
+                        <h3>نوشتن پاسخ</h3>
+                        <p>حروف روی کیبورد رو لمس کن تا توی خونه‌های خالی قرار بگیرن. برای حذف روی خونه پاسخ ضربه بزن.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="guide-footer">
+                <button class="btn-primary" onclick="closeModal()">متوجه شدم.</button>
+            </div>
+        </div>
+
+        <div id="shop-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">فروشگاه</div>
+            <div class="shop-container">
+                <div class="shop-item">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36">
+                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
+                        </svg>
+                    </div>
+                    <span class="label">سکه</span>
+                    <button class="buy-btn">خرید</button>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="challenge-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">چالش روزانه</div>
+            <div id="challengeContent" style="text-align:center; width:100%;"></div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="gift-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">جایزه روزانه</div>
+            <div class="gift-container">
+                <div class="gift-box" onclick="openGift(1)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2" /><rect x="3" y="4" width="18" height="4" rx="1.5" /><line x1="12" y1="3" x2="12" y2="20" /><path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" /></svg>
+                    <span>جعبه ۱</span>
+                </div>
+                <div class="gift-box" onclick="openGift(2)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2" /><rect x="3" y="4" width="18" height="4" rx="1.5" /><line x1="12" y1="3" x2="12" y2="20" /><path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" /></svg>
+                    <span>جعبه ۲</span>
+                </div>
+                <div class="gift-box" onclick="openGift(3)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2" /><rect x="3" y="4" width="18" height="4" rx="1.5" /><line x1="12" y1="3" x2="12" y2="20" /><path d="M10 4 L6 1 L12 4 L18 1 L14 4 L12 6 Z" /></svg>
+                    <span>جعبه ۳</span>
+                </div>
+            </div>
+            <div class="gift-timer" id="giftTimer">--:--:--</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="gift-result-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">نتیجه</div>
+            <div class="result-message" id="giftResultMsg">پیام نتیجه</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="attention-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">توجه</div>
+            <div class="attention-text">امکان باز کردن جعبه تا ۲۴ ساعت دیگر وجود ندارد.</div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+    </div>
+
+    <div id="name-modal-overlay" onclick="closeNameModal()">
+        <div id="name-modal" onclick="event.stopPropagation()">
+            <div class="modal-title">تغییر نام</div>
+            <input type="text" id="nameInput" placeholder="...نام جدید را وارد کنید" maxlength="20">
+            <button class="btn-primary" onclick="saveName()">ثبت</button>
+        </div>
+    </div>
+
+    <div id="offline-overlay">
+        <div id="offline-modal">
+            <div class="offline-title">آفلاین</div>
+            <div class="offline-desc">اینترنت شما قطع است.</div>
+            <div class="offline-desc">لطفا اینترنت خود را بررسی کنید.</div>
+            <button id="offline-close-btn">تلاش مجدد</button>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
-</html>
+                        </html>
