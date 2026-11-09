@@ -1,3 +1,5 @@
+const defaultAvatar = 'avatar0.jpg';
+
 const avatarImages = [
     'avatar1.jpg',
     'avatar2.jpg',
@@ -157,7 +159,7 @@ const TOTAL_LEVELS = 135;
 const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 9;
 
-let currentAvatarIndex = 0;
+let currentAvatarIndex = -1;
 let currentName = 'بدون نام';
 
 const GIFT_KEY = 'gift_last_open_v6';
@@ -203,7 +205,7 @@ function loadProfile() {
         if (saved) {
             const data = JSON.parse(saved);
             currentName = data.name || 'بدون نام';
-            currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : 0;
+            currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
         }
     } catch (e) {}
 }
@@ -212,7 +214,9 @@ function updateProfileUI() {
     const nameEl = document.getElementById('profileNameDisplay');
     const avatarEl = document.getElementById('headerAvatar');
     if (nameEl) nameEl.innerText = currentName;
-    if (avatarEl) avatarEl.src = avatarImages[currentAvatarIndex];
+    if (avatarEl) {
+        avatarEl.src = (currentAvatarIndex >= 0) ? avatarImages[currentAvatarIndex] : defaultAvatar;
+    }
 }
 
 const ICONS = {
@@ -301,7 +305,7 @@ function renderAvatars() {
         if (idx < 3) row1.appendChild(item);
         else row2.appendChild(item);
     });
-    if (preview) preview.src = avatarImages[currentAvatarIndex];
+    if (preview) preview.src = (currentAvatarIndex >= 0) ? avatarImages[currentAvatarIndex] : defaultAvatar;
 }
 
 function startGiftTimer() {
