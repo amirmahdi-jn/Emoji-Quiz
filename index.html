@@ -94,11 +94,15 @@
                 <span id="game-chapter">فصل 1</span>
                 <span id="game-level">مرحله 1</span>
             </div>
-            <div class="coin-wrapper">
-                <span class="coin-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
-                </span>
-                <span id="game-coins">50</span>
+            <div class="game-stats-header">
+                <div class="stat-pill">
+                    <span id="header-coins">10</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coin-stat-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                </div>
+                <div class="stat-pill">
+                    <span id="header-diamonds">10</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="diamond-stat-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                </div>
             </div>
         </div>
 
@@ -147,7 +151,7 @@
             <h2>درست حدس زدی! 🎉</h2>
             <p class="modal-subtitle">پاسخ صحیح:</p>
             <div class="correct-answer" id="correct-answer-text"></div>
-            <div class="reward" style="color: var(--success-color);">10 سکه دریافت کردید.</div>
+            <div class="reward" style="color: var(--success-color);">5 سکه دریافت کردید.</div>
             <button class="btn-primary" onclick="nextLevel()">مرحله بعدی ⬅</button>
         </div>
     </div>
@@ -263,6 +267,32 @@
 
         <div id="shop-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">فروشگاه</div>
+            <div class="shop-container">
+                <div class="shop-item" onclick="closeModal(); openModal('buy-coin-modal');">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                            <text x="12" y="17" font-family="Arial" font-weight="bold" font-size="14" fill="#1e293b" text-anchor="middle">$</text>
+                        </svg>
+                    </div>
+                    <span class="label">خرید سکه</span>
+                </div>
+                <div class="shop-item" onclick="closeModal(); openModal('buy-diamond-modal');">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.5 3 8 9l4 13 4-13-2.5-6"/>
+                            <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/>
+                            <path d="M2 9h20"/>
+                        </svg>
+                    </div>
+                    <span class="label">خرید الماس</span>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
+        <div id="buy-coin-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">خرید سکه</div>
             <div class="shop-list">
                 <div class="shop-row">
                     <div class="shop-right">
@@ -313,7 +343,54 @@
                     <button class="shop-buy-btn">خرید</button>
                 </div>
             </div>
-            <button class="close-btn" onclick="closeModal()">بستن</button>
+            <button class="close-btn" onclick="closeModal(); openModal('shop-modal');">بازگشت</button>
+        </div>
+
+        <div id="buy-diamond-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">خرید الماس</div>
+            <div class="shop-list">
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" style="color:#60a5fa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                        <span class="shop-amount">10 الماس</span>
+                    </div>
+                    <div class="shop-price">5,000 T</div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" style="color:#60a5fa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                        <span class="shop-amount">30 الماس</span>
+                    </div>
+                    <div class="shop-price">15,000 T</div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" style="color:#60a5fa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                        <span class="shop-amount">50 الماس</span>
+                    </div>
+                    <div class="shop-price">25,000 T</div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" style="color:#60a5fa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                        <span class="shop-amount">100 الماس</span>
+                    </div>
+                    <div class="shop-price">50,000 T</div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" style="color:#60a5fa;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                        <span class="shop-amount">200 الماس</span>
+                    </div>
+                    <div class="shop-price">100,000 T</div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal(); openModal('shop-modal');">بازگشت</button>
         </div>
 
         <div id="challenge-modal" class="modal-box" onclick="event.stopPropagation()">
