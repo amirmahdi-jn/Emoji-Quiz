@@ -497,7 +497,7 @@ const dailyQuestions = [
     { emoji1: '🏠', emoji2: '🆕', emoji3: '🎻', answer: 'خانه نو ساز' },
     { emoji1: '🦶', emoji2: '🏐', emoji3: '📄', answer: 'فوتبالیست' },
     { emoji1: '💧', emoji2: '🪢', emoji3: '🏠', answer: 'آبدارخانه' },
-    { emoji1: '', emoji2: '', emoji3: '', answer: '' },
+    { emoji1: '🔔', emoji2: '🚪', emoji3: '🇨🇳', answer: 'بلدرچین' },
     { emoji1: '🧹', emoji2: '✋', emoji3: '☕', answer: 'جارو دستی' }
 ];
 
