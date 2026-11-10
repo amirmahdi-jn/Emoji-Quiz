@@ -149,7 +149,8 @@ const gameData = [
 
 let currentLevelIndex = 0;
 let currentChapter = 1;
-let currentCoins = 50;
+let currentCoins = 10;
+let currentDiamonds = 10;
 let currentWord = [];
 let currentGuess = [];
 let unlockedLevels = 1;
@@ -173,6 +174,7 @@ let dailyChallengeInterval = null;
 function saveProgress() {
     const progress = {
         currentCoins: currentCoins,
+        currentDiamonds: currentDiamonds,
         unlockedLevels: unlockedLevels,
         solvedLevels: solvedLevels,
         currentChapter: currentChapter,
@@ -186,7 +188,8 @@ function loadProgress() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const p = JSON.parse(saved);
-            currentCoins = typeof p.currentCoins === 'number' ? p.currentCoins : 50;
+            currentCoins = typeof p.currentCoins === 'number' ? p.currentCoins : 10;
+            currentDiamonds = typeof p.currentDiamonds === 'number' ? p.currentDiamonds : 10;
             unlockedLevels = typeof p.unlockedLevels === 'number' ? p.unlockedLevels : 1;
             solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
             currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
@@ -235,8 +238,14 @@ const ICONS = {
 };
 
 function updateCoinsUI() {
-    const el = document.getElementById('game-coins');
-    if (el) el.innerText = currentCoins;
+    const c = document.getElementById('game-coins');
+    if (c) c.innerText = currentCoins;
+    const d = document.getElementById('game-diamonds');
+    if (d) d.innerText = currentDiamonds;
+    const hc = document.getElementById('header-coins');
+    if (hc) hc.innerText = currentCoins;
+    const hd = document.getElementById('header-diamonds');
+    if (hd) hd.innerText = currentDiamonds;
 }
 
 function showScreen(screenId) {
@@ -355,21 +364,30 @@ function openGift(boxNumber) {
     const today = new Date().toDateString();
     let seed = 0;
     for (let i = 0; i < today.length; i++) seed += today.charCodeAt(i);
-    const amounts = [5, 10, 15];
-    const shuffled = amounts.slice();
+    const prizes = [
+        { type: 'coin', amount: 10, msg: 'تبریک! ۱۰ سکه برنده شدید.' },
+        { type: 'empty', amount: 0, msg: 'متاسفانه هیچ جایزه‌ای برنده نشدید.' },
+        { type: 'diamond', amount: 10, msg: 'تبریک! ۱۰ الماس برنده شدید.' }
+    ];
+    const shuffled = [0, 1, 2];
     for (let i = shuffled.length - 1; i > 0; i--) {
         const j = (seed + i * 7) % (i + 1);
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
+    const prize = prizes[shuffled[boxNumber - 1]] || prizes[0];
 
-    const prizeAmount = shuffled[boxNumber - 1] || shuffled[0];
-    currentCoins += prizeAmount;
-    updateCoinsUI();
+    if (prize.type === 'coin') {
+        currentCoins += prize.amount;
+        updateCoinsUI();
+    } else if (prize.type === 'diamond') {
+        currentDiamonds += prize.amount;
+        updateCoinsUI();
+    }
 
     const msgEl = document.getElementById('giftResultMsg');
     if (msgEl) {
-        msgEl.textContent = 'تبریک! شما ' + prizeAmount + ' سکه برنده شدید.';
-        msgEl.style.color = '#4ade80';
+        msgEl.textContent = prize.msg;
+        msgEl.style.color = prize.type === 'empty' ? '#f87171' : '#4ade80';
     }
 
     localStorage.setItem(GIFT_KEY, Date.now().toString());
@@ -457,9 +475,9 @@ function initDailyChallenge() {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
         if (isCorrect) {
-            currentCoins += 10;
+            currentDiamonds += 5;
             updateCoinsUI();
-            dailyResult.textContent = 'درست! ۱۰ سکه دریافت کردید.';
+            dailyResult.textContent = 'درست! ۵ الماس دریافت کردید.';
             dailyResult.className = 'challenge-result success';
         } else {
             dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
@@ -586,6 +604,7 @@ function startLevel(index) {
     currentGuess = new Array(currentWord.length).fill('');
     renderSlots();
     renderKeyboard();
+    updateCoinsUI();
     saveProgress();
     showScreen('game-screen');
 }
@@ -664,7 +683,7 @@ function checkAnswer() {
     const guessClean = currentGuess.join('').replace(/\s+/g, '');
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
     if (guessClean === answerClean) {
-        if (!solvedLevels[currentLevelIndex]) { currentCoins += 10; solvedLevels[currentLevelIndex] = true; }
+        if (!solvedLevels[currentLevelIndex]) { currentCoins += 5; solvedLevels[currentLevelIndex] = true; }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
         saveProgress();
