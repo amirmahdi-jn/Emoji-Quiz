@@ -171,6 +171,106 @@ const STORAGE_KEY = 'emojiQuizProgress_v6';
 let giftInterval = null;
 let dailyChallengeInterval = null;
 
+const purchaseCodes = {
+    "coin_100":     ["482917", "930145", "617283"],
+    "coin_200":     ["105938", "728461", "395027"],
+    "coin_300":     ["583019", "246173", "908425"],
+    "coin_400":     ["704826", "391582", "862740"],
+    "coin_500":     ["264915", "837406", "419058"],
+    "coin_1000":    ["951374", "628095", "173846"],
+    "diamond_10":   ["508927", "371640", "826195"],
+    "diamond_20":   ["637482", "195803", "740268"],
+    "diamond_30":   ["820491", "576028", "384751"],
+    "diamond_40":   ["946173", "208536", "513829"],
+    "diamond_50":   ["137264", "689052", "420937"],
+    "diamond_100":  ["729584", "463871", "918240"]
+};
+
+const USED_CODES_KEY = 'emojiQuizUsedCodes_v1';
+
+let currentPaymentKey = null;
+let currentPaymentAmount = 0;
+let currentPaymentType = null;
+
+function loadUsedCodes() {
+    try {
+        const raw = localStorage.getItem(USED_CODES_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+}
+
+function markCodeUsed(code) {
+    const used = loadUsedCodes();
+    if (!used.includes(code)) {
+        used.push(code);
+        try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
+    }
+}
+
+function isCodeUsed(code) {
+    return loadUsedCodes().includes(code);
+}
+
+function openPayment(key, amount, type) {
+    currentPaymentKey = key;
+    currentPaymentAmount = amount;
+    currentPaymentType = type;
+    const input = document.getElementById('tokenInput');
+    if (input) { input.value = ''; input.disabled = false; }
+    const result = document.getElementById('paymentResult');
+    if (result) { result.textContent = ''; result.className = 'payment-result'; }
+    document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('payment-modal');
+    const overlay = document.getElementById('modal-overlay');
+    if (target && overlay) {
+        target.classList.add('active');
+        overlay.classList.add('active');
+    }
+}
+
+function cancelPaymentToken() {
+    const input = document.getElementById('tokenInput');
+    if (input) input.value = '';
+    const result = document.getElementById('paymentResult');
+    if (result) { result.textContent = ''; result.className = 'payment-result'; }
+}
+
+function confirmPaymentToken() {
+    const input = document.getElementById('tokenInput');
+    const result = document.getElementById('paymentResult');
+    if (!input || !result) return;
+    const code = (input.value || '').trim();
+    if (!/^\d{6}$/.test(code)) {
+        result.textContent = 'کد باید دقیقاً ۶ رقم باشد.';
+        result.className = 'payment-result fail';
+        return;
+    }
+    const validList = purchaseCodes[currentPaymentKey] || [];
+    if (!validList.includes(code)) {
+        result.textContent = 'کد وارد شده معتبر نیست.';
+        result.className = 'payment-result fail';
+        return;
+    }
+    if (isCodeUsed(code)) {
+        result.textContent = 'این کد قبلاً استفاده شده است.';
+        result.className = 'payment-result fail';
+        return;
+    }
+    markCodeUsed(code);
+    if (currentPaymentType === 'coin') {
+        currentCoins += currentPaymentAmount;
+    } else if (currentPaymentType === 'diamond') {
+        currentDiamonds += currentPaymentAmount;
+    }
+    updateCoinsUI();
+    saveProgress();
+    result.textContent = 'پرداخت تأیید شد. ' + currentPaymentAmount + ' ' + (currentPaymentType === 'coin' ? 'سکه' : 'الماس') + ' اضافه شد.';
+    result.className = 'payment-result success';
+    input.value = '';
+    input.disabled = true;
+    setTimeout(() => { input.disabled = false; }, 2000);
+}
+
 function saveProgress() {
     const progress = {
         currentCoins: currentCoins,
@@ -234,14 +334,10 @@ function updateProfileUI() {
 
 const ICONS = {
     lock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>`,
-    check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>`
+    check: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>`
 };
 
 function updateCoinsUI() {
-    const c = document.getElementById('game-coins');
-    if (c) c.innerText = currentCoins;
-    const d = document.getElementById('game-diamonds');
-    if (d) d.innerText = currentDiamonds;
     const hc = document.getElementById('header-coins');
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
@@ -795,6 +891,16 @@ window.addEventListener('load', () => {
         offlineBtn.addEventListener('click', () => {
             if (navigator.onLine) checkOnlineStatus();
             else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
+        });
+    }
+
+    const tokenInput = document.getElementById('tokenInput');
+    if (tokenInput) {
+        tokenInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+        });
+        tokenInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') confirmPaymentToken();
         });
     }
 });
