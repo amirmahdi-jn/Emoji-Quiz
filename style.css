@@ -963,7 +963,6 @@ body {
     .avatar-item { width: 60px; height: 60px; }
 }
 
-/* === Shop === */
 .shop-container {
     display: flex;
     justify-content: center;
@@ -1059,6 +1058,16 @@ body {
     white-space: nowrap;
 }
 .shop-buy-btn:active { transform: scale(0.95); background: #006064; }
+
+.shop-buy-btn.shop-buy-diamond {
+    background: #fbbf24;
+    color: #1e293b;
+    font-weight: 900;
+}
+.shop-buy-btn.shop-buy-diamond:active {
+    background: #f59e0b;
+    transform: scale(0.95);
+}
 
 @media (max-width: 420px) {
     .shop-amount { font-size: 0.72rem; }
