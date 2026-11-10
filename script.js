@@ -264,7 +264,7 @@ function confirmPaymentToken() {
     }
     updateCoinsUI();
     saveProgress();
-    result.textContent = 'پرداخت تأیید شد. ' + currentPaymentAmount + ' ' + (currentPaymentType === 'coin' ? 'سکه' : 'الماس') + ' اضافه شد.';
+    result.textContent = currentPaymentAmount + ' ' + (currentPaymentType === 'coin' ? 'سکه' : 'الماس') + ' با موفقیت اضافه شد.';
     result.className = 'payment-result success';
     input.value = '';
     input.disabled = true;
