@@ -29,7 +29,7 @@
             <button id="btn-start" class="btn-primary">شروع بازی</button>
             
             <div class="menu-buttons">
-                <button class="btn-secondary btn-shop">
+                <button class="btn-secondary btn-shop" onclick="openModal('shop-modal')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"/><path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>
                     فروشگاه
                 </button>
@@ -261,6 +261,61 @@
             </div>
         </div>
 
+        <div id="shop-modal" class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">فروشگاه</div>
+            <div class="shop-list">
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">100 سکه <span class="shop-bonus">(50+)</span></span>
+                    </div>
+                    <div class="shop-price">10,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">200 سکه <span class="shop-bonus">(100+)</span></span>
+                    </div>
+                    <div class="shop-price">20,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">300 سکه <span class="shop-bonus">(150+)</span></span>
+                    </div>
+                    <div class="shop-price">30,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">400 سکه <span class="shop-bonus">(200+)</span></span>
+                    </div>
+                    <div class="shop-price">40,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">500 سکه <span class="shop-bonus">(250+)</span></span>
+                    </div>
+                    <div class="shop-price">50,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+                <div class="shop-row">
+                    <div class="shop-right">
+                        <svg class="shop-coin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                        <span class="shop-amount">1000 سکه <span class="shop-bonus">(500+)</span></span>
+                    </div>
+                    <div class="shop-price">100,000 تومان <span class="shop-discount">(50%)</span></div>
+                    <button class="shop-buy-btn">خرید</button>
+                </div>
+            </div>
+            <button class="close-btn" onclick="closeModal()">بستن</button>
+        </div>
+
         <div id="challenge-modal" class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-title">چالش</div>
             <div id="challengeContent" style="text-align:center; width:100%;"></div>
@@ -319,4 +374,4 @@
 
     <script src="script.js"></script>
 </body>
-                                                                                                                                                                   </html>
+</html>
