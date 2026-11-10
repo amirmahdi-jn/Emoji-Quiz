@@ -1000,16 +1000,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     border-radius: 15px;
-    padding: 8px 10px;
+    padding: 10px 12px;
 }
 .shop-right {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     flex: 1;
     min-width: 0;
 }
@@ -1021,60 +1021,32 @@ body {
 }
 .shop-amount {
     color: var(--text-color);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: bold;
     white-space: nowrap;
 }
-.shop-bonus {
-    color: var(--success-color);
-    font-size: 0.7rem;
-    font-weight: normal;
-}
 .shop-price {
     color: var(--text-color);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: bold;
     white-space: nowrap;
     direction: ltr;
     flex-shrink: 0;
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 90px;
-}
-.shop-price-text {
-    position: relative;
-    z-index: 2;
-}
-.shop-discount {
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #ff5252;
-    font-size: 0.75rem;
-    font-weight: bold;
-    opacity: 0.45;
-    z-index: 0;
-    pointer-events: none;
-    user-select: none;
+    padding: 0 4px;
 }
 .shop-buy-btn {
     background: #00838f;
     color: white;
     border: none;
     border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 0.75rem;
+    padding: 6px 16px;
+    font-size: 0.8rem;
     font-weight: bold;
     font-family: 'Vazirmatn', sans-serif;
     cursor: pointer;
     transition: 0.2s;
     flex-shrink: 0;
     white-space: nowrap;
-    position: relative;
-    z-index: 2;
 }
 .shop-buy-btn:active { transform: scale(0.95); background: #006064; }
 
@@ -1089,9 +1061,8 @@ body {
 }
 
 @media (max-width: 420px) {
-    .shop-amount { font-size: 0.72rem; }
-    .shop-price { font-size: 0.68rem; min-width: 80px; }
-    .shop-discount { font-size: 0.65rem; }
-    .shop-buy-btn { padding: 4px 10px; font-size: 0.7rem; }
+    .shop-amount { font-size: 0.78rem; }
+    .shop-price { font-size: 0.78rem; }
+    .shop-buy-btn { padding: 5px 12px; font-size: 0.75rem; }
     .shop-coin-icon { width: 18px; height: 18px; }
 }
