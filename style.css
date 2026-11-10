@@ -1037,11 +1037,28 @@ body {
     white-space: nowrap;
     direction: ltr;
     flex-shrink: 0;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 90px;
+}
+.shop-price-text {
+    position: relative;
+    z-index: 2;
 }
 .shop-discount {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #ff5252;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: bold;
+    opacity: 0.45;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
 }
 .shop-buy-btn {
     background: #00838f;
@@ -1056,6 +1073,8 @@ body {
     transition: 0.2s;
     flex-shrink: 0;
     white-space: nowrap;
+    position: relative;
+    z-index: 2;
 }
 .shop-buy-btn:active { transform: scale(0.95); background: #006064; }
 
@@ -1071,7 +1090,8 @@ body {
 
 @media (max-width: 420px) {
     .shop-amount { font-size: 0.72rem; }
-    .shop-price { font-size: 0.68rem; }
+    .shop-price { font-size: 0.68rem; min-width: 80px; }
+    .shop-discount { font-size: 0.65rem; }
     .shop-buy-btn { padding: 4px 10px; font-size: 0.7rem; }
     .shop-coin-icon { width: 18px; height: 18px; }
 }
