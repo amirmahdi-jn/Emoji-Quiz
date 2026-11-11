@@ -880,8 +880,6 @@ function checkOnlineStatus() {
     else overlay.classList.remove('active');
 }
 
-// --- سیستم چت، لیدربورد و پروفایل ---
-
 async function initChat() {
     const chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) return;
@@ -973,9 +971,6 @@ async function initLeaderboard() {
     if (!leaderboardList) return;
     leaderboardList.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال دریافت...</div>';
 
-    // برای سادگی، لیدربورد بر اساس جدول `profiles` (که ما ساختیم) کار می‌کند.
-    // (ما فعلاً کاری نمی‌کنیم که امتیاز کاربران به طور خودکار در Supabase آپدیت شود،
-    // اما شما می‌توانید از API Supabase برای آپدیت پروفایل استفاده کنید)
     const { data, error } = await supabaseClient.from('profiles').select('name, coins').order('coins', { ascending: false }).limit(10);
     if (error) { leaderboardList.innerHTML = 'خطا در دریافت.'; return; }
 
@@ -1034,10 +1029,9 @@ window.addEventListener('load', () => {
         });
     }
 
-    const privateChatBtn = document.getElementById('private-chat-btn'); // Wait, I added to menu button
     const privateReceiver = document.getElementById('private-receiver');
     if (privateReceiver) {
-        privateReceiver.addEventListener('change', initPrivateChat); // Reload chat when user changes receiver
+        privateReceiver.addEventListener('change', initPrivateChat);
     }
 
     const privateInput = document.getElementById('private-input');
