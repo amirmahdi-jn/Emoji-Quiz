@@ -339,7 +339,6 @@ function switchPanelTab(tabId) {
 function renderPanelContent(tabId) {
     const container = document.getElementById('panel-content');
     if (!container) return;
-    
     if (tabId === 'top-players') {
         container.innerHTML = `
             <div class="top-player-card">
@@ -460,11 +459,21 @@ function closeNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     if (overlay) overlay.classList.remove('active');
 }
-function saveName() {
+async function saveName() {
     const input = document.getElementById('nameInput');
     if (!input) return;
     let raw = input.value.trim();
-    currentName = raw.length > 0 ? raw : 'بدون نام';
+    if (!/^[a-z0-9_]{10,}$/.test(raw)) {
+        alert('نام کاربری باید حداقل ۱۰ کاراکتر باشد و فقط شامل حروف کوچک انگلیسی، اعداد و آندرلاین باشد.');
+        return;
+    }
+    const { data: existing, error } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
+    if (existing) {
+        alert('این نام کاربری قبلاً انتخاب شده است. لطفاً نام دیگری انتخاب کنید.');
+        return;
+    }
+    currentName = raw;
+    await supabaseClient.from('profiles').insert([{ name: currentName, coins: currentCoins }]);
     saveProfile();
     updateProfileUI();
     closeNameModal();
