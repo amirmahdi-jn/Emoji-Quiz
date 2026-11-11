@@ -196,6 +196,9 @@ let currentPaymentKey = null;
 let currentPaymentAmount = 0;
 let currentPaymentType = null;
 
+let chatSubscription = null;
+let privateSubscription = null;
+
 function loadUsedCodes() {
     try {
         const raw = localStorage.getItem(USED_CODES_KEY);
@@ -369,6 +372,8 @@ function openModal(modalId) {
     if (modalId === 'gift-modal') startGiftTimer();
     if (modalId === 'profile-modal') renderAvatars();
     if (modalId === 'chat-modal') initChat();
+    if (modalId === 'private-chat-modal') initPrivateChat();
+    if (modalId === 'leaderboard-modal') initLeaderboard();
 }
 
 function closeModal() {
@@ -875,94 +880,117 @@ function checkOnlineStatus() {
     else overlay.classList.remove('active');
 }
 
-let chatSubscription = null;
+// --- سیستم چت، لیدربورد و پروفایل ---
 
 async function initChat() {
     const chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) return;
-    chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال اتصال به چت...</div>';
+    chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال اتصال...</div>';
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('messages')
-            .select('*')
-            .order('created_at', { ascending: true })
-            .limit(50);
+    const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
+    if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
 
-        if (error) throw error;
+    chatMessages.innerHTML = data.length === 0 ? '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">هنوز پیامی نیست.</div>' : '';
+    data.forEach(msg => appendChatMessage(msg.sender_name, msg.text));
 
-        chatMessages.innerHTML = '';
-        if (data.length === 0) {
-            chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">هنوز پیامی ارسال نشده است.</div>';
-        } else {
-            data.forEach(msg => appendChatMessage(msg.sender_name, msg.text));
-        }
-
-        if (chatSubscription) {
-            supabaseClient.removeChannel(chatSubscription);
-        }
-
-        chatSubscription = supabaseClient
-            .channel('public:messages')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'messages' },
-                (payload) => {
-                    appendChatMessage(payload.new.sender_name, payload.new.text);
-                }
-            )
-            .subscribe();
-
-    } catch (error) {
-        console.error('Chat error:', error);
-        chatMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 10px;">خطا در اتصال به چت.</div>';
-    }
+    if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
+    chatSubscription = supabaseClient.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, 
+        (payload) => appendChatMessage(payload.new.sender_name, payload.new.text)).subscribe();
 }
 
 function appendChatMessage(sender, text) {
     const chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) return;
-
-    if (chatMessages.innerHTML.includes('هنوز پیامی') || chatMessages.innerHTML.includes('در حال اتصال')) {
-        chatMessages.innerHTML = '';
-    }
-
+    if (chatMessages.innerHTML.includes('هنوز پیامی') || chatMessages.innerHTML.includes('در حال اتصال')) chatMessages.innerHTML = '';
+    
     const msgDiv = document.createElement('div');
-    msgDiv.style.background = 'rgba(255, 255, 255, 0.05)';
-    msgDiv.style.padding = '8px';
-    msgDiv.style.borderRadius = '8px';
-    msgDiv.style.fontSize = '0.85rem';
-    msgDiv.style.alignSelf = 'flex-start';
-    msgDiv.style.width = '100%';
-    msgDiv.style.wordBreak = 'break-word';
-
-    msgDiv.innerHTML = `<span style="color: #00e5ff; font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">${sender || 'ناشناس'}:</span>
-                        <span style="color: #fff;">${text}</span>`;
-
+    msgDiv.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 8px; font-size: 0.85rem; align-self: flex-start; width: 100%; word-break: break-word;';
+    msgDiv.innerHTML = `<span style="color: #00e5ff; font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">${sender}:</span><span>${text}</span>`;
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 async function sendChatMessage() {
     const input = document.getElementById('chat-input');
-    if (!input) return;
+    if (!input || !input.value.trim()) return;
     const text = input.value.trim();
-    if (!text) return;
-
     input.value = '';
+    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
+}
 
-    try {
-        const { error } = await supabaseClient
-            .from('messages')
-            .insert([{ text: text, sender_name: currentName }]);
-        
-        if (error) {
-            console.error('Send error:', error);
-            alert('خطا در ارسال پیام');
-        }
-    } catch (e) {
-        console.error(e);
+async function initPrivateChat() {
+    const receiver = document.getElementById('private-receiver').value.trim();
+    const privateMessages = document.getElementById('private-messages');
+    if (!receiver) { privateMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 10px;">نام کاربری را وارد کنید.</div>'; return; }
+    
+    privateMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال اتصال...</div>';
+
+    const { data, error } = await supabaseClient
+        .from('private_messages')
+        .select('*')
+        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${receiver}),and(sender_name.eq.${receiver},receiver_name.eq.${currentName})`)
+        .order('created_at', { ascending: true });
+
+    if (error) { privateMessages.innerHTML = 'خطا در اتصال.'; return; }
+
+    privateMessages.innerHTML = data.length === 0 ? '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">هنوز پیامی نیست.</div>' : '';
+    data.forEach(msg => appendPrivateMessage(msg.sender_name, msg.text));
+
+    if (privateSubscription) supabaseClient.removeChannel(privateSubscription);
+    privateSubscription = supabaseClient.channel('private_messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, 
+        (payload) => {
+            const msg = payload.new;
+            if ((msg.sender_name === currentName && msg.receiver_name === receiver) || 
+                (msg.sender_name === receiver && msg.receiver_name === currentName)) {
+                appendPrivateMessage(msg.sender_name, msg.text);
+            }
+        }).subscribe();
+}
+
+function appendPrivateMessage(sender, text) {
+    const privateMessages = document.getElementById('private-messages');
+    if (!privateMessages) return;
+    if (privateMessages.innerHTML.includes('هنوز پیامی') || privateMessages.innerHTML.includes('در حال اتصال')) privateMessages.innerHTML = '';
+    
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 8px; font-size: 0.85rem; align-self: flex-start; width: 100%; word-break: break-word;';
+    msgDiv.innerHTML = `<span style="color: #ff4081; font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">${sender}:</span><span>${text}</span>`;
+    privateMessages.appendChild(msgDiv);
+    privateMessages.scrollTop = privateMessages.scrollHeight;
+}
+
+async function sendPrivateMessage() {
+    const input = document.getElementById('private-input');
+    const receiver = document.getElementById('private-receiver').value.trim();
+    if (!input || !input.value.trim() || !receiver) return;
+    const text = input.value.trim();
+    input.value = '';
+    await supabaseClient.from('private_messages').insert([{ text: text, sender_name: currentName, receiver_name: receiver }]);
+}
+
+async function initLeaderboard() {
+    const leaderboardList = document.getElementById('leaderboard-list');
+    if (!leaderboardList) return;
+    leaderboardList.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال دریافت...</div>';
+
+    // برای سادگی، لیدربورد بر اساس جدول `profiles` (که ما ساختیم) کار می‌کند.
+    // (ما فعلاً کاری نمی‌کنیم که امتیاز کاربران به طور خودکار در Supabase آپدیت شود،
+    // اما شما می‌توانید از API Supabase برای آپدیت پروفایل استفاده کنید)
+    const { data, error } = await supabaseClient.from('profiles').select('name, coins').order('coins', { ascending: false }).limit(10);
+    if (error) { leaderboardList.innerHTML = 'خطا در دریافت.'; return; }
+
+    if (data.length === 0) {
+        leaderboardList.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">هیچ پروفایلی ثبت نشده.</div>';
+        return;
     }
+
+    leaderboardList.innerHTML = '';
+    data.forEach((profile, index) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold;';
+        row.innerHTML = `<span style="color: #f1c40f;">${index + 1}. ${profile.name}</span><span style="color: #fff;">${profile.coins} سکه</span>`;
+        leaderboardList.appendChild(row);
+    });
 }
 
 window.addEventListener('load', () => {
@@ -1003,6 +1031,19 @@ window.addEventListener('load', () => {
     if (chatInput) {
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendChatMessage();
+        });
+    }
+
+    const privateChatBtn = document.getElementById('private-chat-btn'); // Wait, I added to menu button
+    const privateReceiver = document.getElementById('private-receiver');
+    if (privateReceiver) {
+        privateReceiver.addEventListener('change', initPrivateChat); // Reload chat when user changes receiver
+    }
+
+    const privateInput = document.getElementById('private-input');
+    if (privateInput) {
+        privateInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendPrivateMessage();
         });
     }
 });
