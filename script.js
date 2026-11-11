@@ -1,5 +1,18 @@
+const SUPABASE_URL = 'https://tkhvcfqqxxodhwgmdjiq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const defaultAvatar = 'avatar0.jpg';
-const avatarImages = ['avatar1.jpg','avatar2.jpg','avatar3.jpg','avatar4.jpg','avatar5.jpg','avatar6.jpg'];
+
+const avatarImages = [
+    'avatar1.jpg',
+    'avatar2.jpg',
+    'avatar3.jpg',
+    'avatar4.jpg',
+    'avatar5.jpg',
+    'avatar6.jpg'
+];
+
 const gameData = [
     { id: 1, emojis: ['🐬', '🧑'], answer: 'پسر دلفینی', letters: ['پ','س','ر',' ','د','ل','ف','ی','ن','ی'] },
     { id: 2, emojis: ['🧊', '🌅'], answer: 'عصر یخبندان', letters: ['ع','ص','ر',' ','ی','خ','ب','ن','د','ا','ن'] },
@@ -137,6 +150,7 @@ const gameData = [
     { id: 134, emojis: ['👂', '🦓'], answer: 'خرگوش', letters: ['خ','ر','گ','و','ش'] },
     { id: 135, emojis: ['🐁', '🪤'], answer: 'تله موش', letters: ['ت','ل','ه',' ','م','و','ش'] }
 ];
+
 let currentLevelIndex = 0;
 let currentChapter = 1;
 let currentCoins = 10;
@@ -149,14 +163,18 @@ let removeHintUses = 0;
 const TOTAL_LEVELS = 135;
 const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 9;
+
 let currentAvatarIndex = -1;
 let currentName = 'بدون نام';
+
 const GIFT_KEY = 'gift_last_open_v6';
 const DAILY_KEY = 'emoji_daily_challenge_v6';
 const PROFILE_KEY = 'emoji_profile_v6';
 const STORAGE_KEY = 'emojiQuizProgress_v6';
+
 let giftInterval = null;
 let dailyChallengeInterval = null;
+
 const purchaseCodes = {
     "coin_100":     ["482917", "930145", "617283"],
     "coin_200":     ["105938", "728461", "395027"],
@@ -171,11 +189,12 @@ const purchaseCodes = {
     "diamond_50":   ["137264", "689052", "420937"],
     "diamond_100":  ["729584", "463871", "918240"]
 };
+
 const USED_CODES_KEY = 'emojiQuizUsedCodes_v1';
+
 let currentPaymentKey = null;
 let currentPaymentAmount = 0;
 let currentPaymentType = null;
-let currentPanelTab = 'top-players';
 
 function loadUsedCodes() {
     try {
@@ -183,6 +202,7 @@ function loadUsedCodes() {
         return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
 }
+
 function markCodeUsed(code) {
     const used = loadUsedCodes();
     if (!used.includes(code)) {
@@ -190,9 +210,11 @@ function markCodeUsed(code) {
         try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
     }
 }
+
 function isCodeUsed(code) {
     return loadUsedCodes().includes(code);
 }
+
 function openPayment(key, amount, type) {
     currentPaymentKey = key;
     currentPaymentAmount = amount;
@@ -209,12 +231,14 @@ function openPayment(key, amount, type) {
         overlay.classList.add('active');
     }
 }
+
 function cancelPaymentToken() {
     const input = document.getElementById('tokenInput');
     if (input) input.value = '';
     const result = document.getElementById('paymentResult');
     if (result) { result.textContent = ''; result.className = 'payment-result'; }
 }
+
 function confirmPaymentToken() {
     const input = document.getElementById('tokenInput');
     const result = document.getElementById('paymentResult');
@@ -250,6 +274,7 @@ function confirmPaymentToken() {
     input.disabled = true;
     setTimeout(() => { input.disabled = false; }, 2000);
 }
+
 function saveProgress() {
     const progress = {
         currentCoins: currentCoins,
@@ -261,6 +286,7 @@ function saveProgress() {
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
+
 function loadProgress() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -275,9 +301,11 @@ function loadProgress() {
         }
     } catch (e) {}
 }
+
 function saveProfile() {
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
 }
+
 function loadProfile() {
     try {
         const saved = localStorage.getItem(PROFILE_KEY);
@@ -294,6 +322,7 @@ function loadProfile() {
         currentAvatarIndex = -1;
     }
 }
+
 function updateProfileUI() {
     const nameEl = document.getElementById('profileNameDisplay');
     const avatarEl = document.getElementById('headerAvatar');
@@ -306,76 +335,27 @@ function updateProfileUI() {
         }
     }
 }
+
 const ICONS = {
     lock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>`,
     check: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>`
 };
+
 function updateCoinsUI() {
     const hc = document.getElementById('header-coins');
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
 }
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
     if (screenId === 'chapters-screen') renderChapters();
     if (screenId === 'levels-screen') renderLevels();
-    if (screenId === 'panel-screen') switchPanelTab('top-players');
 }
-function switchPanelTab(tabId) {
-    currentPanelTab = tabId;
-    document.querySelectorAll('.panel-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabId);
-    });
-    renderPanelContent(tabId);
-}
-function renderPanelContent(tabId) {
-    const container = document.getElementById('panel-content');
-    if (!container) return;
-    if (tabId === 'top-players') {
-        const solvedCount = Object.keys(solvedLevels).length;
-        container.innerHTML = `
-            <div class="top-player-card">
-                <div class="top-player-avatar">
-                    <img src="${currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex] ? avatarImages[currentAvatarIndex] : defaultAvatar}" alt="Avatar">
-                </div>
-                <div class="top-player-info">
-                    <div class="top-player-name">${currentName}</div>
-                    <div class="top-player-stats">
-                        <span>🏆 ${solvedCount} مرحله حل‌شده</span>
-                        <span>🪙 ${currentCoins} سکه</span>
-                        <span>💎 ${currentDiamonds} الماس</span>
-                    </div>
-                </div>
-            </div>
-            <p class="panel-hint">جدول برترین‌های واقعی بعد از فعال شدن سرور نمایش داده می‌شود.</p>
-        `;
-    } else if (tabId === 'public-chat') {
-        container.innerHTML = `
-            <div class="panel-empty">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/>
-                    <path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/>
-                    <path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/>
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-                <p>گپ عمومی به‌زودی فعال می‌شود.</p>
-            </div>
-        `;
-    } else if (tabId === 'private-chat') {
-        container.innerHTML = `
-            <div class="panel-empty">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/>
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                </svg>
-                <p>چت خصوصی به‌زودی فعال می‌شود.</p>
-            </div>
-        `;
-    }
-}
+
 function openModal(modalId) {
     const overlay = document.getElementById('modal-overlay');
     if (!overlay) return;
@@ -388,7 +368,9 @@ function openModal(modalId) {
     if (modalId === 'challenge-modal') initDailyChallenge();
     if (modalId === 'gift-modal') startGiftTimer();
     if (modalId === 'profile-modal') renderAvatars();
+    if (modalId === 'chat-modal') initChat();
 }
+
 function closeModal() {
     const overlay = document.getElementById('modal-overlay');
     if (overlay) overlay.classList.remove('active');
@@ -396,6 +378,7 @@ function closeModal() {
     if (giftInterval) { clearInterval(giftInterval); giftInterval = null; }
     if (dailyChallengeInterval) { clearInterval(dailyChallengeInterval); dailyChallengeInterval = null; }
 }
+
 function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
@@ -404,10 +387,12 @@ function openNameModal() {
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
+
 function closeNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     if (overlay) overlay.classList.remove('active');
 }
+
 function saveName() {
     const input = document.getElementById('nameInput');
     if (!input) return;
@@ -417,6 +402,7 @@ function saveName() {
     updateProfileUI();
     closeNameModal();
 }
+
 function renderAvatars() {
     const row1 = document.getElementById('row1');
     const row2 = document.getElementById('row2');
@@ -441,6 +427,7 @@ function renderAvatars() {
     });
     if (preview) preview.src = (currentAvatarIndex >= 0) ? avatarImages[currentAvatarIndex] : defaultAvatar;
 }
+
 function startGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
@@ -448,6 +435,7 @@ function startGiftTimer() {
     updateGiftTimer();
     giftInterval = setInterval(updateGiftTimer, 1000);
 }
+
 function updateGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
@@ -466,12 +454,14 @@ function updateGiftTimer() {
     const pad = (n) => String(n).padStart(2, '0');
     giftTimerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
 }
+
 function openGift(boxNumber) {
     const lastOpen = localStorage.getItem(GIFT_KEY);
     if (lastOpen) {
         const elapsed = Date.now() - parseInt(lastOpen);
         if (elapsed < 24 * 60 * 60 * 1000) { openModal('attention-modal'); return; }
     }
+
     const today = new Date().toDateString();
     let seed = 0;
     for (let i = 0; i < today.length; i++) seed += today.charCodeAt(i);
@@ -486,6 +476,7 @@ function openGift(boxNumber) {
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     const prize = prizes[shuffled[boxNumber - 1]] || prizes[0];
+
     if (prize.type === 'coin') {
         currentCoins += prize.amount;
         updateCoinsUI();
@@ -493,24 +484,28 @@ function openGift(boxNumber) {
         currentDiamonds += prize.amount;
         updateCoinsUI();
     }
+
     const msgEl = document.getElementById('giftResultMsg');
     if (msgEl) {
         msgEl.textContent = prize.msg;
         msgEl.style.color = prize.type === 'empty' ? '#f87171' : '#4ade80';
     }
+
     localStorage.setItem(GIFT_KEY, Date.now().toString());
     saveProgress();
     openModal('gift-result-modal');
 }
+
 const dailyQuestions = [
     { emoji1: '🦶', emoji2: '🛌', emoji3: '☕', answer: 'پاتختی' },
     { emoji1: '🅾', emoji2: '2️⃣', emoji3: '😘', answer: 'اتوبوس' },
     { emoji1: '🏠', emoji2: '🆕', emoji3: '🎻', answer: 'خانه نو ساز' },
-    { emoji1: '🔔', emoji2: '🚪', emoji3: '🇨🇳', answer: 'بلدرچین' },
+    { emoji1: '🌹', emoji2: '🪶', emoji3: 'ی', answer: 'گلپری' },
     { emoji1: '💧', emoji2: '🪢', emoji3: '🏠', answer: 'آبدارخانه' },
-    { emoji1: '🦶', emoji2: '🏐', emoji3: '📄', answer: 'فوتبالیست' },
+    { emoji1: '👩', emoji2: 'ج', emoji3: '🪏', answer: 'زنجبیل' },
     { emoji1: '🧹', emoji2: '✋', emoji3: '☕', answer: 'جارو دستی' }
 ];
+
 function initDailyChallenge() {
     const container = document.getElementById('challengeContent');
     if (!container) return;
@@ -529,6 +524,7 @@ function initDailyChallenge() {
     const dailySubmit = document.getElementById('dailySubmitBtn');
     const dailyResult = document.getElementById('dailyResult');
     const timerEl = document.getElementById('dailyTimer');
+
     function getDailyState() {
         const saved = localStorage.getItem(DAILY_KEY);
         if (saved) {
@@ -592,6 +588,7 @@ function initDailyChallenge() {
     });
     dailyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') dailySubmit.click(); });
 }
+
 function buildProgressRing(percent) {
     const radius = 18;
     const circumference = 2 * Math.PI * radius;
@@ -607,6 +604,7 @@ function buildProgressRing(percent) {
         </div>
     `;
 }
+
 function getSolvedInChapter(chapterNum) {
     const chapterStart = (chapterNum - 1) * LEVELS_PER_CHAPTER;
     let count = 0;
@@ -615,6 +613,7 @@ function getSolvedInChapter(chapterNum) {
     }
     return count;
 }
+
 function isChapterUnlocked(chapterNum) {
     if (chapterNum === 1) return true;
     const prevChapterStart = (chapterNum - 2) * LEVELS_PER_CHAPTER;
@@ -623,6 +622,7 @@ function isChapterUnlocked(chapterNum) {
     }
     return true;
 }
+
 function renderChapters() {
     const chaptersGrid = document.getElementById('chapters-grid');
     if (!chaptersGrid) return;
@@ -649,6 +649,7 @@ function renderChapters() {
     }
     chaptersGrid.innerHTML = html;
 }
+
 function openChapter(chapterNum) {
     currentChapter = chapterNum;
     const title = document.getElementById('level-header-title');
@@ -656,6 +657,7 @@ function openChapter(chapterNum) {
     saveProgress();
     showScreen('levels-screen');
 }
+
 function renderLevels() {
     const levelsGrid = document.getElementById('levels-grid');
     if (!levelsGrid) return;
@@ -687,6 +689,7 @@ function renderLevels() {
     const ptext = document.getElementById('progress-text');
     if (ptext) ptext.innerText = `${solvedInChapter} از ${LEVELS_PER_CHAPTER} مرحله حل شده`;
 }
+
 function startLevel(index) {
     currentLevelIndex = index;
     removeHintUses = 0;
@@ -706,6 +709,7 @@ function startLevel(index) {
     saveProgress();
     showScreen('game-screen');
 }
+
 function renderSlots() {
     const slotsContainer = document.getElementById('answer-slots');
     if (!slotsContainer) return;
@@ -727,6 +731,7 @@ function renderSlots() {
     });
     slotsContainer.appendChild(row);
 }
+
 function getAvailableLetters(wordArr) {
     let letters = wordArr.filter(c => c !== ' ');
     const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب'];
@@ -737,6 +742,7 @@ function getAvailableLetters(wordArr) {
     }
     return letters.sort(() => 0.5 - Math.random());
 }
+
 function renderKeyboard() {
     const keyboard = document.getElementById('keyboard');
     if (!keyboard) return;
@@ -750,6 +756,7 @@ function renderKeyboard() {
         keyboard.appendChild(btn);
     });
 }
+
 function handleKeyPress(letter, btnElement) {
     let emptyIndex = -1;
     for (let i = 0; i < currentGuess.length; i++) {
@@ -763,6 +770,7 @@ function handleKeyPress(letter, btnElement) {
         if (allFilled) checkAnswer();
     }
 }
+
 function removeLetter(index) {
     if (currentGuess[index] !== '' && currentWord[index] !== ' ') {
         const letter = currentGuess[index];
@@ -771,6 +779,7 @@ function removeLetter(index) {
         document.querySelectorAll('.key').forEach(k => { if (k.innerText === letter) k.classList.remove('used'); });
     }
 }
+
 function checkAnswer() {
     const guessClean = currentGuess.join('').replace(/\s+/g, '');
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
@@ -794,6 +803,7 @@ function checkAnswer() {
         }, 400);
     }
 }
+
 function nextLevel() {
     const winModal = document.getElementById('win-modal');
     if (winModal) winModal.classList.remove('active');
@@ -806,6 +816,7 @@ function nextLevel() {
     if (currentLevelIndex < TOTAL_LEVELS - 1) startLevel(currentLevelIndex + 1);
     else showScreen('levels-screen');
 }
+
 function goToNextChapter() {
     const ccModal = document.getElementById('chapter-complete-modal');
     if (ccModal) ccModal.classList.remove('active');
@@ -815,6 +826,7 @@ function goToNextChapter() {
         startLevel((currentChapter - 1) * LEVELS_PER_CHAPTER);
     }
 }
+
 function buyHint(type) {
     if (type === 'remove' && removeHintUses >= 3) return;
     let cost = 0;
@@ -855,12 +867,104 @@ function buyHint(type) {
         if (ncModal) ncModal.classList.add('active');
     }
 }
+
 function checkOnlineStatus() {
     const overlay = document.getElementById('offline-overlay');
     if (!overlay) return;
     if (!navigator.onLine) overlay.classList.add('active');
     else overlay.classList.remove('active');
 }
+
+let chatSubscription = null;
+
+async function initChat() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+    chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">در حال اتصال به چت...</div>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: true })
+            .limit(50);
+
+        if (error) throw error;
+
+        chatMessages.innerHTML = '';
+        if (data.length === 0) {
+            chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">هنوز پیامی ارسال نشده است.</div>';
+        } else {
+            data.forEach(msg => appendChatMessage(msg.sender_name, msg.text));
+        }
+
+        if (chatSubscription) {
+            supabaseClient.removeChannel(chatSubscription);
+        }
+
+        chatSubscription = supabaseClient
+            .channel('public:messages')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'messages' },
+                (payload) => {
+                    appendChatMessage(payload.new.sender_name, payload.new.text);
+                }
+            )
+            .subscribe();
+
+    } catch (error) {
+        console.error('Chat error:', error);
+        chatMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 10px;">خطا در اتصال به چت.</div>';
+    }
+}
+
+function appendChatMessage(sender, text) {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+
+    if (chatMessages.innerHTML.includes('هنوز پیامی') || chatMessages.innerHTML.includes('در حال اتصال')) {
+        chatMessages.innerHTML = '';
+    }
+
+    const msgDiv = document.createElement('div');
+    msgDiv.style.background = 'rgba(255, 255, 255, 0.05)';
+    msgDiv.style.padding = '8px';
+    msgDiv.style.borderRadius = '8px';
+    msgDiv.style.fontSize = '0.85rem';
+    msgDiv.style.alignSelf = 'flex-start';
+    msgDiv.style.width = '100%';
+    msgDiv.style.wordBreak = 'break-word';
+
+    msgDiv.innerHTML = `<span style="color: #00e5ff; font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">${sender || 'ناشناس'}:</span>
+                        <span style="color: #fff;">${text}</span>`;
+
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+
+    try {
+        const { error } = await supabaseClient
+            .from('messages')
+            .insert([{ text: text, sender_name: currentName }]);
+        
+        if (error) {
+            console.error('Send error:', error);
+            alert('خطا در ارسال پیام');
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 window.addEventListener('load', () => {
     loadProgress();
     loadProfile();
@@ -868,6 +972,7 @@ window.addEventListener('load', () => {
     updateCoinsUI();
     renderChapters();
     checkOnlineStatus();
+
     const startBtn = document.getElementById('btn-start');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
@@ -875,6 +980,7 @@ window.addEventListener('load', () => {
             showScreen('chapters-screen');
         });
     }
+
     const offlineBtn = document.getElementById('offline-close-btn');
     if (offlineBtn) {
         offlineBtn.addEventListener('click', () => {
@@ -882,6 +988,7 @@ window.addEventListener('load', () => {
             else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
         });
     }
+
     const tokenInput = document.getElementById('tokenInput');
     if (tokenInput) {
         tokenInput.addEventListener('input', (e) => {
@@ -891,6 +998,14 @@ window.addEventListener('load', () => {
             if (e.key === 'Enter') confirmPaymentToken();
         });
     }
+
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+    }
 });
+
 window.addEventListener('offline', checkOnlineStatus);
 window.addEventListener('online', checkOnlineStatus);
