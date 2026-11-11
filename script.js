@@ -154,7 +154,7 @@ const TOTAL_LEVELS = 135;
 const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 9;
 let currentAvatarIndex = -1;
-let currentName = 'بدون نام';
+let currentName = 'Guest';
 const GIFT_KEY = 'gift_last_open_v6';
 const DAILY_KEY = 'emoji_daily_challenge_v6';
 const PROFILE_KEY = 'emoji_profile_v6';
@@ -181,6 +181,7 @@ let currentPaymentKey = null;
 let currentPaymentAmount = 0;
 let currentPaymentType = null;
 let currentPanelTab = 'top-players';
+const chatColors = ['#00e5ff', '#ff5252', '#4ade80', '#facc15', '#c724ff', '#ff9800', '#3b82f6', '#ec4899', '#14b8a6', '#a3e635'];
 
 function loadUsedCodes() {
     try {
@@ -288,14 +289,14 @@ function loadProfile() {
         const saved = localStorage.getItem(PROFILE_KEY);
         if (saved) {
             const data = JSON.parse(saved);
-            currentName = data.name || 'بدون نام';
+            currentName = data.name || 'Guest';
             currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
         } else {
-            currentName = 'بدون نام';
+            currentName = 'Guest';
             currentAvatarIndex = -1;
         }
     } catch (e) {
-        currentName = 'بدون نام';
+        currentName = 'Guest';
         currentAvatarIndex = -1;
     }
 }
@@ -384,7 +385,7 @@ function renderPanelContent(tabId) {
 async function fetchLeaderboard() {
     const list = document.getElementById('global-leaderboard');
     if (!list) return;
-    const { data, error } = await supabaseClient.from('profiles').select('name, coins').order('coins', { ascending: false }).limit(10);
+    const { data, error } = await supabaseClient.from('profiles').select('name, solved_count').order('solved_count', { ascending: false }).limit(10);
     if (error || !data || data.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         return;
@@ -393,7 +394,7 @@ async function fetchLeaderboard() {
     data.forEach((profile, index) => {
         const row = document.createElement('div');
         row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color);';
-        row.innerHTML = `<span style="color: #f1c40f; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: #fff; font-size: 0.85rem;">${profile.coins} سکه</span>`;
+        row.innerHTML = `<span style="color: #f1c40f; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: #fff; font-size: 0.85rem;">${profile.solved_count} مرحله</span>`;
         list.appendChild(row);
     });
 }
@@ -404,19 +405,33 @@ async function initPanelChat() {
     const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
     chatMessages.innerHTML = data.length === 0 ? '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>' : '';
-    data.forEach(msg => appendPanelChatMessage(msg.sender_name, msg.text));
+    data.forEach(msg => appendPanelChatMessage(msg.sender_name, msg.text, msg.sender_avatar, msg.created_at));
     
     if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
     chatSubscription = supabaseClient.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, 
-        (payload) => appendPanelChatMessage(payload.new.sender_name, payload.new.text)).subscribe();
+        (payload) => appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.sender_avatar, payload.new.created_at)).subscribe();
 }
-function appendPanelChatMessage(sender, text) {
+function appendPanelChatMessage(sender, text, avatar, createdAt) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     if (chatMessages.innerHTML.includes('هنوز پیامی') || chatMessages.innerHTML.includes('در حال اتصال')) chatMessages.innerHTML = '';
+
+    const date = new Date(createdAt);
+    const timeStr = date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const senderHash = sender.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    const color = chatColors[senderHash % chatColors.length];
+    const avatarUrl = avatar || defaultAvatar;
+
     const msgDiv = document.createElement('div');
-    msgDiv.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; font-size: 0.85rem; align-self: flex-start; width: 100%; word-break: break-word; border: 1px solid rgba(255,255,255,0.05);';
-    msgDiv.innerHTML = `<span style="color: #22c55e; font-weight: bold; font-size: 0.75rem; display: block; margin-bottom: 4px;">${sender || 'ناشناس'}:</span><span>${text}</span>`;
+    msgDiv.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; font-size: 0.85rem; align-self: flex-start; width: 100%; word-break: break-word; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 5px;';
+    msgDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="${avatarUrl}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid ${color};">
+            <span style="color: ${color}; font-weight: bold; font-size: 0.8rem;">${sender || 'Guest'}:</span>
+        </div>
+        <div style="color: #fff; padding-right: 38px;">${text}</div>
+        <div style="color: var(--text-muted); font-size: 0.65rem; text-align: left; direction: ltr;">${timeStr}</div>
+    `;
     chatMessages.appendChild(msgDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -425,7 +440,8 @@ async function sendPanelChatMessage() {
     if (!input || !input.value.trim()) return;
     const text = input.value.trim();
     input.value = '';
-    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
+    const avatarUrl = currentAvatarIndex >= 0 ? avatarImages[currentAvatarIndex] : defaultAvatar;
+    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName, sender_avatar: avatarUrl }]);
 }
 function openModal(modalId) {
     const overlay = document.getElementById('modal-overlay');
@@ -451,7 +467,7 @@ function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
-    input.value = currentName === 'بدون نام' ? '' : currentName;
+    input.value = currentName === 'Guest' ? '' : currentName;
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
@@ -459,12 +475,34 @@ function closeNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     if (overlay) overlay.classList.remove('active');
 }
+function showErrorModal() {
+    let errorModal = document.getElementById('error-modal');
+    if (!errorModal) {
+        errorModal = document.createElement('div');
+        errorModal.id = 'error-modal';
+        errorModal.className = 'modal-box';
+        errorModal.style.cssText = 'width: 90%; max-width: 340px; z-index: 10000;';
+        errorModal.innerHTML = `
+            <div class="modal-title" style="color: #f87171;">توجه</div>
+            <div style="color: var(--text-color); font-size: 0.95rem; text-align: center; margin-bottom: 20px; line-height: 1.8;">
+                <div>کاربر گرامی!</div>
+                <div>لطفا از حروف و اعداد انگلیسی استفاده نمایید.</div>
+                <div style="margin-top: 10px;">با تشکر <span style="color: #ff0000;">♥︎</span></div>
+            </div>
+            <button class="close-btn" onclick="document.getElementById('error-modal').classList.remove('active')">باشه</button>
+        `;
+        document.getElementById('modal-overlay').appendChild(errorModal);
+    }
+    document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
+    errorModal.classList.add('active');
+    document.getElementById('modal-overlay').classList.add('active');
+}
 async function saveName() {
     const input = document.getElementById('nameInput');
     if (!input) return;
     let raw = input.value.trim();
-    if (!/^[a-z0-9_]{10,}$/.test(raw)) {
-        alert('نام کاربری باید حداقل ۱۰ کاراکتر باشد و فقط شامل حروف کوچک انگلیسی، اعداد و آندرلاین باشد.');
+    if (!/^[a-zA-Z0-9]{5,10}$/.test(raw)) {
+        showErrorModal();
         return;
     }
     const { data: existing, error } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
@@ -473,7 +511,7 @@ async function saveName() {
         return;
     }
     currentName = raw;
-    await supabaseClient.from('profiles').insert([{ name: currentName, coins: currentCoins }]);
+    await supabaseClient.from('profiles').upsert({ name: currentName, solved_count: Object.keys(solvedLevels).length });
     saveProfile();
     updateProfileUI();
     closeNameModal();
