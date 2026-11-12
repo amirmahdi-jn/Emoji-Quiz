@@ -4,7 +4,7 @@ function renderPanelContent(tabId) {
 
     if (tabId === 'top-players') {
         container.innerHTML = `
-            <p class="panel-hint" id="leaderboard-loading">در حال دریافت برترین‌ها از سرور...</p>
+            <p class="panel-hint" id="leaderboard-loading">در حال دریافت...</p>
             <div id="global-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
         `;
         fetchLeaderboard();
@@ -47,7 +47,7 @@ async function fetchLeaderboard() {
     if (!list) return;
 
     const { data, error } = await supabaseClient
-        .from('leaderboard_view')
+        .from('profiles')
         .select('name, solved_levels, avatar_index')
         .order('solved_levels', { ascending: false })
         .limit(10);
@@ -117,7 +117,7 @@ async function initPanelChat() {
 
     chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     if (messages.length === 0) {
-        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی ثبت نشده است.</div>';
+        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
     } else {
         messages.forEach(msg => {
             const avatarIdx = avatarMap[msg.sender_name] !== undefined ? avatarMap[msg.sender_name] : -1;
