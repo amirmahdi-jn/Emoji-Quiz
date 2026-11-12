@@ -41,7 +41,7 @@ function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
-    input.value = currentName === 'Guest' ? '' : currentName;
+    input.value = currentName.startsWith('Guest.') ? '' : currentName;
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
@@ -56,7 +56,7 @@ async function saveName() {
     if (!input) return;
     let raw = input.value.trim();
     
-    if (!/^[a-zA-Z0-9]{5,10}$/.test(raw)) {
+    if (!/^[a-zA-Z0-9\.]{5,10}$/.test(raw)) {
         document.getElementById('alert-modal').classList.add('active');
         return;
     }
@@ -67,7 +67,7 @@ async function saveName() {
         return;
     }
     
-    if (currentName !== 'Guest' && currentName !== raw) {
+    if (!currentName.startsWith('Guest.') && currentName !== raw) {
         await supabaseClient.from('profiles').delete().eq('name', currentName);
     }
     
