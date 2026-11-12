@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emoji Quiz</title>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/shop.css">
+    <link rel="stylesheet" href="css/chat.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -70,9 +75,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
         </div>
-
         <div class="panel-content" id="panel-content"></div>
-
         <div class="panel-tabs">
             <button class="panel-tab" data-tab="public-chat" onclick="switchPanelTab('public-chat')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -540,7 +543,7 @@
     </div>
 
     <div id="alert-modal" class="modal">
-        <div class="modal-content" style="text-align: right; direction: rtl;">
+        <div class="modal-content" style="text-align: center; direction: rtl;">
             <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">کاربر گرامی!</p>
             <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا از حروف و اعداد انگلیسی استفاده نمایید.</p>
@@ -549,6 +552,22 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="duplicate-alert-modal" class="modal">
+        <div class="modal-content" style="text-align: center; direction: rtl;">
+            <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
+            <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">این نام قبلاً استفاده شده است.</p>
+            <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا یک نام جدید وارد کنید.</p>
+            <button class="btn-primary" style="margin-top: 25px;" onclick="document.getElementById('duplicate-alert-modal').classList.remove('active')">بستن</button>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/shop.js"></script>
+    <script src="js/extras.js"></script>
+    <script src="js/chat.js"></script>
 </body>
 </html>
