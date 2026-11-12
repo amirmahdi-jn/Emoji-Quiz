@@ -1,7 +1,7 @@
 function renderPanelContent(tabId) {
     const container = document.getElementById('panel-content');
     if (!container) return;
-    
+
     if (tabId === 'top-players') {
         container.innerHTML = `
             <p class="panel-hint" id="leaderboard-loading">در حال دریافت برترین‌ها از سرور...</p>
@@ -45,15 +45,20 @@ async function fetchLeaderboard() {
     const list = document.getElementById('global-leaderboard');
     const loading = document.getElementById('leaderboard-loading');
     if (!list) return;
-    
-    const { data, error } = await supabaseClient.from('profiles').select('name, solved_levels, avatar_index').order('solved_levels', { ascending: false }).limit(10);
+
+    const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('name, solved_levels, avatar_index')
+        .order('solved_levels', { ascending: false })
+        .limit(10);
+
     if (loading) loading.style.display = 'none';
-    
+
     if (error || !data || data.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         return;
     }
-    
+
     list.innerHTML = '';
     data.forEach((profile, index) => {
         let numberColor = '#ffffff';
@@ -65,7 +70,7 @@ async function fetchLeaderboard() {
 
         const isMe = profile.name === currentName;
         const borderStyle = isMe ? 'border: 2px solid var(--primary-color);' : 'border: 1px solid transparent;';
-        
+
         let avatarSrc = defaultAvatar;
         if (profile.avatar_index >= 0 && avatarImages[profile.avatar_index]) {
             avatarSrc = avatarImages[profile.avatar_index];
@@ -73,17 +78,18 @@ async function fetchLeaderboard() {
 
         const row = document.createElement('div');
         row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
-        
+
         row.innerHTML = `
             <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${numberColor};">${index + 1}</div>
             <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: ${nameColor}; font-weight: bold;">${profile.name}</span>
+                <span style="color: ${nameColor}; font-weight: bold;"></span>
                 <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${checkIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
+        row.querySelector('span[style*="font-weight: bold"]').textContent = profile.name;
         list.appendChild(row);
     });
 }
@@ -92,64 +98,97 @@ async function initPanelChat() {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">در حال اتصال...</div>';
-    
-    const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
+
+    const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
-    
+
     const { data: profilesData } = await supabaseClient.from('profiles').select('name, avatar_index');
     const avatarMap = {};
     if (profilesData) {
         profilesData.forEach(p => { avatarMap[p.name] = p.avatar_index; });
     }
-    
+
+    const messages = (data || []).slice().reverse();
+
     chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
-    if (data.length === 0) {
+    if (messages.length === 0) {
         chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
     } else {
-        data.forEach(msg => {
+        messages.forEach(msg => {
             const avatarIdx = avatarMap[msg.sender_name] !== undefined ? avatarMap[msg.sender_name] : -1;
-            appendPanelChatMessage(msg.sender_name, msg.text, msg.created_at, avatarIdx);
+            appendPanelChatMessage(msg.id, msg.sender_name, msg.text, msg.created_at, avatarIdx);
         });
     }
-    
+
     if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
-    chatSubscription = supabaseClient.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, 
-        async (payload) => {
-            const { data: profileData } = await supabaseClient.from('profiles').select('avatar_index').eq('name', payload.new.sender_name).maybeSingle();
-            const avatarIdx = profileData && typeof profileData.avatar_index === 'number' ? profileData.avatar_index : -1;
-            appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.created_at, avatarIdx);
-        }).subscribe();
+    chatSubscription = supabaseClient
+        .channel('public:messages')
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages' },
+            async (payload) => {
+                const { data: profileData } = await supabaseClient
+                    .from('profiles')
+                    .select('avatar_index')
+                    .eq('name', payload.new.sender_name)
+                    .maybeSingle();
+                const avatarIdx = profileData && typeof profileData.avatar_index === 'number' ? profileData.avatar_index : -1;
+                appendPanelChatMessage(payload.new.id, payload.new.sender_name, payload.new.text, payload.new.created_at, avatarIdx);
+            })
+        .on('postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'messages' },
+            (payload) => {
+                const id = payload.new.id;
+                const newName = payload.new.sender_name;
+                const el = document.querySelector(`[data-msg-id="${id}"]`);
+                if (el) {
+                    const nameEl = el.querySelector('.chat-msg-name');
+                    if (nameEl) nameEl.textContent = newName;
+                }
+            })
+        .subscribe();
 }
 
-function appendPanelChatMessage(sender, text, timeStr, avatarIndex) {
+function appendPanelChatMessage(id, sender, text, timeStr, avatarIndex) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
-    if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
-    
+    if (chatMessages.innerHTML.includes('هنوز پیامی')) {
+        chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
+    }
+
     const color = getUserColor(sender);
     const time = getPersianTime(timeStr);
     const isMe = sender === currentName;
-    
+
     let avatarSrc = defaultAvatar;
     if (avatarIndex >= 0 && avatarImages[avatarIndex]) {
         avatarSrc = avatarImages[avatarIndex];
     }
-    
+
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
-    
+    if (id) wrapper.setAttribute('data-msg-id', id);
+
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
             <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
         </div>
         <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
             <div class="chat-msg-header" style="margin-bottom: 4px;">
-                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;">${sender || 'Guest'}</span>
+                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;"></span>
             </div>
-            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff;">${text}</div>
+            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff;"></div>
             <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}</div>
         </div>
     `;
+
+    wrapper.querySelector('.chat-msg-name').textContent = sender || 'Guest';
+    wrapper.querySelector('.chat-msg-text').textContent = text;
+
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
