@@ -1,4 +1,4 @@
-const DEVICE_KEY = 'emojiQuizDevice_v6';
+const DEVICE_KEY = 'emojiQuizDeviceId_v6';
 
 function loadUsedCodes() {
     try {
@@ -84,25 +84,22 @@ async function loadProfile() {
             updateProfileUI();
             return;
         }
-    } catch (e) {
-        console.error('DB read error:', e);
-    }
+    } catch (e) {}
 
     try {
         const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
-        let guestNum = 0;
-        let candidate = 'Guest.0';
-        let found = false;
-        while (!found) {
-            candidate = 'Guest.' + guestNum;
-            const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
-            if (!taken) {
-                found = true;
-            } else {
-                guestNum++;
-            }
+        let maxGuestNum = -1;
+        if (allProfiles) {
+            allProfiles.forEach(p => {
+                const match = p.name.match(/^Guest\.(\d+)$/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num > maxGuestNum) maxGuestNum = num;
+                }
+            });
         }
-        currentName = candidate;
+        const newGuestNum = maxGuestNum + 1;
+        currentName = 'Guest.' + newGuestNum;
         currentAvatarIndex = -1;
         await supabaseClient.from('profiles').insert({
             name: currentName,
