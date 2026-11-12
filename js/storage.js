@@ -1,146 +1,74 @@
-const DEVICE_ID_KEY = 'emojiQuizDeviceId_v1';
+const DEVICE_KEY = 'emojiQuizDevice_v3';
 
-function loadUsedCodes() {
+function getDeviceFingerprint() {
     try {
-        const raw = localStorage.getItem(USED_CODES_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
-}
-
-function markCodeUsed(code) {
-    const used = loadUsedCodes();
-    if (!used.includes(code)) {
-        used.push(code);
-        try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
-    }
-}
-
-function isCodeUsed(code) {
-    return loadUsedCodes().includes(code);
-}
-
-function saveProgress() {
-    const progress = {
-        currentCoins: currentCoins,
-        currentDiamonds: currentDiamonds,
-        unlockedLevels: unlockedLevels,
-        solvedLevels: solvedLevels,
-        currentChapter: currentChapter,
-        currentLevelIndex: currentLevelIndex
-    };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
-}
-
-function loadProgress() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const p = JSON.parse(saved);
-            currentCoins = typeof p.currentCoins === 'number' ? p.currentCoins : 10;
-            currentDiamonds = typeof p.currentDiamonds === 'number' ? p.currentDiamonds : 10;
-            unlockedLevels = typeof p.unlockedLevels === 'number' ? p.unlockedLevels : 1;
-            solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
-            currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
-            currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
+        const ua = navigator.userAgent || 'unknown';
+        const lang = navigator.language || 'unknown';
+        const screenW = window.screen.width || 0;
+        const screenH = window.screen.height || 0;
+        const colorDepth = window.screen.colorDepth || 0;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+        const raw = ua + lang + screenW + 'x' + screenH + colorDepth + timezone;
+        
+        let hash = 0;
+        for (let i = 0; i < raw.length; i++) {
+            const char = raw.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
         }
-    } catch (e) {}
-}
-
-function saveProfile() {
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
-}
-
-function getDeviceId() {
-    try {
-        let id = localStorage.getItem(DEVICE_ID_KEY);
-        if (!id) {
-            id = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            localStorage.setItem(DEVICE_ID_KEY, id);
-        }
-        return id;
+        return 'fp_' + Math.abs(hash).toString(36);
     } catch (e) {
-        return 'dev_temp_' + Date.now();
+        return 'fp_error';
     }
 }
 
 async function loadProfile() {
-    let saved = null;
-    try {
-        saved = localStorage.getItem(PROFILE_KEY);
-    } catch (e) {}
+    const fingerprint = getDeviceFingerprint();
+    let finalName = '';
+    let finalAvatar = -1;
 
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-            if (data.name && data.name !== 'Guest.0' && !data.name.startsWith('Guest.')) {
-                currentName = data.name;
-                currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
-                return;
-            }
-        } catch (e) {}
-    }
-
-    const deviceId = getDeviceId();
-    
     try {
         const { data: existing } = await supabaseClient
             .from('profiles')
-            .select('name, solved_levels')
-            .eq('name', deviceId)
-            .single();
-        
+            .select('name, avatar_index')
+            .eq('device_id', fingerprint)
+            .maybeSingle();
+
         if (existing) {
-            currentName = existing.name;
-            currentAvatarIndex = -1;
-            saveProfile();
-            updateProfileUI();
-            return;
+            finalName = existing.name;
+            finalAvatar = typeof existing.avatar_index === 'number' ? existing.avatar_index : -1;
         }
     } catch (e) {}
 
-    try {
-        const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
-        let newGuestName = 'Guest.0';
-        let counter = 0;
-        let isUnique = false;
-        
-        while (!isUnique) {
-            newGuestName = 'Guest.' + counter;
-            const check = existingProfiles ? existingProfiles.find(p => p.name === newGuestName) : null;
-            if (!check) {
-                isUnique = true;
-            } else {
-                counter++;
+    if (!finalName) {
+        try {
+            const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
+            let guestNum = 0;
+            let candidate = 'Guest.0';
+            let found = false;
+            while (!found) {
+                candidate = 'Guest.' + guestNum;
+                const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
+                if (!taken) {
+                    found = true;
+                } else {
+                    guestNum++;
+                }
             }
-        }
-        
-        currentName = newGuestName;
-        await supabaseClient.from('profiles').upsert({ 
-            name: currentName, 
-            solved_levels: Object.keys(solvedLevels).length 
-        });
-        saveProfile();
-    } catch (e) {
-        console.error('Error generating guest name:', e);
-    }
-}
-
-function updateProfileUI() {
-    const nameEl = document.getElementById('profileNameDisplay');
-    const avatarEl = document.getElementById('headerAvatar');
-    if (nameEl) nameEl.innerText = currentName;
-    if (avatarEl) {
-        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) {
-            avatarEl.src = avatarImages[currentAvatarIndex];
-        } else {
-            avatarEl.src = defaultAvatar;
+            finalName = candidate;
+            finalAvatar = -1;
+            await supabaseClient.from('profiles').insert({
+                name: finalName,
+                device_id: fingerprint,
+                avatar_index: -1,
+                solved_levels: Object.keys(solvedLevels).length
+            });
+        } catch (e) {
+            finalName = 'Guest.0';
         }
     }
-}
 
-function updateCoinsUI() {
-    const hc = document.getElementById('header-coins');
-    if (hc) hc.innerText = currentCoins;
-    const hd = document.getElementById('header-diamonds');
-    if (hd) hd.innerText = currentDiamonds;
+    currentName = finalName;
+    currentAvatarIndex = finalAvatar;
+    saveProfile();
 }
