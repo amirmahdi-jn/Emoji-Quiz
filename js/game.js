@@ -189,29 +189,23 @@ function removeLetter(index) {
     }
 }
 
-function checkAnswer() {
+async function checkAnswer() {
     const guessClean = currentGuess.join('').replace(/\s+/g, '');
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
     if (guessClean === answerClean) {
-        if (!solvedLevels[currentLevelIndex]) { 
-            currentCoins += 5; 
-            solvedLevels[currentLevelIndex] = true; 
+        if (!solvedLevels[currentLevelIndex]) {
+            currentCoins += 5;
+            solvedLevels[currentLevelIndex] = true;
         }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
         saveProgress();
 
-        if (currentName && !currentName.startsWith('Guest.')) {
-            supabaseClient.from('profiles')
-                .update({ solved_levels: Object.keys(solvedLevels).length })
-                .eq('device_id', getDeviceId())
-                .then();
-        } else if (currentName) {
-            supabaseClient.from('profiles')
-                .update({ solved_levels: Object.keys(solvedLevels).length })
-                .eq('device_id', getDeviceId())
-                .then();
-        }
+        const deviceId = await getDeviceIdAsync();
+        supabaseClient.from('profiles')
+            .update({ solved_levels: Object.keys(solvedLevels).length })
+            .eq('device_id', deviceId)
+            .then();
 
         const correctEl = document.getElementById('correct-answer-text');
         if (correctEl) correctEl.innerText = gameData[currentLevelIndex].answer;
