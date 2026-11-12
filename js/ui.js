@@ -61,7 +61,7 @@ async function saveName() {
         return;
     }
 
-    const deviceId = getDeviceId();
+    const deviceId = await getDeviceIdAsync();
 
     try {
         const { data: existing } = await supabaseClient
@@ -113,14 +113,15 @@ function renderAvatars() {
         const img = document.createElement('img');
         img.src = src;
         item.appendChild(img);
-        item.onclick = () => {
+        item.onclick = async () => {
             currentAvatarIndex = idx;
             if (preview) preview.src = src;
             saveProfile();
             updateProfileUI();
+            const deviceId = await getDeviceIdAsync();
             supabaseClient.from('profiles')
                 .update({ avatar_index: idx })
-                .eq('device_id', getDeviceId())
+                .eq('device_id', deviceId)
                 .then(() => {
                     if (currentPanelTab === 'top-players') fetchLeaderboard();
                 });
