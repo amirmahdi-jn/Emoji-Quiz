@@ -126,9 +126,9 @@ async function sendPanelChatMessage() {
     await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
 }
 
-window.addEventListener('load', () => {
-    loadProgress();
-    loadProfile();
+window.addEventListener('load', async () => {
+    await loadProgress();
+    await loadProfile();
     updateProfileUI();
     updateCoinsUI();
     renderChapters();
