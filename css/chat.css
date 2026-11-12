@@ -17,76 +17,44 @@
 
 .chat-header-date {
     text-align: center;
-    color: var(--text-muted);
+    color: #fff;
     font-size: 0.8rem;
-    margin-bottom: 10px;
     font-weight: bold;
+    background: rgba(199, 36, 255, 0.3);
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    margin: 0 auto 15px auto;
     position: sticky;
     top: 0;
-    background: var(--panel-bg);
-    padding: 5px;
     z-index: 10;
+    border: 1px solid rgba(199, 36, 255, 0.5);
 }
 .chat-msg-wrapper {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 8px;
     width: 100%;
     word-break: break-word;
+    margin-bottom: 8px;
 }
 .chat-msg-wrapper.my-message {
     flex-direction: row-reverse;
-    background: rgba(199, 36, 255, 0.1);
-    border-color: rgba(199, 36, 255, 0.3);
+}
+.chat-msg-wrapper.other-message {
+    flex-direction: row;
 }
 .chat-msg-avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
     background: #fff;
+    border: 1px solid var(--border-color);
 }
-.chat-msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .chat-msg-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-.chat-msg-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 4px;
-}
-.chat-msg-wrapper.my-message .chat-msg-header {
-    flex-direction: row-reverse;
-}
-.chat-msg-name {
-    font-size: 0.75rem;
-    font-weight: bold;
-}
-.chat-msg-time {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    direction: ltr;
-}
-.chat-msg-text {
-    font-size: 0.85rem;
-    color: var(--text-color);
-    line-height: 1.4;
-}
-.chat-msg-wrapper.my-message .chat-msg-text {
-    text-align: right;
-}
-#alert-modal .modal-content,
-#duplicate-alert-modal .modal-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    word-break: break-word;
+    max-width: 80%;
 }
