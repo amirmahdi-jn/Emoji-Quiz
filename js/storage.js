@@ -1,3 +1,5 @@
+const DEVICE_ID_KEY = 'emojiQuizDeviceId_v1';
+
 function loadUsedCodes() {
     try {
         const raw = localStorage.getItem(USED_CODES_KEY);
@@ -48,6 +50,19 @@ function saveProfile() {
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
 }
 
+function getDeviceId() {
+    try {
+        let id = localStorage.getItem(DEVICE_ID_KEY);
+        if (!id) {
+            id = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem(DEVICE_ID_KEY, id);
+        }
+        return id;
+    } catch (e) {
+        return 'dev_temp_' + Date.now();
+    }
+}
+
 async function loadProfile() {
     let saved = null;
     try {
@@ -57,34 +72,56 @@ async function loadProfile() {
     if (saved) {
         try {
             const data = JSON.parse(saved);
-            currentName = data.name || '';
-            currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
+            if (data.name && data.name !== 'Guest.0' && !data.name.startsWith('Guest.')) {
+                currentName = data.name;
+                currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
+                return;
+            }
         } catch (e) {}
     }
 
-    if (!currentName || currentName === 'Guest.0' || currentName.startsWith('Guest.')) {
-        try {
-            const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
-            let newGuestName = 'Guest.0';
-            let counter = 0;
-            let isUnique = false;
-            
-            while (!isUnique) {
-                newGuestName = 'Guest.' + counter;
-                const check = existingProfiles ? existingProfiles.find(p => p.name === newGuestName) : null;
-                if (!check) {
-                    isUnique = true;
-                } else {
-                    counter++;
-                }
-            }
-            
-            currentName = newGuestName;
-            await supabaseClient.from('profiles').upsert({ name: currentName, solved_levels: Object.keys(solvedLevels).length });
+    const deviceId = getDeviceId();
+    
+    try {
+        const { data: existing } = await supabaseClient
+            .from('profiles')
+            .select('name, solved_levels')
+            .eq('name', deviceId)
+            .single();
+        
+        if (existing) {
+            currentName = existing.name;
+            currentAvatarIndex = -1;
             saveProfile();
-        } catch (e) {
-            console.error('Error generating guest name:', e);
+            updateProfileUI();
+            return;
         }
+    } catch (e) {}
+
+    try {
+        const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
+        let newGuestName = 'Guest.0';
+        let counter = 0;
+        let isUnique = false;
+        
+        while (!isUnique) {
+            newGuestName = 'Guest.' + counter;
+            const check = existingProfiles ? existingProfiles.find(p => p.name === newGuestName) : null;
+            if (!check) {
+                isUnique = true;
+            } else {
+                counter++;
+            }
+        }
+        
+        currentName = newGuestName;
+        await supabaseClient.from('profiles').upsert({ 
+            name: currentName, 
+            solved_levels: Object.keys(solvedLevels).length 
+        });
+        saveProfile();
+    } catch (e) {
+        console.error('Error generating guest name:', e);
     }
 }
 
