@@ -50,7 +50,7 @@ async function fetchLeaderboard() {
         .from('profiles')
         .select('name, solved_levels, avatar_index')
         .order('solved_levels', { ascending: false })
-        .limit(50);
+        .limit(51);
 
     if (loading) loading.style.display = 'none';
 
@@ -61,12 +61,11 @@ async function fetchLeaderboard() {
 
     list.innerHTML = '';
     data.forEach((profile, index) => {
-        let numberColor = '#ffffff';
-        let nameColor = '#ffffff';
+        let rowColor = '#ffffff';
 
-        if (index === 0) { numberColor = '#ffd700'; nameColor = '#ef4444'; }
-        else if (index === 1) { numberColor = '#c0c0c0'; nameColor = '#ef4444'; }
-        else if (index === 2) { numberColor = '#cd7f32'; nameColor = '#ef4444'; }
+        if (index === 0) rowColor = '#ffd700';
+        else if (index === 1) rowColor = '#c0c0c0';
+        else if (index === 2) rowColor = '#cd7f32';
 
         const isMe = profile.name === currentName;
         const borderStyle = isMe ? 'border: 2px solid var(--primary-color);' : 'border: 1px solid transparent;';
@@ -80,12 +79,12 @@ async function fetchLeaderboard() {
         row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
 
         row.innerHTML = `
-            <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${numberColor};">${index + 1}</div>
+            <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${rowColor};">${index + 1}</div>
             <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: ${nameColor}; font-weight: bold;"></span>
+                <span style="color: ${rowColor}; font-weight: bold;"></span>
                 <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${checkIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
