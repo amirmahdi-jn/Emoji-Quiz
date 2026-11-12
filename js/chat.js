@@ -108,7 +108,7 @@ function appendPanelChatMessage(sender, text, timeStr) {
         </div>
         <div class="chat-msg-content">
             <div class="chat-msg-header">
-                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'} :</span>
+                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'}</span>
                 <span class="chat-msg-time">${time}</span>
             </div>
             <div class="chat-msg-text">${text}</div>
