@@ -50,7 +50,7 @@ async function fetchLeaderboard() {
         .from('profiles')
         .select('name, solved_levels, avatar_index')
         .order('solved_levels', { ascending: false })
-        .limit(10);
+        .limit(50);
 
     if (loading) loading.style.display = 'none';
 
