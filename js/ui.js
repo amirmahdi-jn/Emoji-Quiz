@@ -56,7 +56,7 @@ async function saveName() {
     if (!input) return;
     let raw = input.value.trim();
     
-    if (!/^[a-zA-Z0-9\.]{5,10}$/.test(raw)) {
+    if (!/^[a-zA-Z0-9\.]{3,10}$/.test(raw)) {
         document.getElementById('alert-modal').classList.add('active');
         return;
     }
@@ -67,12 +67,17 @@ async function saveName() {
         return;
     }
     
+    const deviceId = getDeviceId();
     if (!currentName.startsWith('Guest.') && currentName !== raw) {
         await supabaseClient.from('profiles').delete().eq('name', currentName);
     }
     
     currentName = raw;
-    await supabaseClient.from('profiles').upsert({ name: currentName, solved_levels: Object.keys(solvedLevels).length });
+    await supabaseClient.from('profiles').upsert({ 
+        name: currentName, 
+        device_id: deviceId,
+        solved_levels: Object.keys(solvedLevels).length 
+    }, { onConflict: 'device_id' });
     
     saveProfile();
     updateProfileUI();
@@ -97,6 +102,10 @@ function renderAvatars() {
             if (preview) preview.src = src;
             saveProfile();
             updateProfileUI();
+            supabaseClient.from('profiles')
+                .update({ avatar_index: idx })
+                .eq('device_id', getDeviceId())
+                .then();
         };
         if (idx < 3) row1.appendChild(item);
         else row2.appendChild(item);
@@ -106,12 +115,17 @@ function renderAvatars() {
 
 function getUserColor(username) {
     if (!username) return '#475569';
+    const palette = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
     let hash = 0;
     for (let i = 0; i < username.length; i++) {
         hash = username.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const index = Math.abs(hash) % colors.length;
-    return colors[index];
+    return palette[Math.abs(hash) % palette.length];
+}
+
+function getUserInitial(username) {
+    if (!username) return '?';
+    return username.charAt(0).toUpperCase();
 }
 
 function getPersianDate() {
