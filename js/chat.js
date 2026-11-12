@@ -1,6 +1,7 @@
 function renderPanelContent(tabId) {
     const container = document.getElementById('panel-content');
     if (!container) return;
+    
     if (tabId === 'top-players') {
         container.innerHTML = `
             <div class="top-player-card">
@@ -39,6 +40,13 @@ function renderPanelContent(tabId) {
                 <p>چت خصوصی به‌زودی فعال می‌شود.</p>
             </div>
         `;
+    }
+
+    const titleEl = document.getElementById('panel-title');
+    if (titleEl) {
+        if (tabId === 'top-players') titleEl.innerText = 'برترین‌ها';
+        else if (tabId === 'public-chat') titleEl.innerText = 'گپ عمومی';
+        else if (tabId === 'private-chat') titleEl.innerText = 'چت خصوصی';
     }
 }
 
