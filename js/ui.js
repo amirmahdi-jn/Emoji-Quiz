@@ -77,29 +77,24 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
-
-    await supabaseClient
-        .from('profiles')
-        .upsert({ 
-            name: currentName, 
-            device_id: deviceId,
-            avatar_index: currentAvatarIndex,
-            solved_levels: Object.keys(solvedLevels).length 
-        }, { onConflict: 'device_id' });
-
-    await supabaseClient
-        .from('messages')
-        .update({ sender_name: currentName })
-        .eq('sender_name', oldName);
-
+    
     saveProfile();
     updateProfileUI();
     closeNameModal();
 
+    supabaseClient.from('profiles').upsert({ 
+        name: currentName, 
+        device_id: deviceId,
+        avatar_index: currentAvatarIndex,
+        solved_levels: Object.keys(solvedLevels).length 
+    }, { onConflict: 'device_id' }).then();
+
+    supabaseClient.from('messages').update({ sender_name: currentName }).eq('sender_name', oldName).then();
+
     if (currentPanelTab === 'top-players') {
-        fetchLeaderboard();
+        setTimeout(fetchLeaderboard, 300);
     } else if (currentPanelTab === 'public-chat') {
-        initPanelChat();
+        setTimeout(initPanelChat, 300);
     }
 }
 
