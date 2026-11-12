@@ -6,22 +6,6 @@
 .panel-tab span { font-size: 0.7rem; color: var(--text-muted); font-weight: bold; font-family: 'Vazirmatn', sans-serif; transition: 0.2s; }
 .panel-tab.active svg { opacity: 1; filter: drop-shadow(0 0 6px currentColor); }
 .panel-tab.active span { color: var(--text-color); }
-
-.top-player-card {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 15px;
-    border: 2px solid #eab308;
-}
-.top-player-avatar { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid var(--primary-color); }
-.top-player-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.top-player-info { flex: 1; min-width: 0; }
-.top-player-name { font-size: 1.1rem; font-weight: bold; color: var(--text-color); margin-bottom: 5px; }
-.top-player-stats { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.8rem; color: var(--text-muted); }
 .panel-hint { text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; line-height: 1.6; }
 .panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
 
@@ -57,16 +41,15 @@
 }
 
 .chat-msg-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
     background: #fff;
-    border: 1px solid var(--border-color);
 }
 .chat-msg-content {
     display: inline-block;
     word-break: break-word;
     max-width: 80%;
-                 }
+}
