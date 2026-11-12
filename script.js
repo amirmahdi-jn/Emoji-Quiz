@@ -207,7 +207,12 @@ function getUserColor(username) {
 
 function getPersianDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Intl.DateTimeFormat('fa-IR', options).format(new Date());
+    const parts = new Intl.DateTimeFormat('fa-IR', options).formatToParts(new Date());
+    const weekday = parts.find(p => p.type === 'weekday').value;
+    const day = parts.find(p => p.type === 'day').value;
+    const month = parts.find(p => p.type === 'month').value;
+    const year = parts.find(p => p.type === 'year').value;
+    return `${weekday} ${day} ${month} ${year}`;
 }
 
 function getPersianTime(dateStr) {
@@ -458,9 +463,10 @@ function appendPanelChatMessage(sender, text, timeStr) {
     const color = getUserColor(sender);
     const time = getPersianTime(timeStr);
     const avatarSrc = defaultAvatar;
+    const isMe = sender === currentName;
     
     const wrapper = document.createElement('div');
-    wrapper.className = 'chat-msg-wrapper';
+    wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : ''}`;
     
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
@@ -468,7 +474,7 @@ function appendPanelChatMessage(sender, text, timeStr) {
         </div>
         <div class="chat-msg-content">
             <div class="chat-msg-header">
-                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'}:</span>
+                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'} :</span>
                 <span class="chat-msg-time">${time}</span>
             </div>
             <div class="chat-msg-text">${text}</div>
@@ -528,7 +534,7 @@ async function saveName() {
     
     const { data: existing } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
     if (existing) {
-        alert('این نام کاربری قبلاً انتخاب شده است. لطفاً نام دیگری انتخاب کنید.');
+        document.getElementById('duplicate-alert-modal').classList.add('active');
         return;
     }
     
