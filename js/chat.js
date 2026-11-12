@@ -4,19 +4,8 @@ function renderPanelContent(tabId) {
     
     if (tabId === 'top-players') {
         container.innerHTML = `
-            <div class="top-player-card" style="border: 2px solid #eab308;">
-                <div class="top-player-avatar">
-                    <img src="${currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex] ? avatarImages[currentAvatarIndex] : defaultAvatar}" alt="Avatar">
-                </div>
-                <div class="top-player-info">
-                    <div class="top-player-name">${currentName}</div>
-                    <div class="top-player-stats">
-                        <span>🏆 ${Object.keys(solvedLevels).length} مرحله حل‌شده</span>
-                    </div>
-                </div>
-            </div>
             <p class="panel-hint" id="leaderboard-loading">در حال دریافت برترین‌ها از سرور...</p>
-            <div id="global-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            <div id="global-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
         `;
         fetchLeaderboard();
     } else if (tabId === 'public-chat') {
@@ -54,27 +43,40 @@ async function fetchLeaderboard() {
     const list = document.getElementById('global-leaderboard');
     const loading = document.getElementById('leaderboard-loading');
     if (!list) return;
+    
     const { data, error } = await supabaseClient.from('profiles').select('name, solved_levels').order('solved_levels', { ascending: false }).limit(10);
     if (loading) loading.style.display = 'none';
+    
     if (error || !data || data.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         return;
     }
+    
     list.innerHTML = '';
     data.forEach((profile, index) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); margin-bottom: 8px;';
-        
-        if (profile.name === currentName) {
-            row.style.border = '2px solid #eab308';
-        }
-
         let rankColor = '#000000';
         if (index === 0) rankColor = '#ffd700';
         else if (index === 1) rankColor = '#c0c0c0';
         else if (index === 2) rankColor = '#cd7f32';
 
-        row.innerHTML = `<span style="color: ${rankColor}; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: ${rankColor}; font-size: 0.85rem;">${profile.solved_levels} مرحله</span>`;
+        const isMe = profile.name === currentName;
+        const borderStyle = isMe ? 'border: 2px solid #eab308;' : 'border: none;';
+        const userColor = getUserColor(profile.name);
+        const initial = getUserInitial(profile.name);
+
+        const row = document.createElement('div');
+        row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
+        
+        row.innerHTML = `
+            <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${rankColor};">${index + 1}</div>
+            <div style="width: 35px; height: 35px; border-radius: 50%; background: ${userColor}; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 1.1rem; flex-shrink: 0;">
+                ${initial}
+            </div>
+            <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; color: ${rankColor}; font-weight: bold;">
+                <span>${profile.name}</span>
+                <span style="font-size: 0.8rem;">${profile.solved_levels} مرحله</span>
+            </div>
+        `;
         list.appendChild(row);
     });
 }
@@ -105,18 +107,18 @@ function appendPanelChatMessage(sender, text, timeStr) {
     if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     
     const color = getUserColor(sender);
+    const initial = getUserInitial(sender);
     const time = getPersianTime(timeStr);
-    const avatarSrc = defaultAvatar;
     const isMe = sender === currentName;
     
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     
     wrapper.innerHTML = `
-        <div class="chat-msg-avatar">
-            <img src="${avatarSrc}" alt="Avatar">
+        <div class="chat-msg-avatar" style="background: ${color}; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">
+            ${initial}
         </div>
-        <div class="chat-msg-content" style="max-width: 80%; padding: 8px 12px; border-radius: 12px; background: ${isMe ? 'rgba(199, 36, 255, 0.15)' : 'rgba(255,255,255,0.05)'}">
+        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
             <div class="chat-msg-header" style="margin-bottom: 4px;">
                 <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;">${sender || 'Guest'}</span>
             </div>
