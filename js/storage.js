@@ -49,19 +49,17 @@ function saveProfile() {
 }
 
 async function loadProfile() {
+    let saved = null;
     try {
-        const saved = localStorage.getItem(PROFILE_KEY);
-        if (saved) {
+        saved = localStorage.getItem(PROFILE_KEY);
+    } catch (e) {}
+
+    if (saved) {
+        try {
             const data = JSON.parse(saved);
             currentName = data.name || '';
             currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
-        } else {
-            currentName = '';
-            currentAvatarIndex = -1;
-        }
-    } catch (e) {
-        currentName = '';
-        currentAvatarIndex = -1;
+        } catch (e) {}
     }
 
     if (!currentName || currentName === 'Guest.0' || currentName.startsWith('Guest.')) {
