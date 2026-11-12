@@ -53,18 +53,18 @@ async function loadProfile() {
         const saved = localStorage.getItem(PROFILE_KEY);
         if (saved) {
             const data = JSON.parse(saved);
-            currentName = data.name || 'Guest.0';
+            currentName = data.name || '';
             currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
         } else {
-            currentName = 'Guest.0';
+            currentName = '';
             currentAvatarIndex = -1;
         }
     } catch (e) {
-        currentName = 'Guest.0';
+        currentName = '';
         currentAvatarIndex = -1;
     }
 
-    if (currentName.startsWith('Guest.')) {
+    if (!currentName || currentName === 'Guest.0' || currentName.startsWith('Guest.')) {
         try {
             const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
             let newGuestName = 'Guest.0';
