@@ -92,17 +92,19 @@ async function saveName() {
         supabaseClient.from('messages')
             .update({ sender_name: currentName })
             .eq('sender_name', oldName)
-            .then();
+            .then(() => {
+                if (currentPanelTab === 'public-chat') {
+                    if (chatSubscription) {
+                        supabaseClient.removeChannel(chatSubscription);
+                        chatSubscription = null;
+                    }
+                    initPanelChat();
+                }
+            });
     }
 
     if (currentPanelTab === 'top-players') {
         fetchLeaderboard();
-    } else if (currentPanelTab === 'public-chat') {
-        if (chatSubscription) {
-            supabaseClient.removeChannel(chatSubscription);
-            chatSubscription = null;
-        }
-        initPanelChat();
     }
 }
 
@@ -129,7 +131,13 @@ function renderAvatars() {
                 .eq('device_id', getDeviceId())
                 .then(() => {
                     if (currentPanelTab === 'top-players') fetchLeaderboard();
-                    if (currentPanelTab === 'public-chat') initPanelChat();
+                    if (currentPanelTab === 'public-chat') {
+                        if (chatSubscription) {
+                            supabaseClient.removeChannel(chatSubscription);
+                            chatSubscription = null;
+                        }
+                        initPanelChat();
+                    }
                 });
         };
         if (idx < 3) row1.appendChild(item);
