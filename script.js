@@ -2,6 +2,12 @@ const SUPABASE_URL = 'https://tkhvcfqqxxodhwgmdjiq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const RESET_KEY = 'emojiQuizResetOnce_v2';
+if (!localStorage.getItem(RESET_KEY)) {
+    localStorage.clear();
+    localStorage.setItem(RESET_KEY, '1');
+}
+
 const defaultAvatar = 'avatar0.jpg';
 const avatarImages = ['avatar1.jpg','avatar2.jpg','avatar3.jpg','avatar4.jpg','avatar5.jpg','avatar6.jpg'];
 const gameData = [
@@ -141,6 +147,7 @@ const gameData = [
     { id: 134, emojis: ['👂', '🦓'], answer: 'خرگوش', letters: ['خ','ر','گ','و','ش'] },
     { id: 135, emojis: ['🐁', '🪤'], answer: 'تله موش', letters: ['ت','ل','ه',' ','م','و','ش'] }
 ];
+
 let currentLevelIndex = 0;
 let currentChapter = 1;
 let currentCoins = 10;
@@ -162,6 +169,7 @@ const STORAGE_KEY = 'emojiQuizProgress_v6';
 let giftInterval = null;
 let dailyChallengeInterval = null;
 let chatSubscription = null;
+
 const purchaseCodes = {
     "coin_100":     ["482917", "930145", "617283"],
     "coin_200":     ["105938", "728461", "395027"],
@@ -181,7 +189,32 @@ let currentPaymentKey = null;
 let currentPaymentAmount = 0;
 let currentPaymentType = null;
 let currentPanelTab = 'top-players';
-const chatColors = ['#00e5ff', '#ff5252', '#4ade80', '#facc15', '#c724ff', '#ff9800', '#3b82f6', '#ec4899', '#14b8a6', '#a3e635'];
+
+const colors = [
+    '#e11d48', '#2563eb', '#16a34a', '#d97706', '#9333ea', 
+    '#0d9488', '#ea580c', '#4f46e5', '#c026d3', '#475569'
+];
+
+function getUserColor(username) {
+    if (!username) return colors[0];
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+}
+
+function getPersianDate() {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Intl.DateTimeFormat('fa-IR', options).format(new Date());
+}
+
+function getPersianTime(dateStr) {
+    const date = new Date(dateStr);
+    const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    return new Intl.DateTimeFormat('fa-IR', options).format(date);
+}
 
 function loadUsedCodes() {
     try {
@@ -350,12 +383,10 @@ function renderPanelContent(tabId) {
                     <div class="top-player-name">${currentName}</div>
                     <div class="top-player-stats">
                         <span>🏆 ${Object.keys(solvedLevels).length} مرحله حل‌شده</span>
-                        <span>🪙 ${currentCoins} سکه</span>
-                        <span>💎 ${currentDiamonds} الماس</span>
                     </div>
                 </div>
             </div>
-            <p class="panel-hint">در حال دریافت برترین‌ها از سرور...</p>
+            <p class="panel-hint" id="leaderboard-loading">در حال دریافت برترین‌ها از سرور...</p>
             <div id="global-leaderboard" style="display: flex; flex-direction: column; gap: 10px;"></div>
         `;
         fetchLeaderboard();
@@ -384,8 +415,10 @@ function renderPanelContent(tabId) {
 }
 async function fetchLeaderboard() {
     const list = document.getElementById('global-leaderboard');
+    const loading = document.getElementById('leaderboard-loading');
     if (!list) return;
-    const { data, error } = await supabaseClient.from('profiles').select('name, solved_count').order('solved_count', { ascending: false }).limit(10);
+    const { data, error } = await supabaseClient.from('profiles').select('name, solved_levels').order('solved_levels', { ascending: false }).limit(10);
+    if (loading) loading.style.display = 'none';
     if (error || !data || data.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         return;
@@ -394,7 +427,7 @@ async function fetchLeaderboard() {
     data.forEach((profile, index) => {
         const row = document.createElement('div');
         row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color);';
-        row.innerHTML = `<span style="color: #f1c40f; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: #fff; font-size: 0.85rem;">${profile.solved_count} مرحله</span>`;
+        row.innerHTML = `<span style="color: #f1c40f; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: #fff; font-size: 0.85rem;">${profile.solved_levels} مرحله</span>`;
         list.appendChild(row);
     });
 }
@@ -402,37 +435,46 @@ async function initPanelChat() {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">در حال اتصال...</div>';
+    
     const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
-    chatMessages.innerHTML = data.length === 0 ? '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>' : '';
-    data.forEach(msg => appendPanelChatMessage(msg.sender_name, msg.text, msg.sender_avatar, msg.created_at));
+    
+    chatMessages.innerHTML = `<div class="chat-header-date">${getPersianDate()}</div>`;
+    if (data.length === 0) {
+        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
+    } else {
+        data.forEach(msg => appendPanelChatMessage(msg.sender_name, msg.text, msg.created_at));
+    }
     
     if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
     chatSubscription = supabaseClient.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, 
-        (payload) => appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.sender_avatar, payload.new.created_at)).subscribe();
+        (payload) => appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.created_at)).subscribe();
 }
-function appendPanelChatMessage(sender, text, avatar, createdAt) {
+function appendPanelChatMessage(sender, text, timeStr) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
-    if (chatMessages.innerHTML.includes('هنوز پیامی') || chatMessages.innerHTML.includes('در حال اتصال')) chatMessages.innerHTML = '';
-
-    const date = new Date(createdAt);
-    const timeStr = date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const senderHash = sender.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    const color = chatColors[senderHash % chatColors.length];
-    const avatarUrl = avatar || defaultAvatar;
-
-    const msgDiv = document.createElement('div');
-    msgDiv.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; font-size: 0.85rem; align-self: flex-start; width: 100%; word-break: break-word; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 5px;';
-    msgDiv.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="${avatarUrl}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid ${color};">
-            <span style="color: ${color}; font-weight: bold; font-size: 0.8rem;">${sender || 'Guest'}:</span>
+    if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date">${getPersianDate()}</div>`;
+    
+    const color = getUserColor(sender);
+    const time = getPersianTime(timeStr);
+    const avatarSrc = defaultAvatar;
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-msg-wrapper';
+    
+    wrapper.innerHTML = `
+        <div class="chat-msg-avatar">
+            <img src="${avatarSrc}" alt="Avatar">
         </div>
-        <div style="color: #fff; padding-right: 38px;">${text}</div>
-        <div style="color: var(--text-muted); font-size: 0.65rem; text-align: left; direction: ltr;">${timeStr}</div>
+        <div class="chat-msg-content">
+            <div class="chat-msg-header">
+                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'}:</span>
+                <span class="chat-msg-time">${time}</span>
+            </div>
+            <div class="chat-msg-text">${text}</div>
+        </div>
     `;
-    chatMessages.appendChild(msgDiv);
+    chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 async function sendPanelChatMessage() {
@@ -440,8 +482,7 @@ async function sendPanelChatMessage() {
     if (!input || !input.value.trim()) return;
     const text = input.value.trim();
     input.value = '';
-    const avatarUrl = currentAvatarIndex >= 0 ? avatarImages[currentAvatarIndex] : defaultAvatar;
-    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName, sender_avatar: avatarUrl }]);
+    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
 }
 function openModal(modalId) {
     const overlay = document.getElementById('modal-overlay');
@@ -475,43 +516,29 @@ function closeNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     if (overlay) overlay.classList.remove('active');
 }
-function showErrorModal() {
-    let errorModal = document.getElementById('error-modal');
-    if (!errorModal) {
-        errorModal = document.createElement('div');
-        errorModal.id = 'error-modal';
-        errorModal.className = 'modal-box';
-        errorModal.style.cssText = 'width: 90%; max-width: 340px; z-index: 10000;';
-        errorModal.innerHTML = `
-            <div class="modal-title" style="color: #f87171;">توجه</div>
-            <div style="color: var(--text-color); font-size: 0.95rem; text-align: center; margin-bottom: 20px; line-height: 1.8;">
-                <div>کاربر گرامی!</div>
-                <div>لطفا از حروف و اعداد انگلیسی استفاده نمایید.</div>
-                <div style="margin-top: 10px;">با تشکر <span style="color: #ff0000;">♥︎</span></div>
-            </div>
-            <button class="close-btn" onclick="document.getElementById('error-modal').classList.remove('active')">باشه</button>
-        `;
-        document.getElementById('modal-overlay').appendChild(errorModal);
-    }
-    document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
-    errorModal.classList.add('active');
-    document.getElementById('modal-overlay').classList.add('active');
-}
 async function saveName() {
     const input = document.getElementById('nameInput');
     if (!input) return;
     let raw = input.value.trim();
+    
     if (!/^[a-zA-Z0-9]{5,10}$/.test(raw)) {
-        showErrorModal();
+        document.getElementById('alert-modal').classList.add('active');
         return;
     }
-    const { data: existing, error } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
+    
+    const { data: existing } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
     if (existing) {
         alert('این نام کاربری قبلاً انتخاب شده است. لطفاً نام دیگری انتخاب کنید.');
         return;
     }
+    
+    if (currentName !== 'Guest' && currentName !== raw) {
+        await supabaseClient.from('profiles').delete().eq('name', currentName);
+    }
+    
     currentName = raw;
-    await supabaseClient.from('profiles').upsert({ name: currentName, solved_count: Object.keys(solvedLevels).length });
+    await supabaseClient.from('profiles').upsert({ name: currentName, solved_levels: Object.keys(solvedLevels).length });
+    
     saveProfile();
     updateProfileUI();
     closeNameModal();
@@ -878,6 +905,9 @@ function checkAnswer() {
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
         saveProgress();
+        if (currentName !== 'Guest') {
+            supabaseClient.from('profiles').upsert({ name: currentName, solved_levels: Object.keys(solvedLevels).length }).then();
+        }
         const correctEl = document.getElementById('correct-answer-text');
         if (correctEl) correctEl.innerText = gameData[currentLevelIndex].answer;
         const winModal = document.getElementById('win-modal');
