@@ -1,112 +1,38 @@
-.shop-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 15px 0;
-    width: 100%;
-    flex-wrap: wrap;
-}
-.shop-item {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1.5px solid var(--border-color);
-    border-radius: 20px;
-    padding: 25px 15px;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 120px;
-}
+.shop-container { display: flex; justify-content: center; gap: 15px; margin: 15px 0; width: 100%; flex-wrap: wrap; }
+.shop-item { background: rgba(255, 255, 255, 0.05); border: 1.5px solid var(--border-color); border-radius: 20px; padding: 25px 15px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; min-width: 120px; }
 .shop-item:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.1); }
 .shop-item .icon { display: flex; align-items: center; justify-content: center; }
 .shop-item .label { font-size: 1rem; color: var(--text-color); font-weight: bold; }
-
-.shop-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 10px 0;
-}
-.shop-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    border-radius: 15px;
-    padding: 8px 10px;
-}
-.shop-right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-}
-.shop-coin-icon {
-    width: 20px;
-    height: 20px;
-    color: var(--coin-color);
-    flex-shrink: 0;
-}
-.shop-amount {
-    color: var(--text-color);
-    font-size: 0.8rem;
-    font-weight: bold;
-    white-space: nowrap;
-}
-.shop-bonus {
-    color: var(--success-color);
-    font-size: 0.7rem;
-    font-weight: normal;
-}
-.shop-price {
-    color: var(--text-color);
-    font-size: 0.75rem;
-    font-weight: bold;
-    white-space: nowrap;
-    direction: ltr;
-    flex-shrink: 0;
-}
-.shop-discount {
-    color: #ff5252;
-    font-size: 0.65rem;
-    font-weight: bold;
-}
-.shop-buy-btn {
-    background: #00838f;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    font-family: 'Vazirmatn', sans-serif;
-    cursor: pointer;
-    transition: 0.2s;
-    flex-shrink: 0;
-    white-space: nowrap;
-}
+.shop-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.shop-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 15px; padding: 10px 12px; }
+.shop-right { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.shop-coin-icon { width: 20px; height: 20px; color: var(--coin-color); flex-shrink: 0; }
+.shop-amount { color: var(--text-color); font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+.shop-price { color: var(--text-color); font-size: 0.85rem; font-weight: bold; white-space: nowrap; direction: rtl; unicode-bidi: plaintext; flex-shrink: 0; padding: 0 4px; }
+.shop-buy-btn { background: #00838f; color: white; border: none; border-radius: 20px; padding: 6px 16px; font-size: 0.8rem; font-weight: bold; font-family: 'Vazirmatn', sans-serif; cursor: pointer; transition: 0.2s; flex-shrink: 0; white-space: nowrap; }
 .shop-buy-btn:active { transform: scale(0.95); background: #006064; }
-
-.shop-buy-btn.shop-buy-diamond {
-    background: #fbbf24;
-    color: #1e293b;
-    font-weight: 900;
-}
-.shop-buy-btn.shop-buy-diamond:active {
-    background: #f59e0b;
-    transform: scale(0.95);
-}
-
+.shop-buy-btn.shop-buy-diamond { background: #fbbf24; color: #1e293b; font-weight: 900; }
+.shop-buy-btn.shop-buy-diamond:active { background: #f59e0b; transform: scale(0.95); }
 @media (max-width: 420px) {
-    .shop-amount { font-size: 0.72rem; }
-    .shop-price { font-size: 0.68rem; }
-    .shop-buy-btn { padding: 4px 10px; font-size: 0.7rem; }
+    .shop-amount { font-size: 0.78rem; }
+    .shop-price { font-size: 0.78rem; }
+    .shop-buy-btn { padding: 5px 12px; font-size: 0.75rem; }
     .shop-coin-icon { width: 18px; height: 18px; }
 }
+.payment-info { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.payment-line { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 0.65rem; line-height: 1.4; text-align: right; margin: 0; white-space: nowrap; overflow: hidden; }
+.payment-line svg { flex-shrink: 0; display: block; width: 14px; height: 14px; }
+.payment-line > span { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.payment-id { color: var(--text-color); font-size: inherit; direction: ltr; unicode-bidi: isolate; display: inline; font-weight: 600; }
+.card-number-box { width: 100%; background: rgba(34, 197, 94, 0.08); border: 2px solid rgba(34, 197, 94, 0.55); border-radius: 15px; padding: 14px 10px; text-align: center; font-size: 1.2rem; font-weight: 900; color: #86efac; letter-spacing: 1px; direction: ltr; margin: 12px 0; box-shadow: 0 0 18px rgba(34, 197, 94, 0.2); }
+.token-input-row { display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 10px; margin-top: 4px; flex-direction: row-reverse; }
+.token-input { flex: 1; min-width: 0; background: #0d0518; border: 2px solid var(--border-color); border-radius: 12px; padding: 12px 14px; font-size: 1.1rem; font-family: 'Vazirmatn', sans-serif; color: var(--text-color); text-align: center; letter-spacing: 6px; direction: ltr; outline: none; }
+.token-input::placeholder { color: #4a3a5f; letter-spacing: 4px; }
+.token-input:focus { border-color: var(--primary-color); }
+.token-cancel-btn, .token-confirm-btn { width: 48px; height: 48px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: transform 0.15s; }
+.token-cancel-btn:active, .token-confirm-btn:active { transform: scale(0.9); }
+.token-cancel-btn { background: #ef4444; box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4); }
+.token-confirm-btn { background: #22c55e; box-shadow: 0 3px 10px rgba(34, 197, 94, 0.4); }
+.payment-result { min-height: 22px; font-size: 0.85rem; font-weight: bold; text-align: center; margin-top: 6px; }
+.payment-result.success { color: var(--success-color); }
+.payment-result.fail { color: #f87171; }
