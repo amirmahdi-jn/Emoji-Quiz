@@ -1,4 +1,5 @@
-const DEVICE_KEY = 'emojiQuizDeviceId_v6';
+const DEVICE_KEY = 'emojiQuizDeviceId_v7';
+const LAST_GUEST_KEY = 'emojiQuizLastGuestNum_v1';
 
 function loadUsedCodes() {
     try {
@@ -53,18 +54,25 @@ function saveProfile() {
 function getDeviceId() {
     try {
         let id = localStorage.getItem(DEVICE_KEY);
-        if (!id) {
-            id = sessionStorage.getItem(DEVICE_KEY);
-        }
-        if (!id) {
-            id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        }
+        if (!id) id = sessionStorage.getItem(DEVICE_KEY);
+        if (!id) id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
         localStorage.setItem(DEVICE_KEY, id);
         sessionStorage.setItem(DEVICE_KEY, id);
         return id;
     } catch (e) {
         return 'device_fallback_' + Date.now();
     }
+}
+
+function getLastGuestNum() {
+    try {
+        const saved = localStorage.getItem(LAST_GUEST_KEY);
+        return saved ? parseInt(saved) : -1;
+    } catch (e) { return -1; }
+}
+
+function setLastGuestNum(num) {
+    try { localStorage.setItem(LAST_GUEST_KEY, num.toString()); } catch (e) {}
 }
 
 async function loadProfile() {
@@ -88,7 +96,8 @@ async function loadProfile() {
 
     try {
         const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
-        let maxGuestNum = -1;
+        let maxGuestNum = getLastGuestNum();
+
         if (allProfiles) {
             allProfiles.forEach(p => {
                 const match = p.name.match(/^Guest\.(\d+)$/);
@@ -98,9 +107,23 @@ async function loadProfile() {
                 }
             });
         }
-        const newGuestNum = maxGuestNum + 1;
-        currentName = 'Guest.' + newGuestNum;
+
+        let newGuestNum = maxGuestNum + 1;
+        let candidate = 'Guest.' + newGuestNum;
+        let found = false;
+        while (!found) {
+            const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
+            if (!taken) {
+                found = true;
+            } else {
+                newGuestNum++;
+                candidate = 'Guest.' + newGuestNum;
+            }
+        }
+
+        currentName = candidate;
         currentAvatarIndex = -1;
+        setLastGuestNum(newGuestNum);
         await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
