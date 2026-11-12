@@ -16,7 +16,7 @@
                 <div class="profile-avatar" onclick="openModal('profile-modal')">
                     <img id="headerAvatar" src="avatar0.jpg" alt="Avatar">
                 </div>
-                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">بدون نام</div>
+                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">Guest</div>
             </div>
             <div class="panel-btn" onclick="showScreen('panel-screen')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,7 +69,6 @@
             <button class="btn-back" onclick="showScreen('main-menu')">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
-            <h2>پنل</h2>
         </div>
 
         <div class="panel-content" id="panel-content"></div>
@@ -537,6 +536,16 @@
             <div class="offline-desc">اینترنت شما قطع است.</div>
             <div class="offline-desc">لطفا اینترنت خود را بررسی کنید.</div>
             <button id="offline-close-btn">تلاش مجدد</button>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="modal">
+        <div class="modal-content" style="text-align: right; direction: rtl;">
+            <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
+            <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">کاربر گرامی!</p>
+            <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا از حروف و اعداد انگلیسی استفاده نمایید.</p>
+            <p style="color: var(--text-color); font-size: 0.95rem;">با تشکر <span style="color: #ff3b3b;">♥︎</span></p>
+            <button class="btn-primary" style="margin-top: 25px;" onclick="document.getElementById('alert-modal').classList.remove('active')">بستن</button>
         </div>
     </div>
 
