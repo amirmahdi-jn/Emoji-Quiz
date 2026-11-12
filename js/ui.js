@@ -128,6 +128,13 @@ function getUserInitial(username) {
     return username.charAt(0).toUpperCase();
 }
 
+function getAvatarForUser(username) {
+    if (username === currentName && currentAvatarIndex >= 0) {
+        return avatarImages[currentAvatarIndex];
+    }
+    return defaultAvatar;
+}
+
 function getPersianDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const parts = new Intl.DateTimeFormat('fa-IR', options).formatToParts(new Date());
