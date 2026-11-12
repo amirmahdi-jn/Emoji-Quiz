@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://tkhvcfqqxxodhwgmdjiq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const RESET_KEY = 'emojiQuizResetOnce_v3';
+const RESET_KEY = 'emojiQuizResetOnce_v5';
 if (!localStorage.getItem(RESET_KEY)) {
     localStorage.clear();
     localStorage.setItem(RESET_KEY, '1');
