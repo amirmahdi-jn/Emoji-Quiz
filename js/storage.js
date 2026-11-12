@@ -22,12 +22,12 @@ function isCodeUsed(code) {
 
 function saveProgress() {
     const progress = {
-        currentCoins: currentCoins,
-        currentDiamonds: currentDiamonds,
-        unlockedLevels: unlockedLevels,
-        solvedLevels: solvedLevels,
-        currentChapter: currentChapter,
-        currentLevelIndex: currentLevelIndex
+        currentCoins,
+        currentDiamonds,
+        unlockedLevels,
+        solvedLevels,
+        currentChapter,
+        currentLevelIndex
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
@@ -48,7 +48,9 @@ function loadProgress() {
 }
 
 function saveProfile() {
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
+    try {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex }));
+    } catch (e) {}
 }
 
 function getDeviceId() {
@@ -75,19 +77,85 @@ function setLastGuestNum(num) {
     try { localStorage.setItem(LAST_GUEST_KEY, num.toString()); } catch (e) {}
 }
 
+function extractGuestNum(name) {
+    if (!name) return -1;
+    const match = name.match(/^Guest\.(\d+)$/);
+    return match ? parseInt(match[1]) : -1;
+}
+
+async function createNewGuest(deviceId) {
+    let hasGuestNum = false;
+    let maxNum = -1;
+
+    try {
+        const { data: allProfiles } = await supabaseClient.from('profiles').select('*');
+        if (allProfiles && allProfiles.length > 0) {
+            hasGuestNum = 'guest_number' in allProfiles[0];
+        }
+        for (const p of (allProfiles || [])) {
+            if (hasGuestNum && typeof p.guest_number === 'number') {
+                if (p.guest_number > maxNum) maxNum = p.guest_number;
+            }
+            const fromName = extractGuestNum(p.name);
+            if (fromName > maxNum) maxNum = fromName;
+        }
+    } catch (e) {}
+
+    let num = maxNum + 1;
+    const solved = Object.keys(solvedLevels).length;
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+        const candidate = 'Guest.' + num;
+        const insertData = {
+            name: candidate,
+            device_id: deviceId,
+            avatar_index: -1,
+            solved_levels: solved
+        };
+        if (hasGuestNum) insertData.guest_number = num;
+
+        const { error } = await supabaseClient.from('profiles').insert(insertData);
+
+        if (!error) {
+            return { name: candidate, num };
+        }
+
+        const errStr = (error.message || '') + (error.details || '') + (error.hint || '');
+        if (errStr.includes('duplicate') || errStr.includes('unique') || error.code === '23505') {
+            num++;
+            continue;
+        }
+
+        throw error;
+    }
+
+    throw new Error('retry_exceeded');
+}
+
 async function loadProfile() {
     const deviceId = getDeviceId();
 
     try {
         const { data: existing } = await supabaseClient
             .from('profiles')
-            .select('name, avatar_index')
+            .select('*')
             .eq('device_id', deviceId)
             .maybeSingle();
 
         if (existing) {
             currentName = existing.name;
             currentAvatarIndex = typeof existing.avatar_index === 'number' ? existing.avatar_index : -1;
+
+            if (existing.guest_number === null && /^Guest\.\d+$/.test(existing.name)) {
+                const num = extractGuestNum(existing.name);
+                if (num >= 0) {
+                    supabaseClient.from('profiles')
+                        .update({ guest_number: num })
+                        .eq('device_id', deviceId)
+                        .then();
+                }
+            }
+
             saveProfile();
             updateProfileUI();
             return;
@@ -95,9 +163,17 @@ async function loadProfile() {
     } catch (e) {}
 
     try {
+        const result = await createNewGuest(deviceId);
+        currentName = result.name;
+        currentAvatarIndex = -1;
+        saveProfile();
+        updateProfileUI();
+        return;
+    } catch (e) {}
+
+    try {
         const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
         let maxGuestNum = getLastGuestNum();
-
         if (allProfiles) {
             allProfiles.forEach(p => {
                 const match = p.name.match(/^Guest\.(\d+)$/);
@@ -107,20 +183,16 @@ async function loadProfile() {
                 }
             });
         }
-
         let newGuestNum = maxGuestNum + 1;
         let candidate = 'Guest.' + newGuestNum;
         let found = false;
-        while (!found) {
+        let iterations = 0;
+        while (!found && iterations < 30) {
             const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
-            if (!taken) {
-                found = true;
-            } else {
-                newGuestNum++;
-                candidate = 'Guest.' + newGuestNum;
-            }
+            if (!taken) found = true;
+            else { newGuestNum++; candidate = 'Guest.' + newGuestNum; }
+            iterations++;
         }
-
         currentName = candidate;
         currentAvatarIndex = -1;
         setLastGuestNum(newGuestNum);
@@ -135,6 +207,8 @@ async function loadProfile() {
         currentName = 'Guest.0';
         currentAvatarIndex = -1;
     }
+
+    updateProfileUI();
 }
 
 function updateProfileUI() {
