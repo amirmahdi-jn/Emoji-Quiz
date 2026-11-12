@@ -54,22 +54,22 @@ function closeNameModal() {
 async function saveName() {
     const input = document.getElementById('nameInput');
     if (!input) return;
-    let raw = input.value.trim();
-    
+    const raw = input.value.trim();
+
     if (!/^[a-zA-Z0-9\.]{3,10}$/.test(raw)) {
         document.getElementById('alert-modal').classList.add('active');
         return;
     }
 
     const deviceId = getDeviceId();
-    
+
     try {
         const { data: existing } = await supabaseClient
             .from('profiles')
             .select('name, device_id')
             .ilike('name', raw)
             .maybeSingle();
-        
+
         if (existing && existing.device_id !== deviceId) {
             document.getElementById('duplicate-alert-modal').classList.add('active');
             return;
@@ -78,7 +78,7 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
-    
+
     saveProfile();
     updateProfileUI();
     closeNameModal();
@@ -92,15 +92,7 @@ async function saveName() {
         supabaseClient.from('messages')
             .update({ sender_name: currentName })
             .eq('sender_name', oldName)
-            .then(() => {
-                if (currentPanelTab === 'public-chat') {
-                    if (chatSubscription) {
-                        supabaseClient.removeChannel(chatSubscription);
-                        chatSubscription = null;
-                    }
-                    initPanelChat();
-                }
-            });
+            .then();
     }
 
     if (currentPanelTab === 'top-players') {
@@ -131,13 +123,6 @@ function renderAvatars() {
                 .eq('device_id', getDeviceId())
                 .then(() => {
                     if (currentPanelTab === 'top-players') fetchLeaderboard();
-                    if (currentPanelTab === 'public-chat') {
-                        if (chatSubscription) {
-                            supabaseClient.removeChannel(chatSubscription);
-                            chatSubscription = null;
-                        }
-                        initPanelChat();
-                    }
                 });
         };
         if (idx < 3) row1.appendChild(item);
