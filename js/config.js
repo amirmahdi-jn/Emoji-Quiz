@@ -2,7 +2,7 @@ const SUPABASE_URL = 'https://tkhvcfqqxxodhwgmdjiq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const RESET_KEY = 'emojiQuizResetOnce_v2';
+const RESET_KEY = 'emojiQuizResetOnce_v3';
 if (!localStorage.getItem(RESET_KEY)) {
     localStorage.clear();
     localStorage.setItem(RESET_KEY, '1');
@@ -25,7 +25,7 @@ const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 9;
 
 let currentAvatarIndex = -1;
-let currentName = 'Guest';
+let currentName = 'Guest.0';
 
 const GIFT_KEY = 'gift_last_open_v6';
 const DAILY_KEY = 'emoji_daily_challenge_v6';
