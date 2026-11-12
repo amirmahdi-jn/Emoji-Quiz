@@ -61,7 +61,7 @@ async function saveName() {
         return;
     }
     
-    const { data: existing } = await supabaseClient.from('profiles').select('name').eq('name', raw).single();
+    const { data: existing } = await supabaseClient.from('profiles').select('name').ilike('name', raw).single();
     if (existing) {
         document.getElementById('duplicate-alert-modal').classList.add('active');
         return;
@@ -76,12 +76,17 @@ async function saveName() {
     await supabaseClient.from('profiles').upsert({ 
         name: currentName, 
         device_id: deviceId,
+        avatar_index: currentAvatarIndex,
         solved_levels: Object.keys(solvedLevels).length 
     }, { onConflict: 'device_id' });
     
     saveProfile();
     updateProfileUI();
     closeNameModal();
+    
+    if (currentPanelTab === 'top-players') {
+        setTimeout(() => fetchLeaderboard(), 100);
+    }
 }
 
 function renderAvatars() {
