@@ -60,32 +60,46 @@ async function saveName() {
         document.getElementById('alert-modal').classList.add('active');
         return;
     }
+
+    const deviceId = getDeviceId();
     
-    const { data: existing } = await supabaseClient.from('profiles').select('name').ilike('name', raw).single();
+    const { data: existing } = await supabaseClient
+        .from('profiles')
+        .select('name')
+        .ilike('name', raw)
+        .neq('device_id', deviceId)
+        .maybeSingle();
+    
     if (existing) {
         document.getElementById('duplicate-alert-modal').classList.add('active');
         return;
     }
-    
-    const deviceId = getDeviceId();
-    if (!currentName.startsWith('Guest.') && currentName !== raw) {
-        await supabaseClient.from('profiles').delete().eq('name', currentName);
-    }
-    
+
+    const oldName = currentName;
     currentName = raw;
-    await supabaseClient.from('profiles').upsert({ 
-        name: currentName, 
-        device_id: deviceId,
-        avatar_index: currentAvatarIndex,
-        solved_levels: Object.keys(solvedLevels).length 
-    }, { onConflict: 'device_id' });
-    
+
+    await supabaseClient
+        .from('profiles')
+        .upsert({ 
+            name: currentName, 
+            device_id: deviceId,
+            avatar_index: currentAvatarIndex,
+            solved_levels: Object.keys(solvedLevels).length 
+        }, { onConflict: 'device_id' });
+
+    await supabaseClient
+        .from('messages')
+        .update({ sender_name: currentName })
+        .eq('sender_name', oldName);
+
     saveProfile();
     updateProfileUI();
     closeNameModal();
-    
+
     if (currentPanelTab === 'top-players') {
-        setTimeout(() => fetchLeaderboard(), 100);
+        fetchLeaderboard();
+    } else if (currentPanelTab === 'public-chat') {
+        initPanelChat();
     }
 }
 
@@ -110,7 +124,9 @@ function renderAvatars() {
             supabaseClient.from('profiles')
                 .update({ avatar_index: idx })
                 .eq('device_id', getDeviceId())
-                .then();
+                .then(() => {
+                    if (currentPanelTab === 'top-players') fetchLeaderboard();
+                });
         };
         if (idx < 3) row1.appendChild(item);
         else row2.appendChild(item);
