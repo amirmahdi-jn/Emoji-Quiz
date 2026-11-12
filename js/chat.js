@@ -44,7 +44,7 @@ async function fetchLeaderboard() {
     const loading = document.getElementById('leaderboard-loading');
     if (!list) return;
     
-    const { data, error } = await supabaseClient.from('profiles').select('name, solved_levels').order('solved_levels', { ascending: false }).limit(10);
+    const { data, error } = await supabaseClient.from('profiles').select('name, solved_levels, avatar_index').order('solved_levels', { ascending: false }).limit(10);
     if (loading) loading.style.display = 'none';
     
     if (error || !data || data.length === 0) {
@@ -54,27 +54,30 @@ async function fetchLeaderboard() {
     
     list.innerHTML = '';
     data.forEach((profile, index) => {
-        let rankColor = '#000000';
+        let rankColor = '#ffffff';
         if (index === 0) rankColor = '#ffd700';
         else if (index === 1) rankColor = '#c0c0c0';
         else if (index === 2) rankColor = '#cd7f32';
 
         const isMe = profile.name === currentName;
-        const borderStyle = isMe ? 'border: 2px solid #eab308;' : 'border: none;';
-        const userColor = getUserColor(profile.name);
-        const initial = getUserInitial(profile.name);
+        const borderStyle = isMe ? 'border: 2px solid #eab308;' : 'border: 1px solid transparent;';
+        
+        let avatarSrc = defaultAvatar;
+        if (profile.avatar_index >= 0 && avatarImages[profile.avatar_index]) {
+            avatarSrc = avatarImages[profile.avatar_index];
+        }
 
         const row = document.createElement('div');
         row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
         
         row.innerHTML = `
             <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${rankColor};">${index + 1}</div>
-            <div style="width: 35px; height: 35px; border-radius: 50%; background: ${userColor}; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 1.1rem; flex-shrink: 0;">
-                ${initial}
+            <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid ${rankColor};">
+                <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; color: ${rankColor}; font-weight: bold;">
                 <span>${profile.name}</span>
-                <span style="font-size: 0.8rem;">${profile.solved_levels} مرحله</span>
+                <span style="font-size: 0.8rem;">🏆 ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
         list.appendChild(row);
@@ -107,16 +110,16 @@ function appendPanelChatMessage(sender, text, timeStr) {
     if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     
     const color = getUserColor(sender);
-    const initial = getUserInitial(sender);
     const time = getPersianTime(timeStr);
     const isMe = sender === currentName;
+    const avatarSrc = getAvatarForUser(sender);
     
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     
     wrapper.innerHTML = `
-        <div class="chat-msg-avatar" style="background: ${color}; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold;">
-            ${initial}
+        <div class="chat-msg-avatar" style="border: 2px solid ${color};">
+            <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
         </div>
         <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
             <div class="chat-msg-header" style="margin-bottom: 4px;">
