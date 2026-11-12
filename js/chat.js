@@ -96,19 +96,29 @@ async function initPanelChat() {
     const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
     
+    const { data: profilesData } = await supabaseClient.from('profiles').select('name, avatar_index');
+    
     chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     if (data.length === 0) {
         chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
     } else {
-        data.forEach(msg => appendPanelChatMessage(msg.sender_name, msg.text, msg.created_at));
+        data.forEach(msg => {
+            const profile = profilesData ? profilesData.find(p => p.name === msg.sender_name) : null;
+            const avatarIdx = profile ? profile.avatar_index : -1;
+            appendPanelChatMessage(msg.sender_name, msg.text, msg.created_at, avatarIdx);
+        });
     }
     
     if (chatSubscription) supabaseClient.removeChannel(chatSubscription);
     chatSubscription = supabaseClient.channel('public:messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, 
-        (payload) => appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.created_at)).subscribe();
+        async (payload) => {
+            const { data: profileData } = await supabaseClient.from('profiles').select('avatar_index').eq('name', payload.new.sender_name).maybeSingle();
+            const avatarIdx = profileData ? profileData.avatar_index : -1;
+            appendPanelChatMessage(payload.new.sender_name, payload.new.text, payload.new.created_at, avatarIdx);
+        }).subscribe();
 }
 
-function appendPanelChatMessage(sender, text, timeStr) {
+function appendPanelChatMessage(sender, text, timeStr, avatarIndex) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
@@ -116,7 +126,11 @@ function appendPanelChatMessage(sender, text, timeStr) {
     const color = getUserColor(sender);
     const time = getPersianTime(timeStr);
     const isMe = sender === currentName;
-    const avatarSrc = getAvatarForUser(sender);
+    
+    let avatarSrc = defaultAvatar;
+    if (avatarIndex >= 0 && avatarImages[avatarIndex]) {
+        avatarSrc = avatarImages[avatarIndex];
+    }
     
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
