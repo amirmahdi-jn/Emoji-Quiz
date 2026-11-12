@@ -53,14 +53,14 @@ function loadProfile() {
         const saved = localStorage.getItem(PROFILE_KEY);
         if (saved) {
             const data = JSON.parse(saved);
-            currentName = data.name || 'Guest';
+            currentName = data.name || 'Guest.0';
             currentAvatarIndex = typeof data.avatarIndex === 'number' ? data.avatarIndex : -1;
         } else {
-            currentName = 'Guest';
+            currentName = 'Guest.0';
             currentAvatarIndex = -1;
         }
     } catch (e) {
-        currentName = 'Guest';
+        currentName = 'Guest.0';
         currentAvatarIndex = -1;
     }
 }
