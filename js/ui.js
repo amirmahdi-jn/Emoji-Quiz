@@ -86,19 +86,7 @@ async function saveName() {
     supabaseClient.from('profiles')
         .update({ name: currentName })
         .eq('device_id', deviceId)
-        .then((res) => {
-            if (res.error) {
-                const { data } = supabaseClient.from('profiles').select('id').eq('device_id', deviceId);
-                if (!data || data.length === 0) {
-                    supabaseClient.from('profiles').insert({
-                        name: currentName,
-                        device_id: deviceId,
-                        avatar_index: currentAvatarIndex,
-                        solved_levels: Object.keys(solvedLevels).length
-                    }).then();
-                }
-            }
-        });
+        .then();
 
     if (oldName && oldName !== raw) {
         supabaseClient.from('messages')
@@ -110,6 +98,10 @@ async function saveName() {
     if (currentPanelTab === 'top-players') {
         fetchLeaderboard();
     } else if (currentPanelTab === 'public-chat') {
+        if (chatSubscription) {
+            supabaseClient.removeChannel(chatSubscription);
+            chatSubscription = null;
+        }
         initPanelChat();
     }
 }
@@ -137,6 +129,7 @@ function renderAvatars() {
                 .eq('device_id', getDeviceId())
                 .then(() => {
                     if (currentPanelTab === 'top-players') fetchLeaderboard();
+                    if (currentPanelTab === 'public-chat') initPanelChat();
                 });
         };
         if (idx < 3) row1.appendChild(item);
