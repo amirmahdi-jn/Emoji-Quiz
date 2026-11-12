@@ -39,6 +39,8 @@ function renderPanelContent(tabId) {
     }
 }
 
+const checkIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#2ecc71" stroke-width="2" fill="rgba(46, 204, 113, 0.15)"/><path d="m8.5 12 2.5 2.5 4.5-4.5"/></svg>`;
+
 async function fetchLeaderboard() {
     const list = document.getElementById('global-leaderboard');
     const loading = document.getElementById('leaderboard-loading');
@@ -60,7 +62,7 @@ async function fetchLeaderboard() {
         else if (index === 2) rankColor = '#cd7f32';
 
         const isMe = profile.name === currentName;
-        const borderStyle = isMe ? 'border: 2px solid #eab308;' : 'border: 1px solid transparent;';
+        const borderStyle = isMe ? 'border: 2px solid var(--primary-color);' : 'border: 1px solid transparent;';
         
         let avatarSrc = defaultAvatar;
         if (profile.avatar_index >= 0 && avatarImages[profile.avatar_index]) {
@@ -72,12 +74,12 @@ async function fetchLeaderboard() {
         
         row.innerHTML = `
             <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${rankColor};">${index + 1}</div>
-            <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid ${rankColor};">
+            <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; color: ${rankColor}; font-weight: bold;">
                 <span>${profile.name}</span>
-                <span style="font-size: 0.8rem;">🏆 ${profile.solved_levels} مرحله حل شده</span>
+                <span style="font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">${checkIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
         list.appendChild(row);
@@ -118,7 +120,7 @@ function appendPanelChatMessage(sender, text, timeStr) {
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     
     wrapper.innerHTML = `
-        <div class="chat-msg-avatar" style="border: 2px solid ${color};">
+        <div class="chat-msg-avatar">
             <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
         </div>
         <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
