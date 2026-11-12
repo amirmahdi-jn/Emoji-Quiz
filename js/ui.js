@@ -63,17 +63,18 @@ async function saveName() {
 
     const deviceId = getDeviceId();
     
-    const { data: existing } = await supabaseClient
-        .from('profiles')
-        .select('name')
-        .ilike('name', raw)
-        .neq('device_id', deviceId)
-        .maybeSingle();
-    
-    if (existing) {
-        document.getElementById('duplicate-alert-modal').classList.add('active');
-        return;
-    }
+    try {
+        const { data: existing } = await supabaseClient
+            .from('profiles')
+            .select('name, device_id')
+            .ilike('name', raw)
+            .maybeSingle();
+        
+        if (existing && existing.device_id !== deviceId) {
+            document.getElementById('duplicate-alert-modal').classList.add('active');
+            return;
+        }
+    } catch (e) {}
 
     const oldName = currentName;
     currentName = raw;
@@ -82,19 +83,34 @@ async function saveName() {
     updateProfileUI();
     closeNameModal();
 
-    supabaseClient.from('profiles').upsert({ 
-        name: currentName, 
-        device_id: deviceId,
-        avatar_index: currentAvatarIndex,
-        solved_levels: Object.keys(solvedLevels).length 
-    }, { onConflict: 'device_id' }).then();
+    supabaseClient.from('profiles')
+        .update({ name: currentName })
+        .eq('device_id', deviceId)
+        .then((res) => {
+            if (res.error) {
+                const { data } = supabaseClient.from('profiles').select('id').eq('device_id', deviceId);
+                if (!data || data.length === 0) {
+                    supabaseClient.from('profiles').insert({
+                        name: currentName,
+                        device_id: deviceId,
+                        avatar_index: currentAvatarIndex,
+                        solved_levels: Object.keys(solvedLevels).length
+                    }).then();
+                }
+            }
+        });
 
-    supabaseClient.from('messages').update({ sender_name: currentName }).eq('sender_name', oldName).then();
+    if (oldName && oldName !== raw) {
+        supabaseClient.from('messages')
+            .update({ sender_name: currentName })
+            .eq('sender_name', oldName)
+            .then();
+    }
 
     if (currentPanelTab === 'top-players') {
-        setTimeout(fetchLeaderboard, 300);
+        fetchLeaderboard();
     } else if (currentPanelTab === 'public-chat') {
-        setTimeout(initPanelChat, 300);
+        initPanelChat();
     }
 }
 
