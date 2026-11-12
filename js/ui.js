@@ -105,7 +105,7 @@ function renderAvatars() {
 }
 
 function getUserColor(username) {
-    if (!username) return colors[0];
+    if (!username) return '#475569';
     let hash = 0;
     for (let i = 0; i < username.length; i++) {
         hash = username.charCodeAt(i) + ((hash << 5) - hash);
