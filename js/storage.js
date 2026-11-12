@@ -1,4 +1,4 @@
-const DEVICE_KEY = 'emojiQuizDeviceId_v5';
+const DEVICE_KEY = 'emojiQuizDevice_v6';
 
 function loadUsedCodes() {
     try {
@@ -54,9 +54,13 @@ function getDeviceId() {
     try {
         let id = localStorage.getItem(DEVICE_KEY);
         if (!id) {
-            id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            localStorage.setItem(DEVICE_KEY, id);
+            id = sessionStorage.getItem(DEVICE_KEY);
         }
+        if (!id) {
+            id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+        localStorage.setItem(DEVICE_KEY, id);
+        sessionStorage.setItem(DEVICE_KEY, id);
         return id;
     } catch (e) {
         return 'device_fallback_' + Date.now();
@@ -80,7 +84,9 @@ async function loadProfile() {
             updateProfileUI();
             return;
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('DB read error:', e);
+    }
 
     try {
         const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
