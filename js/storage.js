@@ -48,7 +48,7 @@ function saveProfile() {
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
 }
 
-function loadProfile() {
+async function loadProfile() {
     try {
         const saved = localStorage.getItem(PROFILE_KEY);
         if (saved) {
@@ -62,6 +62,31 @@ function loadProfile() {
     } catch (e) {
         currentName = 'Guest.0';
         currentAvatarIndex = -1;
+    }
+
+    if (currentName === 'Guest.0' || currentName.startsWith('Guest.')) {
+        try {
+            const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
+            let newGuestName = 'Guest.0';
+            let counter = 0;
+            let isUnique = false;
+            
+            while (!isUnique) {
+                newGuestName = 'Guest.' + counter;
+                const check = existingProfiles ? existingProfiles.find(p => p.name === newGuestName) : null;
+                if (!check) {
+                    isUnique = true;
+                } else {
+                    counter++;
+                }
+            }
+            
+            currentName = newGuestName;
+            await supabaseClient.from('profiles').upsert({ name: currentName, solved_levels: Object.keys(solvedLevels).length });
+            saveProfile();
+        } catch (e) {
+            console.error('Error generating guest name:', e);
+        }
     }
 }
 
