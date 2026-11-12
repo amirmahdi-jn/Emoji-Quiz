@@ -4,7 +4,7 @@ function renderPanelContent(tabId) {
     
     if (tabId === 'top-players') {
         container.innerHTML = `
-            <div class="top-player-card">
+            <div class="top-player-card" style="border: 2px solid #eab308;">
                 <div class="top-player-avatar">
                     <img src="${currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex] ? avatarImages[currentAvatarIndex] : defaultAvatar}" alt="Avatar">
                 </div>
@@ -63,8 +63,18 @@ async function fetchLeaderboard() {
     list.innerHTML = '';
     data.forEach((profile, index) => {
         const row = document.createElement('div');
-        row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color);';
-        row.innerHTML = `<span style="color: #f1c40f; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: #fff; font-size: 0.85rem;">${profile.solved_levels} مرحله</span>`;
+        row.style.cssText = 'background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); margin-bottom: 8px;';
+        
+        if (profile.name === currentName) {
+            row.style.border = '2px solid #eab308';
+        }
+
+        let rankColor = '#000000';
+        if (index === 0) rankColor = '#ffd700';
+        else if (index === 1) rankColor = '#c0c0c0';
+        else if (index === 2) rankColor = '#cd7f32';
+
+        row.innerHTML = `<span style="color: ${rankColor}; font-weight: bold;">${index + 1}. ${profile.name}</span><span style="color: ${rankColor}; font-size: 0.85rem;">${profile.solved_levels} مرحله</span>`;
         list.appendChild(row);
     });
 }
@@ -77,7 +87,7 @@ async function initPanelChat() {
     const { data, error } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true }).limit(50);
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
     
-    chatMessages.innerHTML = `<div class="chat-header-date">${getPersianDate()}</div>`;
+    chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     if (data.length === 0) {
         chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
     } else {
@@ -92,7 +102,7 @@ async function initPanelChat() {
 function appendPanelChatMessage(sender, text, timeStr) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
-    if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date">${getPersianDate()}</div>`;
+    if (chatMessages.innerHTML.includes('هنوز پیامی')) chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     
     const color = getUserColor(sender);
     const time = getPersianTime(timeStr);
@@ -100,18 +110,18 @@ function appendPanelChatMessage(sender, text, timeStr) {
     const isMe = sender === currentName;
     
     const wrapper = document.createElement('div');
-    wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : ''}`;
+    wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
             <img src="${avatarSrc}" alt="Avatar">
         </div>
-        <div class="chat-msg-content">
-            <div class="chat-msg-header">
-                <span class="chat-msg-name" style="color: ${color};">${sender || 'Guest'}</span>
-                <span class="chat-msg-time">${time}</span>
+        <div class="chat-msg-content" style="max-width: 80%; padding: 8px 12px; border-radius: 12px; background: ${isMe ? 'rgba(199, 36, 255, 0.15)' : 'rgba(255,255,255,0.05)'}">
+            <div class="chat-msg-header" style="margin-bottom: 4px;">
+                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;">${sender || 'Guest'}</span>
             </div>
-            <div class="chat-msg-text">${text}</div>
+            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff;">${text}</div>
+            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}</div>
         </div>
     `;
     chatMessages.appendChild(wrapper);
