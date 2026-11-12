@@ -22,12 +22,12 @@ function isCodeUsed(code) {
 
 function saveProgress() {
     const progress = {
-        currentCoins,
-        currentDiamonds,
-        unlockedLevels,
-        solvedLevels,
-        currentChapter,
-        currentLevelIndex
+        currentCoins: currentCoins,
+        currentDiamonds: currentDiamonds,
+        unlockedLevels: unlockedLevels,
+        solvedLevels: solvedLevels,
+        currentChapter: currentChapter,
+        currentLevelIndex: currentLevelIndex
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
@@ -53,17 +53,53 @@ function saveProfile() {
     } catch (e) {}
 }
 
-function getDeviceId() {
-    try {
-        let id = localStorage.getItem(DEVICE_KEY);
-        if (!id) id = sessionStorage.getItem(DEVICE_KEY);
-        if (!id) id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem(DEVICE_KEY, id);
-        sessionStorage.setItem(DEVICE_KEY, id);
+let _cachedDeviceId = null;
+let _deviceIdPromise = null;
+
+async function getDeviceIdAsync() {
+    if (_cachedDeviceId) return _cachedDeviceId;
+    if (_deviceIdPromise) return _deviceIdPromise;
+
+    _deviceIdPromise = (async () => {
+        let stored = null;
+        try {
+            stored = localStorage.getItem(DEVICE_KEY) || sessionStorage.getItem(DEVICE_KEY);
+        } catch (e) {}
+
+        let fp = null;
+        try { fp = await getStableDeviceId(); } catch (e) {}
+
+        let idbId = null;
+        try { idbId = await getOrCreateIdbDeviceId(); } catch (e) {}
+
+        let id;
+        if (stored) {
+            id = stored;
+        } else if (fp) {
+            id = fp;
+        } else if (idbId) {
+            id = idbId;
+        } else {
+            id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+
+        try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
+        try { sessionStorage.setItem(DEVICE_KEY, id); } catch (e) {}
+
+        _cachedDeviceId = id;
         return id;
-    } catch (e) {
-        return 'device_fallback_' + Date.now();
-    }
+    })();
+
+    return _deviceIdPromise;
+}
+
+function getDeviceId() {
+    if (_cachedDeviceId) return _cachedDeviceId;
+    try {
+        const stored = localStorage.getItem(DEVICE_KEY) || sessionStorage.getItem(DEVICE_KEY);
+        if (stored) return stored;
+    } catch (e) {}
+    return 'device_pending';
 }
 
 function getLastGuestNum() {
@@ -133,7 +169,7 @@ async function createNewGuest(deviceId) {
 }
 
 async function loadProfile() {
-    const deviceId = getDeviceId();
+    const deviceId = await getDeviceIdAsync();
 
     try {
         const { data: existing } = await supabaseClient
@@ -171,43 +207,8 @@ async function loadProfile() {
         return;
     } catch (e) {}
 
-    try {
-        const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
-        let maxGuestNum = getLastGuestNum();
-        if (allProfiles) {
-            allProfiles.forEach(p => {
-                const match = p.name.match(/^Guest\.(\d+)$/);
-                if (match) {
-                    const num = parseInt(match[1]);
-                    if (num > maxGuestNum) maxGuestNum = num;
-                }
-            });
-        }
-        let newGuestNum = maxGuestNum + 1;
-        let candidate = 'Guest.' + newGuestNum;
-        let found = false;
-        let iterations = 0;
-        while (!found && iterations < 30) {
-            const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
-            if (!taken) found = true;
-            else { newGuestNum++; candidate = 'Guest.' + newGuestNum; }
-            iterations++;
-        }
-        currentName = candidate;
-        currentAvatarIndex = -1;
-        setLastGuestNum(newGuestNum);
-        await supabaseClient.from('profiles').insert({
-            name: currentName,
-            device_id: deviceId,
-            avatar_index: -1,
-            solved_levels: Object.keys(solvedLevels).length
-        });
-        saveProfile();
-    } catch (e) {
-        currentName = 'Guest.0';
-        currentAvatarIndex = -1;
-    }
-
+    currentName = 'Guest.local_' + Math.floor(Math.random() * 99999);
+    currentAvatarIndex = -1;
     updateProfileUI();
 }
 
