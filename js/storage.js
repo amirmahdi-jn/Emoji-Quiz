@@ -1,5 +1,56 @@
-const DEVICE_KEY = 'emojiQuizDeviceId_v7';
+const DEVICE_KEY = 'emojiQuizDeviceId_v8';
 const LAST_GUEST_KEY = 'emojiQuizLastGuestNum_v1';
+
+function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/;SameSite=Lax";
+}
+
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+}
+
+function getHardwareId() {
+    const screenInfo = `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`;
+    const navInfo = `${navigator.hardwareConcurrency || 0}-${navigator.userAgent.length}-${window.devicePixelRatio || 1}`;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let hash = 0;
+    const str = screenInfo + navInfo + tz;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return 'hw_' + Math.abs(hash).toString(36);
+}
+
+function getDeviceId() {
+    let id = getCookie(DEVICE_KEY);
+    if (id) return id;
+
+    try {
+        id = localStorage.getItem(DEVICE_KEY);
+        if (id) {
+            setCookie(DEVICE_KEY, id, 365);
+            return id;
+        }
+    } catch (e) {}
+
+    id = getHardwareId() + '_' + Math.random().toString(36).substr(2, 5);
+    
+    setCookie(DEVICE_KEY, id, 365);
+    try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
+    
+    return id;
+}
 
 function loadUsedCodes() {
     try {
@@ -27,7 +78,8 @@ function saveProgress() {
         unlockedLevels,
         solvedLevels,
         currentChapter,
-        currentLevelIndex
+        currentLevelIndex,
+        removeHintUses
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
@@ -43,6 +95,7 @@ function loadProgress() {
             solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
             currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
             currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
+            removeHintUses = typeof p.removeHintUses === 'number' ? p.removeHintUses : 0;
         }
     } catch (e) {}
 }
@@ -51,19 +104,6 @@ function saveProfile() {
     try {
         localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex }));
     } catch (e) {}
-}
-
-function getDeviceId() {
-    try {
-        let id = localStorage.getItem(DEVICE_KEY);
-        if (!id) id = sessionStorage.getItem(DEVICE_KEY);
-        if (!id) id = 'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem(DEVICE_KEY, id);
-        sessionStorage.setItem(DEVICE_KEY, id);
-        return id;
-    } catch (e) {
-        return 'device_fallback_' + Date.now();
-    }
 }
 
 function getLastGuestNum() {
@@ -83,55 +123,6 @@ function extractGuestNum(name) {
     return match ? parseInt(match[1]) : -1;
 }
 
-async function createNewGuest(deviceId) {
-    let hasGuestNum = false;
-    let maxNum = -1;
-
-    try {
-        const { data: allProfiles } = await supabaseClient.from('profiles').select('*');
-        if (allProfiles && allProfiles.length > 0) {
-            hasGuestNum = 'guest_number' in allProfiles[0];
-        }
-        for (const p of (allProfiles || [])) {
-            if (hasGuestNum && typeof p.guest_number === 'number') {
-                if (p.guest_number > maxNum) maxNum = p.guest_number;
-            }
-            const fromName = extractGuestNum(p.name);
-            if (fromName > maxNum) maxNum = fromName;
-        }
-    } catch (e) {}
-
-    let num = maxNum + 1;
-    const solved = Object.keys(solvedLevels).length;
-
-    for (let attempt = 0; attempt < 10; attempt++) {
-        const candidate = 'Guest.' + num;
-        const insertData = {
-            name: candidate,
-            device_id: deviceId,
-            avatar_index: -1,
-            solved_levels: solved
-        };
-        if (hasGuestNum) insertData.guest_number = num;
-
-        const { error } = await supabaseClient.from('profiles').insert(insertData);
-
-        if (!error) {
-            return { name: candidate, num };
-        }
-
-        const errStr = (error.message || '') + (error.details || '') + (error.hint || '');
-        if (errStr.includes('duplicate') || errStr.includes('unique') || error.code === '23505') {
-            num++;
-            continue;
-        }
-
-        throw error;
-    }
-
-    throw new Error('retry_exceeded');
-}
-
 async function loadProfile() {
     const deviceId = getDeviceId();
 
@@ -145,17 +136,6 @@ async function loadProfile() {
         if (existing) {
             currentName = existing.name;
             currentAvatarIndex = typeof existing.avatar_index === 'number' ? existing.avatar_index : -1;
-
-            if (existing.guest_number === null && /^Guest\.\d+$/.test(existing.name)) {
-                const num = extractGuestNum(existing.name);
-                if (num >= 0) {
-                    supabaseClient.from('profiles')
-                        .update({ guest_number: num })
-                        .eq('device_id', deviceId)
-                        .then();
-                }
-            }
-
             saveProfile();
             updateProfileUI();
             return;
@@ -163,12 +143,24 @@ async function loadProfile() {
     } catch (e) {}
 
     try {
-        const result = await createNewGuest(deviceId);
-        currentName = result.name;
-        currentAvatarIndex = -1;
-        saveProfile();
-        updateProfileUI();
-        return;
+        const solvedCount = Object.keys(solvedLevels).length;
+        
+        if (solvedCount > 0) {
+            const { data: matching } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('solved_levels', solvedCount)
+                .limit(1);
+
+            if (matching && matching.length > 0) {
+                currentName = matching[0].name;
+                currentAvatarIndex = matching[0].avatar_index ?? -1;
+                saveProfile();
+                await supabaseClient.from('profiles').update({ device_id: deviceId }).eq('name', currentName);
+                updateProfileUI();
+                return;
+            }
+        }
     } catch (e) {}
 
     try {
@@ -176,26 +168,15 @@ async function loadProfile() {
         let maxGuestNum = getLastGuestNum();
         if (allProfiles) {
             allProfiles.forEach(p => {
-                const match = p.name.match(/^Guest\.(\d+)$/);
-                if (match) {
-                    const num = parseInt(match[1]);
-                    if (num > maxGuestNum) maxGuestNum = num;
-                }
+                const num = extractGuestNum(p.name);
+                if (num > maxGuestNum) maxGuestNum = num;
             });
         }
-        let newGuestNum = maxGuestNum + 1;
-        let candidate = 'Guest.' + newGuestNum;
-        let found = false;
-        let iterations = 0;
-        while (!found && iterations < 30) {
-            const taken = allProfiles ? allProfiles.find(p => p.name === candidate) : null;
-            if (!taken) found = true;
-            else { newGuestNum++; candidate = 'Guest.' + newGuestNum; }
-            iterations++;
-        }
-        currentName = candidate;
+        const newGuestNum = maxGuestNum + 1;
+        currentName = 'Guest.' + newGuestNum;
         currentAvatarIndex = -1;
         setLastGuestNum(newGuestNum);
+
         await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
