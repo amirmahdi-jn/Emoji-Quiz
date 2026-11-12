@@ -64,7 +64,7 @@ async function loadProfile() {
         currentAvatarIndex = -1;
     }
 
-    if (currentName === 'Guest.0' || currentName.startsWith('Guest.')) {
+    if (currentName.startsWith('Guest.')) {
         try {
             const { data: existingProfiles } = await supabaseClient.from('profiles').select('name');
             let newGuestName = 'Guest.0';
