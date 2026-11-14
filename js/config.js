@@ -14,9 +14,9 @@ let currentGuess = [];
 let unlockedLevels = 1;
 let solvedLevels = {};
 let removeHintUses = 0;
-const TOTAL_LEVELS = 135;
+const TOTAL_LEVELS = 180;
 const LEVELS_PER_CHAPTER = 15;
-const TOTAL_CHAPTERS = 9;
+const TOTAL_CHAPTERS = 12;
 
 let currentAvatarIndex = -1;
 let currentName = 'Guest.0';
