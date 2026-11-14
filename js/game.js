@@ -40,16 +40,11 @@ function renderChapters() {
         const isUnlocked = isChapterUnlocked(i);
         const solvedInChapter = getSolvedInChapter(i);
         const percent = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
-        let stageText = "";
-        if (i === 1) stageText = "مرحله ۱ تا ۱۵";
-        else if (i === 2) stageText = "مرحله ۱۶ تا ۳۰";
-        else if (i === 3) stageText = "مرحله ۳۱ تا ۴۵";
-        else if (i === 4) stageText = "مرحله ۴۶ تا ۶۰";
-        else if (i === 5) stageText = "مرحله ۶۱ تا ۷۵";
-        else if (i === 6) stageText = "مرحله ۷۶ تا ۹۰";
-        else if (i === 7) stageText = "مرحله ۹۱ تا ۱۰۵";
-        else if (i === 8) stageText = "مرحله ۱۰۶ تا ۱۲۰";
-        else if (i === 9) stageText = "مرحله ۱۲۱ تا ۱۳۵";
+        
+        const startLevel = (i - 1) * LEVELS_PER_CHAPTER + 1;
+        const endLevel = i * LEVELS_PER_CHAPTER;
+        const stageText = `مرحله ${startLevel} تا ${endLevel}`;
+
         if (isUnlocked) {
             html += `<div class="chapter-card" onclick="openChapter(${i})"><h3>فصل ${i}</h3><p>${stageText}</p>${buildProgressRing(percent)}</div>`;
         } else {
