@@ -58,7 +58,6 @@ function openChapter(chapterNum) {
     currentChapter = chapterNum;
     const title = document.getElementById('level-header-title');
     if (title) title.innerText = `فصل ${chapterNum}`;
-    saveProgress();
     showScreen('levels-screen');
 }
 
@@ -110,7 +109,6 @@ function startLevel(index) {
     renderSlots();
     renderKeyboard();
     updateCoinsUI();
-    saveProgress();
     showScreen('game-screen');
 }
 
@@ -216,7 +214,6 @@ function checkAnswer() {
         }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
-        saveProgress();
 
         supabaseClient.from('profiles')
             .update({ 
@@ -261,7 +258,6 @@ function goToNextChapter() {
     if (ccModal) ccModal.classList.remove('active');
     if (currentChapter < TOTAL_CHAPTERS) {
         currentChapter++;
-        saveProgress();
         startLevel((currentChapter - 1) * LEVELS_PER_CHAPTER);
     }
 }
@@ -276,7 +272,6 @@ function buyHint(type) {
     if (currentCoins >= cost) {
         currentCoins -= cost;
         updateCoinsUI();
-        saveProgress();
         
         supabaseClient.from('profiles')
             .update({ coins: currentCoins })
@@ -312,4 +307,4 @@ function buyHint(type) {
         const ncModal = document.getElementById('no-coin-modal');
         if (ncModal) ncModal.classList.add('active');
     }
-        }
+}
