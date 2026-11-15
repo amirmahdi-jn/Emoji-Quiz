@@ -50,6 +50,7 @@ async function fetchLeaderboard() {
         .from('profiles')
         .select('name, solved_levels, avatar_index')
         .order('solved_levels', { ascending: false })
+        .order('name', { ascending: true })
         .limit(51);
 
     if (loading) loading.style.display = 'none';
@@ -195,7 +196,7 @@ function appendPanelChatMessage(id, sender, text, timeStr, avatarIndex) {
 async function sendPanelChatMessage() {
     const input = document.getElementById('panel-chat-input');
     if (!input || !input.value.trim()) return;
-    const text = input.value.trim();
+    const text = input.value.trim().slice(0, 500);
     input.value = '';
     await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
 }
