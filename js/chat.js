@@ -48,9 +48,8 @@ async function fetchLeaderboard() {
 
     const { data, error } = await supabaseClient
         .from('profiles')
-        .select('name, solved_levels, avatar_index')
-        .order('solved_levels', { ascending: false })
-        .order('name', { ascending: true })
+        .select('name, solved_levels, avatar_index, created_at')
+        .order('created_at', { ascending: true })
         .limit(51);
 
     if (loading) loading.style.display = 'none';
