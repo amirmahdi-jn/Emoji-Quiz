@@ -144,36 +144,29 @@ async function loadProfile() {
         }
     } catch (e) {}
 
+    let nextGuestNum = 0;
+
     try {
-        const { data: counter, error: counterError } = await supabaseClient
-            .from('global_counters')
-            .select('last_guest_number')
-            .eq('id', 'guest_counter')
-            .single();
+        const { count, error } = await supabaseClient
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
 
-        let nextGuestNum = 1;
-        if (!counterError && counter) {
-            nextGuestNum = counter.last_guest_number + 1;
+        if (!error && count !== null) {
+            nextGuestNum = count;
         }
+    } catch (e) {}
 
-        currentName = 'Guest.' + nextGuestNum;
-        currentAvatarIndex = -1;
+    currentName = 'Guest.' + nextGuestNum;
+    currentAvatarIndex = -1;
 
-        const { error: insertError } = await supabaseClient.from('profiles').insert({
+    try {
+        await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
             avatar_index: -1,
             solved_levels: Object.keys(solvedLevels).length
         });
-
-        if (!insertError) {
-            await supabaseClient.from('global_counters')
-                .update({ last_guest_number: nextGuestNum })
-                .eq('id', 'guest_counter');
-            saveProfile();
-        } else {
-            currentName = 'Guest.0';
-        }
+        saveProfile();
     } catch (e) {
         currentName = 'Guest.0';
         currentAvatarIndex = -1;
@@ -200,4 +193,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-            }
+                      }
