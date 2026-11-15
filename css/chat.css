@@ -56,15 +56,15 @@
 .msg-menu-btn {
     position: absolute;
     top: 8px;
-    left: 12px;
+    left: 10px;
     background: transparent;
     border: none;
-    color: #ffffff;
     cursor: pointer;
-    font-size: 1.2rem;
-    line-height: 1;
-    padding: 0 2px;
+    padding: 0;
     z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .msg-reply-btn {
