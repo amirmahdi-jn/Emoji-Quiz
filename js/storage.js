@@ -108,23 +108,6 @@ function saveProfile() {
     } catch (e) {}
 }
 
-function getLastGuestNum() {
-    try {
-        const saved = localStorage.getItem(LAST_GUEST_KEY);
-        return saved ? parseInt(saved) : -1;
-    } catch (e) { return -1; }
-}
-
-function setLastGuestNum(num) {
-    try { localStorage.setItem(LAST_GUEST_KEY, num.toString()); } catch (e) {}
-}
-
-function extractGuestNum(name) {
-    if (!name) return -1;
-    const match = name.match(/^Guest\.(\d+)$/);
-    return match ? parseInt(match[1]) : -1;
-}
-
 async function loadProfile() {
     const deviceId = getDeviceId();
 
@@ -144,58 +127,18 @@ async function loadProfile() {
         }
     } catch (e) {}
 
-    let nextGuestNum = 10;
-
-    try {
-        const { data: allProfiles, error } = await supabaseClient
-            .from('profiles')
-            .select('name');
-
-        if (!error && allProfiles) {
-            let usedNums = [];
-            allProfiles.forEach(p => {
-                const match = p.name.match(/^Guest\.(\d+)$/);
-                if (match) {
-                    usedNums.push(parseInt(match[1]));
-                }
-            });
-
-            usedNums.sort((a, b) => a - b);
-
-            let gap = 10;
-            for (let i = 0; i < usedNums.length; i++) {
-                if (usedNums[i] === gap) {
-                    gap++;
-                } else if (usedNums[i] > gap) {
-                    break;
-                }
-            }
-            nextGuestNum = gap;
-        }
-    } catch (e) {}
-
-    currentName = 'Guest.' + nextGuestNum;
+    currentName = 'Guest';
     currentAvatarIndex = -1;
 
     try {
-        const { error: insertError } = await supabaseClient.from('profiles').insert({
+        await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
             avatar_index: -1,
             solved_levels: Object.keys(solvedLevels).length
         });
-        
-        if (!insertError) {
-            saveProfile();
-            setLastGuestNum(nextGuestNum);
-        } else {
-            currentName = 'Guest.10';
-            currentAvatarIndex = -1;
-        }
-    } catch (e) {
-        currentName = 'Guest.10';
-        currentAvatarIndex = -1;
-    }
+        saveProfile();
+    } catch (e) {}
 
     updateProfileUI();
 }
