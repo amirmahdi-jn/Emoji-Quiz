@@ -172,4 +172,4 @@ function getPersianTime(dateStr) {
     const date = new Date(dateStr);
     const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     return new Intl.DateTimeFormat('fa-IR', options).format(date);
-                                                             }
+}
