@@ -147,12 +147,30 @@ async function loadProfile() {
     let nextGuestNum = 0;
 
     try {
-        const { count, error } = await supabaseClient
+        const { data: allProfiles, error } = await supabaseClient
             .from('profiles')
-            .select('*', { count: 'exact', head: true });
+            .select('name');
 
-        if (!error && count !== null) {
-            nextGuestNum = count;
+        if (!error && allProfiles) {
+            let usedNums = [];
+            allProfiles.forEach(p => {
+                const match = p.name.match(/^Guest\.(\d+)$/);
+                if (match) {
+                    usedNums.push(parseInt(match[1]));
+                }
+            });
+
+            usedNums.sort((a, b) => a - b);
+
+            let gap = 0;
+            for (let i = 0; i < usedNums.length; i++) {
+                if (usedNums[i] === gap) {
+                    gap++;
+                } else if (usedNums[i] > gap) {
+                    break;
+                }
+            }
+            nextGuestNum = gap;
         }
     } catch (e) {}
 
@@ -160,13 +178,20 @@ async function loadProfile() {
     currentAvatarIndex = -1;
 
     try {
-        await supabaseClient.from('profiles').insert({
+        const { error: insertError } = await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
             avatar_index: -1,
             solved_levels: Object.keys(solvedLevels).length
         });
-        saveProfile();
+        
+        if (!insertError) {
+            saveProfile();
+            setLastGuestNum(nextGuestNum);
+        } else {
+            currentName = 'Guest.0';
+            currentAvatarIndex = -1;
+        }
     } catch (e) {
         currentName = 'Guest.0';
         currentAvatarIndex = -1;
@@ -193,4 +218,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-                      }
+        }
