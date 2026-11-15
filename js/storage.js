@@ -64,13 +64,24 @@ async function loadProfile() {
     let dbProfile = null;
 
     try {
-        const { data } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('device_id', deviceId)
             .maybeSingle();
+            
+        if (error) {
+            document.getElementById('offline-overlay').classList.add('active');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            return;
+        }
+        
         dbProfile = data;
-    } catch (e) {}
+    } catch (e) {
+        document.getElementById('offline-overlay').classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        return;
+    }
 
     if (dbProfile) {
         currentName = dbProfile.name || 'Guest';
@@ -104,7 +115,11 @@ async function loadProfile() {
             coins: currentCoins,
             diamonds: currentDiamonds
         });
-    } catch (e) {}
+    } catch (e) {
+        document.getElementById('offline-overlay').classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        return;
+    }
 
     updateProfileUI();
     updateCoinsUI();
@@ -125,4 +140,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-}
+        }
