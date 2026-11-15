@@ -31,7 +31,7 @@
     gap: 8px;
     width: 100%;
     word-break: break-word;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     position: relative;
 }
 .chat-msg-wrapper.my-message { flex-direction: row; }
@@ -70,23 +70,28 @@
 
 .msg-reply-btn {
     position: absolute;
-    bottom: 0;
-    left: -35px;
-    width: 28px;
-    height: 28px;
-    background: rgba(46, 204, 113, 0.15);
-    border: 1.5px solid #2ecc71;
+    top: 50%;
+    right: -50px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: 0.2s;
-    opacity: 0;
     z-index: 2;
 }
-.chat-msg-wrapper:hover .msg-reply-btn, .chat-msg-wrapper:active .msg-reply-btn { opacity: 1; }
-.msg-reply-btn svg { width: 14px; height: 14px; fill: #fff; stroke: none; }
+.msg-reply-btn:active { background: rgba(255, 255, 255, 0.15); }
+.msg-reply-btn svg { width: 20px; height: 20px; stroke: #fff; fill: none; }
+
+.chat-msg-wrapper.my-message .msg-reply-btn {
+    right: auto;
+    left: -50px;
+}
 
 .chat-input-row {
     display: flex;
