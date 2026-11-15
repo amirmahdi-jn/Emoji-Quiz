@@ -144,7 +144,7 @@ async function loadProfile() {
         }
     } catch (e) {}
 
-    let nextGuestNum = 11;
+    let nextGuestNum = 10;
 
     try {
         const { data: allProfiles, error } = await supabaseClient
@@ -162,7 +162,7 @@ async function loadProfile() {
 
             usedNums.sort((a, b) => a - b);
 
-            let gap = 11;
+            let gap = 10;
             for (let i = 0; i < usedNums.length; i++) {
                 if (usedNums[i] === gap) {
                     gap++;
@@ -189,11 +189,11 @@ async function loadProfile() {
             saveProfile();
             setLastGuestNum(nextGuestNum);
         } else {
-            currentName = 'Guest.11';
+            currentName = 'Guest.10';
             currentAvatarIndex = -1;
         }
     } catch (e) {
-        currentName = 'Guest.11';
+        currentName = 'Guest.10';
         currentAvatarIndex = -1;
     }
 
@@ -218,4 +218,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-        }
+}
