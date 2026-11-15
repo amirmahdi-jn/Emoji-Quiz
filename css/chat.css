@@ -188,3 +188,18 @@
     cursor: pointer;
     font-size: 1rem;
 }
+
+.verified-badge {
+    display: inline-block;
+    vertical-align: middle;
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+}
+.verified-badge.sky {
+    color: #38bdf8;
+}
+.verified-badge.red {
+    color: #f87171;
+}
