@@ -307,4 +307,4 @@ function buyHint(type) {
         const ncModal = document.getElementById('no-coin-modal');
         if (ncModal) ncModal.classList.add('active');
     }
-}
+        }
