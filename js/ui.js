@@ -41,7 +41,7 @@ function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
-    input.value = currentName.startsWith('Guest.') || currentName === 'Guest' ? '' : currentName;
+    input.value = currentName.startsWith('Guest') || currentName === 'Guest' ? '' : currentName;
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
@@ -78,28 +78,29 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
-    
     updateProfileUI();
     closeNameModal();
 
     try {
         await supabaseClient
             .from('profiles')
-            .update({
+            .upsert({
+                device_id: deviceId,
                 name: currentName,
                 avatar_index: currentAvatarIndex,
                 coins: currentCoins,
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
-            })
-            .eq('device_id', deviceId);
+            }, { onConflict: 'device_id' });
 
         if (oldName && oldName !== raw) {
             await supabaseClient.from('messages')
                 .update({ sender_name: currentName })
                 .eq('sender_name', oldName);
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error("Save Name Error:", e);
+    }
 
     if (currentPanelTab === 'top-players') {
         fetchLeaderboard();
@@ -119,17 +120,29 @@ function renderAvatars() {
         const img = document.createElement('img');
         img.src = src;
         item.appendChild(img);
-        item.onclick = () => {
+        
+        item.onclick = async () => {
             currentAvatarIndex = idx;
             if (preview) preview.src = src;
             updateProfileUI();
-            supabaseClient.from('profiles')
-                .update({ avatar_index: idx })
-                .eq('device_id', getDeviceId())
-                .then(() => {
-                    if (currentPanelTab === 'top-players') fetchLeaderboard();
-                });
+            
+            try {
+                await supabaseClient.from('profiles')
+                    .upsert({
+                        device_id: getDeviceId(),
+                        name: currentName,
+                        avatar_index: idx,
+                        coins: currentCoins,
+                        diamonds: currentDiamonds,
+                        solved_levels: Object.keys(solvedLevels).length
+                    }, { onConflict: 'device_id' });
+            } catch (e) {
+                console.error("Avatar Save Error:", e);
+            }
+            
+            if (currentPanelTab === 'top-players') fetchLeaderboard();
         };
+        
         if (idx < 3) row1.appendChild(item);
         else row2.appendChild(item);
     });
