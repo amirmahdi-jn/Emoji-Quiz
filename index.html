@@ -559,12 +559,12 @@
 
     <div id="reply-modal" class="chat-custom-modal">
         <div class="chat-custom-modal-content">
-            <div class="chat-custom-modal-title">ریپلای به پیام</div>
+            <div class="chat-custom-modal-title">پاسخ به پیام</div>
             <div id="reply-modal-text" style="color:var(--text-muted); font-size:0.8rem; margin-bottom:10px; padding-right:5px; border-right:2px solid var(--primary-color); max-height:60px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
             <input type="text" id="reply-input-text" class="chat-custom-input" placeholder="پاسخ خود را بنویسید...">
             <div style="display:flex; gap:10px;">
-                <button class="chat-custom-btn" style="flex:1; color:#f87171;" onclick="closeReplyModal()">انصراف</button>
                 <button class="chat-custom-btn" style="flex:1; background:var(--primary-color); color:#fff; border:none;" onclick="submitReply()">ارسال</button>
+                <button class="chat-custom-btn" style="flex:1; color:#f87171;" onclick="closeReplyModal()">انصراف</button>
             </div>
         </div>
     </div>
@@ -574,8 +574,8 @@
             <div class="chat-custom-modal-title">ویرایش پیام</div>
             <input type="text" id="edit-input-text" class="chat-custom-input" placeholder="متن جدید...">
             <div style="display:flex; gap:10px;">
-                <button class="chat-custom-btn" style="flex:1; color:#f87171;" onclick="closeEditModal()">انصراف</button>
                 <button class="chat-custom-btn" style="flex:1; background:var(--primary-color); color:#fff; border:none;" onclick="submitEdit()">ذخیره</button>
+                <button class="chat-custom-btn" style="flex:1; color:#f87171;" onclick="closeEditModal()">انصراف</button>
             </div>
         </div>
     </div>
