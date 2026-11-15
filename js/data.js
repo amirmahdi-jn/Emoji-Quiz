@@ -190,3 +190,12 @@ const dailyQuestions = [
     { emoji1: '🦶', emoji2: '🏐', emoji3: '📄', answer: 'فوتبالیست' },
     { emoji1: '🧹', emoji2: '✋', emoji3: '☕', answer: 'جارو دستی' }
 ];
+
+gameData.sort((a, b) => {
+    const lenA = a.answer.replace(/\s+/g, '').length;
+    const lenB = b.answer.replace(/\s+/g, '').length;
+    if (lenA !== lenB) {
+        return lenA - lenB;
+    }
+    return a.answer.localeCompare(b.answer);
+});
