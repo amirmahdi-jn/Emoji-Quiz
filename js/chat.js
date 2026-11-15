@@ -228,15 +228,6 @@ window.addEventListener('load', async () => {
             else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
         });
     }
-    const tokenInput = document.getElementById('tokenInput');
-    if (tokenInput) {
-        tokenInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
-        });
-        tokenInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') confirmPaymentToken();
-        });
-    }
 });
 window.addEventListener('offline', checkOnlineStatus);
 window.addEventListener('online', checkOnlineStatus);
