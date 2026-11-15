@@ -144,7 +144,7 @@ async function loadProfile() {
         }
     } catch (e) {}
 
-    let nextGuestNum = 0;
+    let nextGuestNum = 11;
 
     try {
         const { data: allProfiles, error } = await supabaseClient
@@ -162,7 +162,7 @@ async function loadProfile() {
 
             usedNums.sort((a, b) => a - b);
 
-            let gap = 0;
+            let gap = 11;
             for (let i = 0; i < usedNums.length; i++) {
                 if (usedNums[i] === gap) {
                     gap++;
@@ -189,11 +189,11 @@ async function loadProfile() {
             saveProfile();
             setLastGuestNum(nextGuestNum);
         } else {
-            currentName = 'Guest.0';
+            currentName = 'Guest.11';
             currentAvatarIndex = -1;
         }
     } catch (e) {
-        currentName = 'Guest.0';
+        currentName = 'Guest.11';
         currentAvatarIndex = -1;
     }
 
