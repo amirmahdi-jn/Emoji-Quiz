@@ -218,17 +218,14 @@ function checkAnswer() {
         updateCoinsUI();
         saveProgress();
 
-        if (currentName && !currentName.startsWith('Guest.')) {
-            supabaseClient.from('profiles')
-                .update({ solved_levels: Object.keys(solvedLevels).length })
-                .eq('device_id', getDeviceId())
-                .then();
-        } else if (currentName) {
-            supabaseClient.from('profiles')
-                .update({ solved_levels: Object.keys(solvedLevels).length })
-                .eq('device_id', getDeviceId())
-                .then();
-        }
+        supabaseClient.from('profiles')
+            .update({ 
+                solved_levels: Object.keys(solvedLevels).length,
+                coins: currentCoins,
+                diamonds: currentDiamonds
+            })
+            .eq('device_id', getDeviceId())
+            .then();
 
         const correctEl = document.getElementById('correct-answer-text');
         if (correctEl) correctEl.innerText = gameData[currentLevelIndex].answer;
@@ -275,10 +272,17 @@ function buyHint(type) {
     if (type === 'remove') cost = 25;
     if (type === 'letter') cost = 5;
     if (type === 'reveal') cost = 50;
+    
     if (currentCoins >= cost) {
         currentCoins -= cost;
         updateCoinsUI();
         saveProgress();
+        
+        supabaseClient.from('profiles')
+            .update({ coins: currentCoins })
+            .eq('device_id', getDeviceId())
+            .then();
+
         if (type === 'reveal') {
             currentGuess = [...currentWord];
             renderSlots();
@@ -308,4 +312,4 @@ function buyHint(type) {
         const ncModal = document.getElementById('no-coin-modal');
         if (ncModal) ncModal.classList.add('active');
     }
-}
+        }
