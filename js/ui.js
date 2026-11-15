@@ -64,13 +64,13 @@ async function saveName() {
     const deviceId = getDeviceId();
 
     try {
-        const { data: existing } = await supabaseClient
+        const { data: existingName } = await supabaseClient
             .from('profiles')
             .select('name, device_id')
             .ilike('name', raw)
             .maybeSingle();
 
-        if (existing && existing.device_id !== deviceId) {
+        if (existingName && existingName.device_id !== deviceId) {
             document.getElementById('duplicate-alert-modal').classList.add('active');
             return;
         }
@@ -78,43 +78,28 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
-
-    saveProfile();
+    
     updateProfileUI();
     closeNameModal();
 
     try {
-        const updates = {
-            name: currentName,
-            avatar_index: currentAvatarIndex,
-            coins: currentCoins,
-            diamonds: currentDiamonds,
-            solved_levels: Object.keys(solvedLevels).length
-        };
-
-        const { error } = await supabaseClient
+        await supabaseClient
             .from('profiles')
-            .update(updates)
-            .eq('device_id', deviceId);
-
-        if (error) {
-            await supabaseClient.from('profiles').insert({
+            .update({
                 name: currentName,
-                device_id: deviceId,
                 avatar_index: currentAvatarIndex,
                 coins: currentCoins,
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
-            });
+            })
+            .eq('device_id', deviceId);
+
+        if (oldName && oldName !== raw) {
+            await supabaseClient.from('messages')
+                .update({ sender_name: currentName })
+                .eq('sender_name', oldName);
         }
     } catch (e) {}
-
-    if (oldName && oldName !== raw) {
-        supabaseClient.from('messages')
-            .update({ sender_name: currentName })
-            .eq('sender_name', oldName)
-            .then();
-    }
 
     if (currentPanelTab === 'top-players') {
         fetchLeaderboard();
@@ -137,7 +122,6 @@ function renderAvatars() {
         item.onclick = () => {
             currentAvatarIndex = idx;
             if (preview) preview.src = src;
-            saveProfile();
             updateProfileUI();
             supabaseClient.from('profiles')
                 .update({ avatar_index: idx })
@@ -188,4 +172,4 @@ function getPersianTime(dateStr) {
     const date = new Date(dateStr);
     const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     return new Intl.DateTimeFormat('fa-IR', options).format(date);
-}
+                                                             }
