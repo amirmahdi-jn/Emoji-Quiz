@@ -47,21 +47,9 @@ function getDeviceId() {
     return id;
 }
 
-function loadUsedCodes() {
-    try { return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || []; } catch (e) { return []; }
-}
-function markCodeUsed(code) {
-    const used = loadUsedCodes();
-    if (!used.includes(code)) {
-        used.push(code);
-        try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
-    }
-}
-function isCodeUsed(code) { return loadUsedCodes().includes(code); }
-
 function saveProgress() {
     const progress = {
-        currentCoins, currentDiamonds, unlockedLevels, solvedLevels,
+        unlockedLevels, solvedLevels,
         currentChapter, currentLevelIndex, removeHintUses
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
@@ -72,8 +60,6 @@ function loadProgress() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const p = JSON.parse(saved);
-            currentCoins = typeof p.currentCoins === 'number' ? p.currentCoins : 10;
-            currentDiamonds = typeof p.currentDiamonds === 'number' ? p.currentDiamonds : 10;
             unlockedLevels = typeof p.unlockedLevels === 'number' ? p.unlockedLevels : 1;
             solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
             currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
@@ -82,10 +68,6 @@ function loadProgress() {
             if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
         }
     } catch (e) {}
-}
-
-function saveProfile() {
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
 }
 
 async function loadProfile() {
@@ -104,15 +86,9 @@ async function loadProfile() {
     if (dbProfile) {
         currentName = dbProfile.name || 'Guest';
         currentAvatarIndex = typeof dbProfile.avatar_index === 'number' ? dbProfile.avatar_index : -1;
+        currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
+        currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
         
-        if (typeof dbProfile.coins === 'number') {
-            currentCoins = dbProfile.coins;
-        }
-        if (typeof dbProfile.diamonds === 'number') {
-            currentDiamonds = dbProfile.diamonds;
-        }
-        
-        saveProfile();
         updateProfileUI();
         updateCoinsUI();
         return;
@@ -120,6 +96,8 @@ async function loadProfile() {
 
     currentName = 'Guest';
     currentAvatarIndex = -1;
+    currentCoins = 10;
+    currentDiamonds = 10;
     
     try {
         await supabaseClient.from('profiles').insert({
@@ -127,13 +105,13 @@ async function loadProfile() {
             device_id: deviceId,
             avatar_index: -1,
             solved_levels: 0,
-            coins: 10,
-            diamonds: 10
+            coins: currentCoins,
+            diamonds: currentDiamonds
         });
-        saveProfile();
     } catch (e) {}
 
     updateProfileUI();
+    updateCoinsUI();
 }
 
 function updateProfileUI() {
@@ -151,4 +129,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-}
+        }
