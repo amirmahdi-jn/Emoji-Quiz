@@ -47,6 +47,22 @@ function getDeviceId() {
     return id;
 }
 
+function loadUsedCodes() {
+    try { return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || []; } catch (e) { return []; }
+}
+
+function markCodeUsed(code) {
+    const used = loadUsedCodes();
+    if (!used.includes(code)) {
+        used.push(code);
+        try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
+    }
+}
+
+function isCodeUsed(code) {
+    return loadUsedCodes().includes(code);
+}
+
 function saveProgress() {}
 
 function loadProgress() {
@@ -140,4 +156,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-        }
+}
