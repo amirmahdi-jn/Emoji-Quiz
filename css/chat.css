@@ -85,7 +85,7 @@
     z-index: 2;
 }
 .msg-reply-btn:active { background: rgba(255, 255, 255, 0.15); }
-.msg-reply-btn svg { width: 28px; height: 28px; stroke: #fff; fill: none; }
+.msg-reply-btn svg { width: 24px; height: 24px; stroke: #fff; fill: none; }
 
 .chat-msg-wrapper.my-message .msg-reply-btn {
     right: auto;
