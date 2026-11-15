@@ -58,7 +58,6 @@ function openGift(boxNumber) {
         msgEl.style.color = prize.type === 'empty' ? '#f87171' : '#4ade80';
     }
     localStorage.setItem(GIFT_KEY, Date.now().toString());
-    saveProgress();
     openModal('gift-result-modal');
 }
 
@@ -139,7 +138,6 @@ function initDailyChallenge() {
             dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
             dailyResult.className = 'challenge-result fail';
         }
-        saveProgress();
     });
     dailyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') dailySubmit.click(); });
 }
@@ -147,6 +145,15 @@ function initDailyChallenge() {
 function checkOnlineStatus() {
     const overlay = document.getElementById('offline-overlay');
     if (!overlay) return;
-    if (!navigator.onLine) overlay.classList.add('active');
-    else overlay.classList.remove('active');
-}
+    
+    if (!navigator.onLine) {
+        overlay.classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    } else {
+        overlay.classList.remove('active');
+        const mainMenu = document.getElementById('main-menu');
+        if (mainMenu && !document.querySelector('.screen.active')) {
+            mainMenu.classList.add('active');
+        }
+    }
+         }
