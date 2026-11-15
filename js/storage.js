@@ -96,6 +96,8 @@ function loadProgress() {
             currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
             currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
             removeHintUses = typeof p.removeHintUses === 'number' ? p.removeHintUses : 0;
+            
+            if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
         }
     } catch (e) {}
 }
@@ -143,47 +145,35 @@ async function loadProfile() {
     } catch (e) {}
 
     try {
-        const solvedCount = Object.keys(solvedLevels).length;
-        
-        if (solvedCount > 0) {
-            const { data: matching } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .eq('solved_levels', solvedCount)
-                .limit(1);
+        const { data: counter, error: counterError } = await supabaseClient
+            .from('global_counters')
+            .select('last_guest_number')
+            .eq('id', 'guest_counter')
+            .single();
 
-            if (matching && matching.length > 0) {
-                currentName = matching[0].name;
-                currentAvatarIndex = matching[0].avatar_index ?? -1;
-                saveProfile();
-                await supabaseClient.from('profiles').update({ device_id: deviceId }).eq('name', currentName);
-                updateProfileUI();
-                return;
-            }
+        let nextGuestNum = 1;
+        if (!counterError && counter) {
+            nextGuestNum = counter.last_guest_number + 1;
         }
-    } catch (e) {}
 
-    try {
-        const { data: allProfiles } = await supabaseClient.from('profiles').select('name');
-        let maxGuestNum = getLastGuestNum();
-        if (allProfiles) {
-            allProfiles.forEach(p => {
-                const num = extractGuestNum(p.name);
-                if (num > maxGuestNum) maxGuestNum = num;
-            });
-        }
-        const newGuestNum = maxGuestNum + 1;
-        currentName = 'Guest.' + newGuestNum;
+        currentName = 'Guest.' + nextGuestNum;
         currentAvatarIndex = -1;
-        setLastGuestNum(newGuestNum);
 
-        await supabaseClient.from('profiles').insert({
+        const { error: insertError } = await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
             avatar_index: -1,
             solved_levels: Object.keys(solvedLevels).length
         });
-        saveProfile();
+
+        if (!insertError) {
+            await supabaseClient.from('global_counters')
+                .update({ last_guest_number: nextGuestNum })
+                .eq('id', 'guest_counter');
+            saveProfile();
+        } else {
+            currentName = 'Guest.0';
+        }
     } catch (e) {
         currentName = 'Guest.0';
         currentAvatarIndex = -1;
@@ -210,4 +200,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-}
+            }
