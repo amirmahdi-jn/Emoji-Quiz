@@ -49,9 +49,10 @@ async function fetchLeaderboard() {
     const { data, error } = await supabaseClient
         .from('profiles')
         .select('name, solved_levels, avatar_index, created_at')
+        .neq('name', 'Guest')
         .order('solved_levels', { ascending: false })
         .order('created_at', { ascending: true })
-        .limit(51);
+        .limit(50);
 
     if (loading) loading.style.display = 'none';
 
@@ -194,6 +195,11 @@ function appendPanelChatMessage(id, sender, text, timeStr, avatarIndex) {
 }
 
 async function sendPanelChatMessage() {
+    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
+        document.getElementById('register-alert-modal').classList.add('active');
+        return;
+    }
+
     const input = document.getElementById('panel-chat-input');
     if (!input || !input.value.trim()) return;
     const text = input.value.trim().slice(0, 500);
