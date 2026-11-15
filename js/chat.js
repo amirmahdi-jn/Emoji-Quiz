@@ -12,9 +12,11 @@ function renderPanelContent(tabId) {
         container.innerHTML = `
             <div class="chat-container" style="display: flex; flex-direction: column; height: 100%;">
                 <div id="panel-chat-messages" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px;"></div>
-                <div class="chat-input-row" style="display: flex; gap: 8px; margin-top: 10px;">
-                    <input type="text" id="panel-chat-input" placeholder="پیام خود را بنویسید..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; color: white; outline: none; font-family: 'Vazirmatn';">
-                    <button onclick="sendPanelChatMessage()" style="background: var(--primary-color); color: white; border: none; border-radius: 12px; padding: 0 15px; cursor: pointer;">ارسال</button>
+                <div class="chat-input-row">
+                    <textarea id="panel-chat-input" placeholder="پیام خود را بنویسید..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"></textarea>
+                    <button class="send-msg-btn" onclick="sendPanelChatMessage()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
                 </div>
             </div>
         `;
@@ -64,7 +66,6 @@ async function fetchLeaderboard() {
     list.innerHTML = '';
     data.forEach((profile, index) => {
         let rowColor = '#ffffff';
-
         if (index === 0) rowColor = '#ffd700';
         else if (index === 1) rowColor = '#c0c0c0';
         else if (index === 2) rowColor = '#cd7f32';
@@ -103,7 +104,7 @@ async function initPanelChat() {
     const { data, error } = await supabaseClient
         .from('messages')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true })
         .limit(50);
 
     if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
@@ -114,15 +115,14 @@ async function initPanelChat() {
         profilesData.forEach(p => { avatarMap[p.name] = p.avatar_index; });
     }
 
-    const messages = (data || []).slice().reverse();
-
     chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
-    if (messages.length === 0) {
+    
+    if (!data || data.length === 0) {
         chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
     } else {
-        messages.forEach(msg => {
+        data.forEach(msg => {
             const avatarIdx = avatarMap[msg.sender_name] !== undefined ? avatarMap[msg.sender_name] : -1;
-            appendPanelChatMessage(msg.id, msg.sender_name, msg.text, msg.created_at, avatarIdx);
+            appendPanelChatMessage(msg, avatarIdx);
         });
     }
 
@@ -138,32 +138,45 @@ async function initPanelChat() {
                     .eq('name', payload.new.sender_name)
                     .maybeSingle();
                 const avatarIdx = profileData && typeof profileData.avatar_index === 'number' ? profileData.avatar_index : -1;
-                appendPanelChatMessage(payload.new.id, payload.new.sender_name, payload.new.text, payload.new.created_at, avatarIdx);
+                appendPanelChatMessage(payload.new, avatarIdx);
             })
         .on('postgres_changes',
             { event: 'UPDATE', schema: 'public', table: 'messages' },
             (payload) => {
-                const id = payload.new.id;
-                const newName = payload.new.sender_name;
-                const el = document.querySelector(`[data-msg-id="${id}"]`);
-                if (el) {
-                    const nameEl = el.querySelector('.chat-msg-name');
-                    if (nameEl) nameEl.textContent = newName;
+                const msg = payload.new;
+                const wrapper = document.querySelector(`[data-msg-id="${msg.id}"]`);
+                if (wrapper) {
+                    const textEl = wrapper.querySelector('.chat-msg-text');
+                    if (textEl) {
+                        textEl.textContent = msg.text;
+                        if (msg.is_edited) {
+                            let timeEl = wrapper.querySelector('.chat-msg-time');
+                            if (!timeEl.innerHTML.includes('(ویرایش شده)')) {
+                                timeEl.innerHTML += ' <span style="color:var(--text-muted);">(ویرایش شده)</span>';
+                            }
+                        }
+                    }
                 }
+            })
+        .on('postgres_changes',
+            { event: 'DELETE', schema: 'public', table: 'messages' },
+            (payload) => {
+                const el = document.querySelector(`[data-msg-id="${payload.old.id}"]`);
+                if (el) el.remove();
             })
         .subscribe();
 }
 
-function appendPanelChatMessage(id, sender, text, timeStr, avatarIndex) {
+function appendPanelChatMessage(msg, avatarIndex) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     if (chatMessages.innerHTML.includes('هنوز پیامی')) {
         chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     }
 
-    const color = getUserColor(sender);
-    const time = getPersianTime(timeStr);
-    const isMe = sender === currentName;
+    const color = getUserColor(msg.sender_name);
+    const time = getPersianTime(msg.created_at);
+    const isMe = msg.sender_name === currentName;
 
     let avatarSrc = defaultAvatar;
     if (avatarIndex >= 0 && avatarImages[avatarIndex]) {
@@ -172,23 +185,37 @@ function appendPanelChatMessage(id, sender, text, timeStr, avatarIndex) {
 
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
-    if (id) wrapper.setAttribute('data-msg-id', id);
+    wrapper.setAttribute('data-msg-id', msg.id);
+
+    let replyHTML = '';
+    if (msg.reply_to_text) {
+        replyHTML = `<div style="font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; margin-bottom: 5px; border-right: 2px solid var(--primary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><b>${msg.reply_to_name || 'کاربر'}:</b> ${msg.reply_to_text}</div>`;
+    }
+
+    let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
+
+    let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', '${msg.text.replace(/'/g, "\\'")}')">&#8942;</button>` : '';
+    let replyBtnHTML = !isMe ? `<button class="msg-reply-btn" onclick="openReplyModal('${msg.id}', '${msg.sender_name}', '${msg.text.replace(/'/g, "\\'")}')">
+        <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+    </button>` : '';
 
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
             <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            ${replyBtnHTML}
         </div>
-        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
-            <div class="chat-msg-header" style="margin-bottom: 4px;">
+        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
+            ${menuBtnHTML}
+            <div class="chat-msg-header" style="margin-bottom: 4px; padding-left: 15px;">
                 <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;"></span>
             </div>
-            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff;"></div>
-            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}</div>
+            ${replyHTML}
+            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
+            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}${editHTML}</div>
         </div>
     `;
 
-    wrapper.querySelector('.chat-msg-name').textContent = sender || 'Guest';
-    wrapper.querySelector('.chat-msg-text').textContent = text;
+    wrapper.querySelector('.chat-msg-name').textContent = msg.sender_name || 'Guest';
 
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -204,8 +231,68 @@ async function sendPanelChatMessage() {
     if (!input || !input.value.trim()) return;
     const text = input.value.trim().slice(0, 500);
     input.value = '';
-    await supabaseClient.from('messages').insert([{ text: text, sender_name: currentName }]);
+    input.style.height = 'auto';
+
+    const msgData = { text: text, sender_name: currentName };
+    if (window.currentReply) {
+        msgData.reply_to_id = window.currentReply.id;
+        msgData.reply_to_text = window.currentReply.text;
+        msgData.reply_to_name = window.currentReply.sender;
+        window.currentReply = null;
+    }
+
+    await supabaseClient.from('messages').insert([msgData]);
 }
+
+window.openReplyModal = function(id, sender, text) {
+    document.getElementById('reply-modal').classList.add('active');
+    document.getElementById('reply-modal-text').innerText = `${sender}: ${text}`;
+    document.getElementById('reply-input-text').value = '';
+    setTimeout(() => document.getElementById('reply-input-text').focus(), 100);
+    window.currentReplyData = { id, sender, text };
+};
+
+window.closeReplyModal = function() {
+    document.getElementById('reply-modal').classList.remove('active');
+};
+
+window.submitReply = async function() {
+    const input = document.getElementById('reply-input-text');
+    const text = input.value.trim();
+    if (!text || !window.currentReplyData) return;
+    
+    const msgData = { 
+        text: text, 
+        sender_name: currentName,
+        reply_to_id: window.currentReplyData.id,
+        reply_to_text: window.currentReplyData.text,
+        reply_to_name: window.currentReplyData.sender
+    };
+    
+    closeReplyModal();
+    await supabaseClient.from('messages').insert([msgData]);
+};
+
+window.openEditModal = function(id, text) {
+    document.getElementById('edit-modal').classList.add('active');
+    const input = document.getElementById('edit-input-text');
+    input.value = text;
+    setTimeout(() => input.focus(), 100);
+    window.currentEditId = id;
+};
+
+window.closeEditModal = function() {
+    document.getElementById('edit-modal').classList.remove('active');
+};
+
+window.submitEdit = async function() {
+    const input = document.getElementById('edit-input-text');
+    const text = input.value.trim();
+    if (!text || !window.currentEditId) return;
+    
+    closeEditModal();
+    await supabaseClient.from('messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
+};
 
 window.addEventListener('load', async () => {
     await loadProgress();
