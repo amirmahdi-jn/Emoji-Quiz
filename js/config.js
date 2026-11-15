@@ -19,32 +19,16 @@ const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 12;
 
 let currentAvatarIndex = -1;
-let currentName = 'Guest.0';
+let currentName = 'Guest';
 
-const GIFT_KEY = 'gift_last_open_v6';
-const DAILY_KEY = 'emoji_daily_challenge_v6';
-const PROFILE_KEY = 'emoji_profile_v6';
-const STORAGE_KEY = 'emojiQuizProgress_v6';
+const GIFT_KEY = 'gift_last_open_v7';
+const DAILY_KEY = 'emoji_daily_challenge_v7';
+const PROFILE_KEY = 'emoji_profile_v7';
+const STORAGE_KEY = 'emojiQuizProgress_v7';
 
 let giftInterval = null;
 let dailyChallengeInterval = null;
 let chatSubscription = null;
-
-const purchaseCodes = {
-    "coin_100":     ["482917", "930145", "617283"],
-    "coin_200":     ["105938", "728461", "395027"],
-    "coin_300":     ["583019", "246173", "908425"],
-    "coin_400":     ["704826", "391582", "862740"],
-    "coin_500":     ["264915", "837406", "419058"],
-    "coin_1000":    ["951374", "628095", "173846"],
-    "diamond_10":   ["508927", "371640", "826195"],
-    "diamond_20":   ["637482", "195803", "740268"],
-    "diamond_30":   ["820491", "576028", "384751"],
-    "diamond_40":   ["946173", "208536", "513829"],
-    "diamond_50":   ["137264", "689052", "420937"],
-    "diamond_100":  ["729584", "463871", "918240"]
-};
-const USED_CODES_KEY = 'emojiQuizUsedCodes_v1';
 
 let currentPaymentKey = null;
 let currentPaymentAmount = 0;
