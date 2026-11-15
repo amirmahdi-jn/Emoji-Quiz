@@ -21,7 +21,7 @@
                 <div class="profile-avatar" onclick="openModal('profile-modal')">
                     <img id="headerAvatar" src="avatar0.jpg" alt="Avatar">
                 </div>
-                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">Guest.0</div>
+                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">Guest</div>
             </div>
             <div class="panel-btn" onclick="showScreen('panel-screen')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -303,7 +303,7 @@
                     </div>
                     <div class="guide-text">
                         <h3>قفل مرحله ها و فصل‌ ها</h3>
-                        <p>مراحل هر فصل به ترتیب باز میشن. برای رفتن به فصل بعدی باید تمام ۱۵ مرحله فعلی رو حل کنی. با حل هر مرحله جدید 10 سکه جایزه می‌گیری!</p>
+                        <p>مراحل هر فصل به ترتیب باز میشن. برای رفتن به فصل بعدی باید تمام ۱۵ مرحله فعلی رو حل کنی. با حل هر مرحله جدید 5 سکه جایزه می‌گیری!</p>
                     </div>
                 </div>
             </div>
@@ -561,6 +561,14 @@
         </div>
     </div>
 
+    <div id="register-alert-modal" class="modal">
+        <div class="modal-content" style="text-align: center; direction: rtl;">
+            <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
+            <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem; white-space: nowrap;">برای اینکه بتوانید پیام بدهید، باید ثبت نام کنید.</p>
+            <button class="btn-primary" style="margin-top: 15px;" onclick="document.getElementById('register-alert-modal').classList.remove('active')">باشه</button>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script src="js/data.js"></script>
     <script src="js/storage.js"></script>
@@ -570,4 +578,4 @@
     <script src="js/extras.js"></script>
     <script src="js/chat.js"></script>
 </body>
-</html>
+    </html>
