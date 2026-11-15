@@ -195,14 +195,14 @@ function appendPanelChatMessage(msg, avatarIndex) {
     let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
 
     let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', '${msg.text.replace(/'/g, "\\'")}')">&#8942;</button>` : '';
+    
     let replyBtnHTML = !isMe ? `<button class="msg-reply-btn" onclick="openReplyModal('${msg.id}', '${msg.sender_name}', '${msg.text.replace(/'/g, "\\'")}')">
-        <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 18v-2a4 4 0 0 0-4-4H4"/><path d="m9 17-5-5 5-5"/></svg>
     </button>` : '';
 
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
             <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            ${replyBtnHTML}
         </div>
         <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
             ${menuBtnHTML}
@@ -212,6 +212,7 @@ function appendPanelChatMessage(msg, avatarIndex) {
             ${replyHTML}
             <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
             <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}${editHTML}</div>
+            ${replyBtnHTML}
         </div>
     `;
 
