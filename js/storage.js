@@ -47,27 +47,16 @@ function getDeviceId() {
     return id;
 }
 
-function saveProgress() {
-    const progress = {
-        unlockedLevels, solvedLevels,
-        currentChapter, currentLevelIndex, removeHintUses
-    };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
-}
+function saveProgress() {}
 
 function loadProgress() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const p = JSON.parse(saved);
-            unlockedLevels = typeof p.unlockedLevels === 'number' ? p.unlockedLevels : 1;
-            solvedLevels = p.solvedLevels && typeof p.solvedLevels === 'object' ? p.solvedLevels : {};
-            currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
-            currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
-            removeHintUses = typeof p.removeHintUses === 'number' ? p.removeHintUses : 0;
-            if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
-        }
-    } catch (e) {}
+    currentCoins = 10;
+    currentDiamonds = 10;
+    unlockedLevels = 1;
+    solvedLevels = {};
+    currentChapter = 1;
+    currentLevelIndex = 0;
+    removeHintUses = 0;
 }
 
 async function loadProfile() {
@@ -88,6 +77,13 @@ async function loadProfile() {
         currentAvatarIndex = typeof dbProfile.avatar_index === 'number' ? dbProfile.avatar_index : -1;
         currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
         currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
+        
+        if (typeof dbProfile.solved_levels === 'number') {
+            for (let i = 0; i < dbProfile.solved_levels; i++) {
+                solvedLevels[i] = true;
+            }
+            unlockedLevels = Math.max(1, dbProfile.solved_levels + 1);
+        }
         
         updateProfileUI();
         updateCoinsUI();
@@ -129,4 +125,4 @@ function updateCoinsUI() {
     if (hc) hc.innerText = currentCoins;
     const hd = document.getElementById('header-diamonds');
     if (hd) hd.innerText = currentDiamonds;
-        }
+}
