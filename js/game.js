@@ -138,13 +138,35 @@ function renderSlots() {
 
 function getAvailableLetters(wordArr) {
     let letters = wordArr.filter(c => c !== ' ');
-    const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب'];
-    let extraCount = 6;
-    let shuffled = extraPool.sort(() => 0.5 - Math.random());
-    for (let char of shuffled) {
-        if (!letters.includes(char) && extraCount > 0) { letters.push(char); extraCount--; }
+    let uniqueLetters = [...new Set(letters)];
+    
+    const similarGroups = [
+        ['س', 'ص', 'ث'], ['ز', 'ذ', 'ض', 'ظ'], ['ت', 'ط'], ['ح', 'ه'], ['ق', 'غ', 'ک', 'گ'], ['ا', 'آ', 'أ', 'إ']
+    ];
+    
+    function isSimilar(char, targetArray) {
+        for (let group of similarGroups) {
+            if (group.includes(char) && group.some(g => targetArray.includes(g))) {
+                return true;
+            }
+        }
+        return false;
     }
-    return letters.sort(() => 0.5 - Math.random());
+
+    const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب', 'ج', 'د', 'ر', 'ن', 'و', 'ه'];
+    
+    let shuffledPool = extraPool.sort(() => 0.5 - Math.random());
+    let extraLetters = [];
+    
+    for (let char of shuffledPool) {
+        if (extraLetters.length >= 6) break;
+        if (!uniqueLetters.includes(char) && !isSimilar(char, uniqueLetters)) {
+            extraLetters.push(char);
+        }
+    }
+    
+    let finalKeys = [...uniqueLetters, ...extraLetters];
+    return finalKeys.sort(() => 0.5 - Math.random());
 }
 
 function renderKeyboard() {
