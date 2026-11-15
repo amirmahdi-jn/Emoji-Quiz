@@ -32,6 +32,7 @@
     width: 100%;
     word-break: break-word;
     margin-bottom: 8px;
+    position: relative;
 }
 .chat-msg-wrapper.my-message { flex-direction: row; }
 .chat-msg-wrapper.other-message { flex-direction: row-reverse; }
@@ -43,18 +44,19 @@
     overflow: hidden;
     flex-shrink: 0;
     background: #fff;
-    position: relative;
 }
+
 .chat-msg-content {
     display: inline-block;
     word-break: break-word;
-    max-width: 80%;
+    max-width: 75%;
+    position: relative;
 }
 
 .msg-menu-btn {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 8px;
+    left: 12px;
     background: transparent;
     border: none;
     color: var(--text-muted);
@@ -62,17 +64,18 @@
     font-size: 1.2rem;
     line-height: 1;
     padding: 0 2px;
+    z-index: 2;
 }
 .msg-menu-btn:active { color: #fff; }
 
 .msg-reply-btn {
     position: absolute;
-    bottom: -8px;
-    left: -8px;
-    width: 22px;
-    height: 22px;
+    bottom: 0;
+    left: -35px;
+    width: 28px;
+    height: 28px;
     background: rgba(46, 204, 113, 0.15);
-    border: 1px solid #2ecc71;
+    border: 1.5px solid #2ecc71;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -80,9 +83,10 @@
     cursor: pointer;
     transition: 0.2s;
     opacity: 0;
+    z-index: 2;
 }
 .chat-msg-wrapper:hover .msg-reply-btn, .chat-msg-wrapper:active .msg-reply-btn { opacity: 1; }
-.msg-reply-btn svg { width: 12px; height: 12px; fill: #fff; stroke: none; }
+.msg-reply-btn svg { width: 14px; height: 14px; fill: #fff; stroke: none; }
 
 .chat-input-row {
     display: flex;
