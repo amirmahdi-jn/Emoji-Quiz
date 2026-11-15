@@ -58,7 +58,12 @@ async function fetchLeaderboard() {
 
     if (loading) loading.style.display = 'none';
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+        list.innerHTML = '<p style="text-align:center; color:#f87171; font-size:0.8rem;">خطا در دریافت</p>';
+        return;
+    }
+    
+    if (!data || data.length === 0) {
         list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         return;
     }
@@ -107,7 +112,10 @@ async function initPanelChat() {
         .order('created_at', { ascending: true })
         .limit(50);
 
-    if (error) { chatMessages.innerHTML = 'خطا در اتصال.'; return; }
+    if (error) { 
+        chatMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 20px;">خطا در اتصال</div>'; 
+        return; 
+    }
 
     const { data: profilesData } = await supabaseClient.from('profiles').select('name, avatar_index');
     const avatarMap = {};
@@ -118,7 +126,7 @@ async function initPanelChat() {
     chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     
     if (!data || data.length === 0) {
-        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی نیست.</div>';
+        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی ارسال نشده است.</div>';
     } else {
         data.forEach(msg => {
             const avatarIdx = avatarMap[msg.sender_name] !== undefined ? avatarMap[msg.sender_name] : -1;
@@ -170,7 +178,7 @@ async function initPanelChat() {
 function appendPanelChatMessage(msg, avatarIndex) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
-    if (chatMessages.innerHTML.includes('هنوز پیامی')) {
+    if (chatMessages.innerHTML.includes('هنوز پیامی ارسال نشده است.')) {
         chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
     }
 
