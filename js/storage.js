@@ -1,5 +1,4 @@
 const DEVICE_KEY = 'emojiQuizDeviceId_v8';
-const LAST_GUEST_KEY = 'emojiQuizLastGuestNum_v1';
 
 function setCookie(name, value, days) {
     const d = new Date();
@@ -35,7 +34,6 @@ function getHardwareId() {
 function getDeviceId() {
     let id = getCookie(DEVICE_KEY);
     if (id) return id;
-
     try {
         id = localStorage.getItem(DEVICE_KEY);
         if (id) {
@@ -43,22 +41,15 @@ function getDeviceId() {
             return id;
         }
     } catch (e) {}
-
     id = getHardwareId() + '_' + Math.random().toString(36).substr(2, 5);
-    
     setCookie(DEVICE_KEY, id, 365);
     try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
-    
     return id;
 }
 
 function loadUsedCodes() {
-    try {
-        const raw = localStorage.getItem(USED_CODES_KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
+    try { return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || []; } catch (e) { return []; }
 }
-
 function markCodeUsed(code) {
     const used = loadUsedCodes();
     if (!used.includes(code)) {
@@ -66,20 +57,12 @@ function markCodeUsed(code) {
         try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
     }
 }
-
-function isCodeUsed(code) {
-    return loadUsedCodes().includes(code);
-}
+function isCodeUsed(code) { return loadUsedCodes().includes(code); }
 
 function saveProgress() {
     const progress = {
-        currentCoins,
-        currentDiamonds,
-        unlockedLevels,
-        solvedLevels,
-        currentChapter,
-        currentLevelIndex,
-        removeHintUses
+        currentCoins, currentDiamonds, unlockedLevels, solvedLevels,
+        currentChapter, currentLevelIndex, removeHintUses
     };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch (e) {}
 }
@@ -96,46 +79,56 @@ function loadProgress() {
             currentChapter = typeof p.currentChapter === 'number' ? p.currentChapter : 1;
             currentLevelIndex = typeof p.currentLevelIndex === 'number' ? p.currentLevelIndex : 0;
             removeHintUses = typeof p.removeHintUses === 'number' ? p.removeHintUses : 0;
-            
             if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
         }
     } catch (e) {}
 }
 
 function saveProfile() {
-    try {
-        localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex }));
-    } catch (e) {}
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ name: currentName, avatarIndex: currentAvatarIndex })); } catch (e) {}
 }
 
 async function loadProfile() {
     const deviceId = getDeviceId();
+    let dbProfile = null;
 
     try {
-        const { data: existing } = await supabaseClient
+        const { data } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('device_id', deviceId)
             .maybeSingle();
-
-        if (existing) {
-            currentName = existing.name;
-            currentAvatarIndex = typeof existing.avatar_index === 'number' ? existing.avatar_index : -1;
-            saveProfile();
-            updateProfileUI();
-            return;
-        }
+        dbProfile = data;
     } catch (e) {}
+
+    if (dbProfile) {
+        currentName = dbProfile.name || 'Guest';
+        currentAvatarIndex = typeof dbProfile.avatar_index === 'number' ? dbProfile.avatar_index : -1;
+        
+        if (typeof dbProfile.coins === 'number') {
+            currentCoins = dbProfile.coins;
+        }
+        if (typeof dbProfile.diamonds === 'number') {
+            currentDiamonds = dbProfile.diamonds;
+        }
+        
+        saveProfile();
+        updateProfileUI();
+        updateCoinsUI();
+        return;
+    }
 
     currentName = 'Guest';
     currentAvatarIndex = -1;
-
+    
     try {
         await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
             avatar_index: -1,
-            solved_levels: Object.keys(solvedLevels).length
+            solved_levels: 0,
+            coins: 10,
+            diamonds: 10
         });
         saveProfile();
     } catch (e) {}
@@ -148,11 +141,8 @@ function updateProfileUI() {
     const avatarEl = document.getElementById('headerAvatar');
     if (nameEl) nameEl.innerText = currentName;
     if (avatarEl) {
-        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) {
-            avatarEl.src = avatarImages[currentAvatarIndex];
-        } else {
-            avatarEl.src = defaultAvatar;
-        }
+        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) avatarEl.src = avatarImages[currentAvatarIndex];
+        else avatarEl.src = defaultAvatar;
     }
 }
 
