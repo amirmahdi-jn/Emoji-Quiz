@@ -41,7 +41,7 @@ function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
-    input.value = currentName.startsWith('Guest.') ? '' : currentName;
+    input.value = currentName.startsWith('Guest.') || currentName === 'Guest' ? '' : currentName;
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
@@ -83,10 +83,31 @@ async function saveName() {
     updateProfileUI();
     closeNameModal();
 
-    supabaseClient.from('profiles')
-        .update({ name: currentName })
-        .eq('device_id', deviceId)
-        .then();
+    try {
+        const updates = {
+            name: currentName,
+            avatar_index: currentAvatarIndex,
+            coins: currentCoins,
+            diamonds: currentDiamonds,
+            solved_levels: Object.keys(solvedLevels).length
+        };
+
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update(updates)
+            .eq('device_id', deviceId);
+
+        if (error) {
+            await supabaseClient.from('profiles').insert({
+                name: currentName,
+                device_id: deviceId,
+                avatar_index: currentAvatarIndex,
+                coins: currentCoins,
+                diamonds: currentDiamonds,
+                solved_levels: Object.keys(solvedLevels).length
+            });
+        }
+    } catch (e) {}
 
     if (oldName && oldName !== raw) {
         supabaseClient.from('messages')
