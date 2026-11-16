@@ -176,6 +176,12 @@ function listenForPrivateEvents() {
 }
 
 async function searchUserForChat() {
+    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
+    if (isGuest) {
+        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+        return;
+    }
+
     const input = document.getElementById('searchUserInput');
     const term = input.value.trim();
     const listContainer = document.getElementById('private-chat-list');
@@ -849,6 +855,12 @@ function appendPanelChatMessage(msg, avatarIndex) {
 }
 
 async function sendPanelChatMessage() {
+    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
+    if (isGuest) {
+        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+        return;
+    }
+
     const input = document.getElementById('panel-chat-input');
     if (!input || !input.value.trim()) return;
     const text = input.value.trim().slice(0, 500);
