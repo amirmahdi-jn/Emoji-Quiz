@@ -96,6 +96,7 @@ function renderLevels() {
 function startLevel(index) {
     currentLevelIndex = index;
     removeHintUses = 0;
+    syncToDatabase();
     const levelData = gameData[index];
     if (!levelData) return;
     const gameLevel = document.getElementById('game-level');
@@ -214,15 +215,7 @@ function checkAnswer() {
         }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
         updateCoinsUI();
-
-        supabaseClient.from('profiles')
-            .update({ 
-                solved_levels: Object.keys(solvedLevels).length,
-                coins: currentCoins,
-                diamonds: currentDiamonds
-            })
-            .eq('device_id', getDeviceId())
-            .then();
+        syncToDatabase();
 
         const correctEl = document.getElementById('correct-answer-text');
         if (correctEl) correctEl.innerText = gameData[currentLevelIndex].answer;
@@ -272,11 +265,7 @@ function buyHint(type) {
     if (currentCoins >= cost) {
         currentCoins -= cost;
         updateCoinsUI();
-        
-        supabaseClient.from('profiles')
-            .update({ coins: currentCoins })
-            .eq('device_id', getDeviceId())
-            .then();
+        syncToDatabase();
 
         if (type === 'reveal') {
             currentGuess = [...currentWord];
@@ -297,6 +286,7 @@ function buyHint(type) {
             }
         } else if (type === 'remove') {
             removeHintUses++;
+            syncToDatabase();
             const keys = document.querySelectorAll('.key:not(.used)');
             let removed = 0;
             keys.forEach(k => {
@@ -307,4 +297,4 @@ function buyHint(type) {
         const ncModal = document.getElementById('no-coin-modal');
         if (ncModal) ncModal.classList.add('active');
     }
-        }
+}
