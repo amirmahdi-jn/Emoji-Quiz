@@ -2,6 +2,16 @@ let activePrivateChat = null;
 let privateChatSubscription = null;
 let friendRequestsSubscription = null;
 let cachedAvatarMap = {};
+let currentChatContext = 'public';
+
+function getStatusHTML(lastSeen) {
+    if (!lastSeen) return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
+    const diff = Date.now() - new Date(lastSeen).getTime();
+    if (diff < 120000) {
+        return `<div class="status-text online"><span class="status-dot status-online"></span>آنلاین</div>`;
+    }
+    return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
+}
 
 function getVerifiedIcon(name) {
     let colorClass = '';
@@ -37,6 +47,7 @@ function renderPanelContent(tabId) {
             </div>
         `;
         initPanelChat();
+        currentChatContext = 'public';
     } else if (tabId === 'private-chat') {
         container.innerHTML = `
             <div class="private-search-bar">
@@ -96,7 +107,7 @@ async function searchUserForChat() {
 
     listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">در حال جستجو...</p>';
 
-    const { data: user } = await supabaseClient.from('profiles').select('name, avatar_index').eq('name', term).maybeSingle();
+    const { data: user } = await supabaseClient.from('profiles').select('name, avatar_index, last_seen').eq('name', term).maybeSingle();
 
     if (!user) {
         listContainer.innerHTML = '<p style="text-align:center; color:#f87171;">کاربری با این آیدی یافت نشد.</p>';
@@ -121,7 +132,10 @@ async function searchUserForChat() {
         <div class="user-card">
             <div class="user-card-info">
                 <img src="${avatarSrc}">
-                <span>${user.name}</span>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span>${user.name} ${getVerifiedIcon(user.name)}</span>
+                    ${getStatusHTML(user.last_seen)}
+                </div>
             </div>
             ${actionBtn}
         </div>
@@ -160,8 +174,8 @@ async function loadChatsList(container) {
         return;
     }
 
-    const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index');
-    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = p.avatar_index);
+    const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index, last_seen');
+    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { avatar_index: p.avatar_index, last_seen: p.last_seen });
 
     const { data: unreadMsgs } = await supabaseClient.from('private_messages')
         .select('sender_name')
@@ -178,17 +192,19 @@ async function loadChatsList(container) {
     container.innerHTML = '';
     friends.forEach(f => {
         const otherUser = f.sender_name === currentName ? f.receiver_name : f.sender_name;
-        const avIdx = cachedAvatarMap[otherUser] !== undefined ? cachedAvatarMap[otherUser] : -1;
-        const avSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
+        const uData = cachedAvatarMap[otherUser] || { avatar_index: -1, last_seen: null };
+        const avSrc = uData.avatar_index >= 0 ? avatarImages[uData.avatar_index] : defaultAvatar;
         const count = unreadCounts[otherUser] || 0;
-
         let badgeHTML = count > 0 ? `<span class="unread-badge">${count}</span>` : '';
 
         container.innerHTML += `
             <div class="user-card" onclick="openPrivateChat('${otherUser}', '${avSrc}')" style="cursor:pointer;">
                 <div class="user-card-info">
                     <img src="${avSrc}">
-                    <span>${otherUser}</span>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
+                        ${getStatusHTML(uData.last_seen)}
+                    </div>
                 </div>
                 <div style="display:flex; align-items:center;">
                     ${badgeHTML}
@@ -227,7 +243,7 @@ async function loadRequestsList(container) {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div class="user-card-info">
                         <img src="${avSrc}">
-                        <span>${r.sender_name}</span>
+                        <span>${r.sender_name} ${getVerifiedIcon(r.sender_name)}</span>
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:flex-end;">
                         <span style="font-size:0.75rem; color:#fff;">${pDate}</span>
@@ -275,8 +291,13 @@ function listenForFriendRequests() {
         .subscribe();
 }
 
-function openPrivateChat(user, avatarSrc) {
+async function openPrivateChat(user, avatarSrc) {
     activePrivateChat = user;
+    currentChatContext = 'private';
+    
+    const { data: pData } = await supabaseClient.from('profiles').select('last_seen').eq('name', user).maybeSingle();
+    const statusHTML = getStatusHTML(pData ? pData.last_seen : null);
+
     const chatWindow = document.createElement('div');
     chatWindow.className = 'private-chat-window';
     chatWindow.id = 'private-chat-window';
@@ -284,7 +305,10 @@ function openPrivateChat(user, avatarSrc) {
         <div class="private-chat-header">
             <div class="header-right">
                 <img src="${avatarSrc}">
-                <span>${user}</span>
+                <div class="name-status">
+                    <span class="name">${user} ${getVerifiedIcon(user)}</span>
+                    ${statusHTML}
+                </div>
             </div>
             <button class="back-btn" onclick="closePrivateChat()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
@@ -314,6 +338,7 @@ function closePrivateChat() {
     const w = document.getElementById('private-chat-window');
     if (w) w.remove();
     activePrivateChat = null;
+    currentChatContext = 'public';
     if (document.getElementById('tab-btn-chats')?.classList.contains('active')) {
         loadChatsList(document.getElementById('private-chat-list'));
     }
@@ -351,7 +376,24 @@ async function loadPrivateMessages() {
                     supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
                 }
             }
-        }).subscribe();
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'private_messages' }, (payload) => {
+            const msg = payload.new;
+            const wrapper = document.querySelector(`[data-private-msg-id="${msg.id}"]`);
+            if (wrapper) {
+                const textEl = wrapper.querySelector('.chat-msg-text');
+                if (textEl) {
+                    textEl.textContent = msg.text;
+                    if (msg.is_edited) {
+                        let timeEl = wrapper.querySelector('.chat-msg-time');
+                        if (!timeEl.innerHTML.includes('(ویرایش شده)')) {
+                            timeEl.innerHTML += ' <span style="color:var(--text-muted);">(ویرایش شده)</span>';
+                        }
+                    }
+                }
+            }
+        })
+        .subscribe();
 }
 
 function appendPrivateMessageUI(msg) {
@@ -360,24 +402,41 @@ function appendPrivateMessageUI(msg) {
 
     const isMe = msg.sender_name === currentName;
     const otherUser = isMe ? msg.receiver_name : msg.sender_name;
-    const avIdx = cachedAvatarMap[otherUser] !== undefined ? cachedAvatarMap[otherUser] : -1;
-    const avatarSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
+    const uData = cachedAvatarMap[otherUser] || { avatar_index: -1 };
+    const avatarSrc = uData.avatar_index >= 0 ? avatarImages[uData.avatar_index] : defaultAvatar;
     
     const time = getPersianTime(msg.created_at);
 
+    let replyHTML = '';
+    if (msg.reply_to_text) {
+        replyHTML = `<div style="font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; margin-bottom: 5px; border-right: 2px solid var(--primary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><b>${msg.reply_to_name || 'کاربر'}:</b> ${msg.reply_to_text}</div>`;
+    }
+
+    let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
+
+    let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>` : '';
+    
+    let replyBtnHTML = !isMe ? `<button class="msg-reply-btn" onclick="openReplyModal('${msg.id}', '${msg.sender_name}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
+    </button>` : '';
+
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
+    wrapper.setAttribute('data-private-msg-id', msg.id);
     
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
             <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
         </div>
-        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
-            <div class="chat-msg-header" style="margin-bottom: 4px;">
-                <span class="chat-msg-name" style="color: #fff; font-size: 0.75rem; font-weight: bold;">${isMe ? 'شما' : msg.sender_name}</span>
+        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
+            <div class="chat-msg-header" style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <span class="chat-msg-name" style="color: #fff; font-size: 0.75rem; font-weight: bold;">${isMe ? 'شما' : msg.sender_name + getVerifiedIcon(msg.sender_name)}</span>
+                ${menuBtnHTML}
             </div>
+            ${replyHTML}
             <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
-            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}</div>
+            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}${editHTML}</div>
+            ${replyBtnHTML}
         </div>
     `;
 
@@ -391,12 +450,21 @@ async function sendPrivateMessage() {
     
     input.value = '';
     input.style.height = 'auto';
-    
-    await supabaseClient.from('private_messages').insert([{
+
+    const msgData = {
         sender_name: currentName,
         receiver_name: activePrivateChat,
         text: text
-    }]);
+    };
+
+    if (window.currentReply) {
+        msgData.reply_to_id = window.currentReply.id;
+        msgData.reply_to_text = window.currentReply.text;
+        msgData.reply_to_name = window.currentReply.sender;
+        window.currentReply = null;
+    }
+    
+    await supabaseClient.from('private_messages').insert([msgData]);
 }
 
 const flameIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>`;
@@ -656,7 +724,13 @@ window.submitReply = async function() {
     };
     
     closeReplyModal();
-    await supabaseClient.from('messages').insert([msgData]);
+    
+    if (currentChatContext === 'private' && activePrivateChat) {
+        msgData.receiver_name = activePrivateChat;
+        await supabaseClient.from('private_messages').insert([msgData]);
+    } else {
+        await supabaseClient.from('messages').insert([msgData]);
+    }
 };
 
 window.openEditModal = function(id, text) {
@@ -677,8 +751,19 @@ window.submitEdit = async function() {
     if (!text || !window.currentEditId) return;
     
     closeEditModal();
-    await supabaseClient.from('messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
+    
+    if (currentChatContext === 'private' && activePrivateChat) {
+        await supabaseClient.from('private_messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
+    } else {
+        await supabaseClient.from('messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
+    }
 };
+
+setInterval(() => {
+    if (currentName && currentName !== 'Guest' && !currentName.startsWith('Guest.')) {
+        supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+    }
+}, 60000);
 
 window.addEventListener('load', async () => {
     await loadProgress();
@@ -687,6 +772,11 @@ window.addEventListener('load', async () => {
     updateCoinsUI();
     renderChapters();
     checkOnlineStatus();
+    
+    if (currentName && currentName !== 'Guest') {
+        supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+    }
+
     const startBtn = document.getElementById('btn-start');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
