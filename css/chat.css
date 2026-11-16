@@ -82,7 +82,7 @@
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 .msg-reply-btn:active { background: rgba(255, 255, 255, 0.3); border-color: #ffffff; }
-.msg-reply-btn svg { width: 20px; height: 20px; }
+.msg-reply-btn svg { width: 16px; height: 16px; }
 
 .chat-msg-wrapper.my-message .msg-reply-btn {
     right: auto;
