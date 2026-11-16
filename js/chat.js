@@ -52,13 +52,13 @@ function renderPanelContent(tabId) {
     }
 }
 
-const flameIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>`;
+const flameIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>`;
 
-const goldMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#fef08a" stroke="#facc15" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#ca8a04" text-anchor="middle">I</text></svg>`;
+const goldMedalSvg = `<svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 10 L12 10 L8 2 Z" fill="#d9381e"/><path d="M18 2 L14 10 L12 10 L16 2 Z" fill="#f0522d"/><circle cx="12" cy="16" r="6.5" fill="#ffe48a" stroke="#f59e0b" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="#d97706" text-anchor="middle">I</text></svg>`;
 
-const silverMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="#64748b" text-anchor="middle">II</text></svg>`;
+const silverMedalSvg = `<svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 10 L12 10 L8 2 Z" fill="#d9381e"/><path d="M18 2 L14 10 L12 10 L16 2 Z" fill="#f0522d"/><circle cx="12" cy="16" r="6.5" fill="#d3dce6" stroke="#8b9dc3" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="#8b9dc3" text-anchor="middle">II</text></svg>`;
 
-const bronzeMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#fed7aa" stroke="#fdba74" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="#9a3412" text-anchor="middle">III</text></svg>`;
+const bronzeMedalSvg = `<svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 10 L12 10 L8 2 Z" fill="#d9381e"/><path d="M18 2 L14 10 L12 10 L16 2 Z" fill="#f0522d"/><circle cx="12" cy="16" r="6.5" fill="#d4b4a9" stroke="#9d6b5b" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="5" font-weight="bold" fill="#9d6b5b" text-anchor="middle">III</text></svg>`;
 
 async function fetchLeaderboard() {
     const topThreeContainer = document.getElementById('top-three-container');
@@ -97,6 +97,13 @@ async function fetchLeaderboard() {
         const isMe = profile.name === currentName;
         const borderStyle = isMe ? 'border: 2px solid var(--primary-color);' : 'border: 1px solid transparent;';
 
+        let nameColor = '#ffffff';
+        let rankColor = '#f87171';
+
+        if (index < 3) {
+            nameColor = '#1e40af';
+        }
+
         let avatarSrc = defaultAvatar;
         if (profile.avatar_index >= 0 && avatarImages[profile.avatar_index]) {
             avatarSrc = avatarImages[profile.avatar_index];
@@ -106,7 +113,7 @@ async function fetchLeaderboard() {
         if (index === 0) rankHTML = goldMedalSvg;
         else if (index === 1) rankHTML = silverMedalSvg;
         else if (index === 2) rankHTML = bronzeMedalSvg;
-        else rankHTML = `<div style="font-weight: bold; font-size: 1.1rem; width: 28px; text-align: center; color: #ffffff;">${index + 1}</div>`;
+        else rankHTML = `<div style="font-weight: bold; font-size: 1.1rem; width: 28px; text-align: center; color: ${rankColor};">${index + 1}</div>`;
 
         const row = document.createElement('div');
         row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
@@ -117,8 +124,8 @@ async function fetchLeaderboard() {
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #ffffff; font-weight: bold;"></span>
-                <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${flameIconSvg} ${profile.solved_levels} مرحله حل شده</span>
+                <span style="color: ${nameColor}; font-weight: bold;"></span>
+                <span style="font-size: 0.8rem; color: #0d9488; display: flex; align-items: center; gap: 4px;">${flameIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
         row.querySelector('span[style*="font-weight: bold"]').innerHTML = profile.name + getVerifiedIcon(profile.name);
