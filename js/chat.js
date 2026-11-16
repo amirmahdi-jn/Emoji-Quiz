@@ -71,7 +71,7 @@ function renderPanelContent(tabId) {
             <div class="private-tabs">
                 <button class="private-tab-btn active" id="tab-btn-chats" onclick="switchPrivateTab('chats')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    چت‌ها
+                    پیام‌ها
                 </button>
                 <button class="private-tab-btn" id="tab-btn-friends" onclick="switchPrivateTab('friends')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -189,7 +189,7 @@ async function loadChatsList(container) {
         .eq('status', 'accepted');
 
     if (!friends || friends.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز چتی ندارید.</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز پیامی ندارید.</p>';
         return;
     }
 
@@ -241,7 +241,7 @@ async function loadFriendsList(container) {
         .eq('status', 'accepted');
 
     if (!friends || friends.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">لیست دوستان شما خالی است.</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز دوستی ندارید.</p>';
         return;
     }
 
@@ -308,7 +308,7 @@ async function loadRequestsList(container) {
         .eq('status', 'pending');
 
     if (!requests || requests.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">درخواستی ندارید.</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز درخواستی ندارید.</p>';
         return;
     }
 
