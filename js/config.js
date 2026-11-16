@@ -21,8 +21,10 @@ const TOTAL_CHAPTERS = 12;
 let currentAvatarIndex = -1;
 let currentName = 'Guest';
 
-const GIFT_KEY = 'gift_last_open_v7';
-const DAILY_KEY = 'emoji_daily_challenge_v7';
+let lastGiftOpen = null;
+let lastChallengeDate = null;
+let challengeCorrect = false;
+
 const PROFILE_KEY = 'emoji_profile_v7';
 const STORAGE_KEY = 'emojiQuizProgress_v7';
 
