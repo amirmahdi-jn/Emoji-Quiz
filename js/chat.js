@@ -94,11 +94,6 @@ async function fetchLeaderboard() {
     restLeaderboard.innerHTML = '';
 
     data.forEach((profile, index) => {
-        let rowColor = '#ffffff';
-        if (index === 0) rowColor = '#ffd700';
-        else if (index === 1) rowColor = '#c0c0c0';
-        else if (index === 2) rowColor = '#cd7f32';
-
         const isMe = profile.name === currentName;
         const borderStyle = isMe ? 'border: 2px solid var(--primary-color);' : 'border: 1px solid transparent;';
 
@@ -122,7 +117,7 @@ async function fetchLeaderboard() {
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: ${rowColor}; font-weight: bold;"></span>
+                <span style="color: #ffffff; font-weight: bold;"></span>
                 <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${flameIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
