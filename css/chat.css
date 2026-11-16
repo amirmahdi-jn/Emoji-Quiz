@@ -66,10 +66,10 @@
 .msg-reply-btn {
     position: absolute;
     top: 50%;
-    right: -50px;
+    right: -44px;
     transform: translateY(-50%);
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
     background: rgba(255, 255, 255, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
@@ -82,11 +82,11 @@
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 .msg-reply-btn:active { background: rgba(255, 255, 255, 0.3); border-color: #ffffff; }
-.msg-reply-btn svg { width: 16px; height: 16px; }
+.msg-reply-btn svg { width: 18px; height: 18px; }
 
 .chat-msg-wrapper.my-message .msg-reply-btn {
     right: auto;
-    left: -50px;
+    left: -44px;
 }
 
 .chat-input-row {
