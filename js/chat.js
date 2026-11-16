@@ -1,6 +1,7 @@
 let activePrivateChat = null;
 let privateChatSubscription = null;
 let friendRequestsSubscription = null;
+let cachedAvatarMap = {};
 
 function getVerifiedIcon(name) {
     let colorClass = '';
@@ -39,7 +40,7 @@ function renderPanelContent(tabId) {
     } else if (tabId === 'private-chat') {
         container.innerHTML = `
             <div class="private-search-bar">
-                <input type="text" id="searchUserInput" placeholder="آیدی دقیق را وارد کنید...">
+                <input type="text" id="searchUserInput" placeholder="لطفا آیدی کاربر را دقیق وارد کنید...">
                 <button onclick="searchUserForChat()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </button>
@@ -103,18 +104,17 @@ async function searchUserForChat() {
     }
 
     const { data: existingFriend } = await supabaseClient.from('friend_requests').select('status').or(`and(sender_name.eq.${currentName},receiver_name.eq.${term}),and(sender_name.eq.${term},receiver_name.eq.${currentName})`).eq('status', 'accepted').maybeSingle();
-
     const { data: existingPending } = await supabaseClient.from('friend_requests').select('status').or(`and(sender_name.eq.${currentName},receiver_name.eq.${term}),and(sender_name.eq.${term},receiver_name.eq.${currentName})`).eq('status', 'pending').maybeSingle();
 
     let avatarSrc = user.avatar_index >= 0 ? avatarImages[user.avatar_index] : defaultAvatar;
-    
     let actionBtn = '';
+
     if (existingFriend) {
         actionBtn = `<button class="user-card-action" onclick="openPrivateChat('${user.name}', '${avatarSrc}')">ورود به چت</button>`;
     } else if (existingPending) {
         actionBtn = `<button class="user-card-action" style="background:#eab308;" disabled>در انتظار تایید</button>`;
     } else {
-        actionBtn = `<button class="user-card-action" onclick="sendFriendRequest('${user.name}')">درخواست دوستی</button>`;
+        actionBtn = `<button class="user-card-action" id="btn-send-req-${user.name}" onclick="sendFriendRequest('${user.name}')">درخواست دوستی</button>`;
     }
 
     listContainer.innerHTML = `
@@ -134,8 +134,19 @@ async function sendFriendRequest(receiver) {
         receiver_name: receiver,
         status: 'pending'
     }]);
-    alert('درخواست شما ارسال شد.');
-    searchUserForChat();
+
+    const btn = document.getElementById(`btn-send-req-${receiver}`);
+    if (btn) {
+        btn.innerHTML = '<span style="color: #22c55e; font-weight: bold;">درخواست ارسال شد</span>';
+        btn.disabled = true;
+        btn.style.background = 'transparent';
+        
+        setTimeout(() => {
+            btn.innerHTML = 'در انتظار تایید';
+            btn.style.background = '#eab308';
+            btn.style.color = '#fff';
+        }, 2000);
+    }
 }
 
 async function loadChatsList(container) {
@@ -150,14 +161,28 @@ async function loadChatsList(container) {
     }
 
     const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index');
-    const avatarMap = {};
-    if (profiles) profiles.forEach(p => avatarMap[p.name] = p.avatar_index);
+    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = p.avatar_index);
+
+    const { data: unreadMsgs } = await supabaseClient.from('private_messages')
+        .select('sender_name')
+        .eq('receiver_name', currentName)
+        .eq('is_read', false);
+
+    const unreadCounts = {};
+    if (unreadMsgs) {
+        unreadMsgs.forEach(m => {
+            unreadCounts[m.sender_name] = (unreadCounts[m.sender_name] || 0) + 1;
+        });
+    }
 
     container.innerHTML = '';
     friends.forEach(f => {
         const otherUser = f.sender_name === currentName ? f.receiver_name : f.sender_name;
-        const avIdx = avatarMap[otherUser] !== undefined ? avatarMap[otherUser] : -1;
+        const avIdx = cachedAvatarMap[otherUser] !== undefined ? cachedAvatarMap[otherUser] : -1;
         const avSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
+        const count = unreadCounts[otherUser] || 0;
+
+        let badgeHTML = count > 0 ? `<span class="unread-badge">${count}</span>` : '';
 
         container.innerHTML += `
             <div class="user-card" onclick="openPrivateChat('${otherUser}', '${avSrc}')" style="cursor:pointer;">
@@ -165,7 +190,10 @@ async function loadChatsList(container) {
                     <img src="${avSrc}">
                     <span>${otherUser}</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                <div style="display:flex; align-items:center;">
+                    ${badgeHTML}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </div>
             </div>
         `;
     });
@@ -183,15 +211,16 @@ async function loadRequestsList(container) {
     }
 
     const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index');
-    const avatarMap = {};
-    if (profiles) profiles.forEach(p => avatarMap[p.name] = p.avatar_index);
+    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = p.avatar_index);
 
     container.innerHTML = '';
     requests.forEach(r => {
-        const avIdx = avatarMap[r.sender_name] !== undefined ? avatarMap[r.sender_name] : -1;
+        const avIdx = cachedAvatarMap[r.sender_name] !== undefined ? cachedAvatarMap[r.sender_name] : -1;
         const avSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
 
-        let timeStr = new Date(r.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(r.created_at);
+        const pDate = date.toLocaleDateString('fa-IR');
+        const pTime = date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
         container.innerHTML += `
             <div class="user-card" style="flex-direction:column; align-items:stretch;">
@@ -200,7 +229,10 @@ async function loadRequestsList(container) {
                         <img src="${avSrc}">
                         <span>${r.sender_name}</span>
                     </div>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">${timeStr}</span>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                        <span style="font-size:0.75rem; color:#fff;">${pDate}</span>
+                        <span style="font-size:0.7rem; color:var(--text-muted);">${pTime}</span>
+                    </div>
                 </div>
                 <div style="display:flex; gap:8px;">
                     <button class="user-card-action accept" style="flex:1;" onclick="acceptRequest('${r.id}')">تایید</button>
@@ -250,19 +282,30 @@ function openPrivateChat(user, avatarSrc) {
     chatWindow.id = 'private-chat-window';
     chatWindow.innerHTML = `
         <div class="private-chat-header">
-            <button class="back-btn" onclick="closePrivateChat()">⬅</button>
-            <img src="${avatarSrc}">
-            <span>${user}</span>
+            <div class="header-right">
+                <img src="${avatarSrc}">
+                <span>${user}</span>
+            </div>
+            <button class="back-btn" onclick="closePrivateChat()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+            </button>
         </div>
         <div class="private-chat-messages" id="private-messages-container"></div>
-        <div class="chat-input-row" style="padding: 15px; background: var(--panel-bg); margin:0;">
-            <textarea id="private-chat-input" placeholder="پیام..." rows="1" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 15px; color: white; resize: none; font-family: 'Vazirmatn';"></textarea>
-            <button class="send-msg-btn" onclick="sendPrivateMessage()" style="height:44px;">
+        <div class="private-input-row">
+            <textarea id="private-chat-input" placeholder="پیام..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"></textarea>
+            <button class="send-msg-btn" onclick="sendPrivateMessage()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
             </button>
         </div>
     `;
     document.body.appendChild(chatWindow);
+    
+    supabaseClient.from('private_messages')
+        .update({ is_read: true })
+        .eq('receiver_name', currentName)
+        .eq('sender_name', user)
+        .then();
+
     loadPrivateMessages();
 }
 
@@ -271,6 +314,9 @@ function closePrivateChat() {
     const w = document.getElementById('private-chat-window');
     if (w) w.remove();
     activePrivateChat = null;
+    if (document.getElementById('tab-btn-chats')?.classList.contains('active')) {
+        loadChatsList(document.getElementById('private-chat-list'));
+    }
 }
 
 async function loadPrivateMessages() {
@@ -285,14 +331,7 @@ async function loadPrivateMessages() {
     container.innerHTML = '';
     if (data) {
         data.forEach(msg => {
-            const isMe = msg.sender_name === currentName;
-            let timeStr = new Date(msg.created_at).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-            container.innerHTML += `
-                <div style="align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--primary-color)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; max-width: 80%; color: #fff; position:relative;">
-                    <div style="font-size:0.85rem;">${msg.text}</div>
-                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.6); text-align:left; margin-top:4px;">${timeStr}</div>
-                </div>
-            `;
+            appendPrivateMessageUI(msg);
         });
     }
     container.scrollTop = container.scrollHeight;
@@ -304,9 +343,45 @@ async function loadPrivateMessages() {
             const msg = payload.new;
             if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) || 
                 (msg.sender_name === activePrivateChat && msg.receiver_name === currentName)) {
-                loadPrivateMessages();
+                appendPrivateMessageUI(msg);
+                const cont = document.getElementById('private-messages-container');
+                if(cont) cont.scrollTop = cont.scrollHeight;
+                
+                if (msg.receiver_name === currentName) {
+                    supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
+                }
             }
         }).subscribe();
+}
+
+function appendPrivateMessageUI(msg) {
+    const container = document.getElementById('private-messages-container');
+    if (!container) return;
+
+    const isMe = msg.sender_name === currentName;
+    const otherUser = isMe ? msg.receiver_name : msg.sender_name;
+    const avIdx = cachedAvatarMap[otherUser] !== undefined ? cachedAvatarMap[otherUser] : -1;
+    const avatarSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
+    
+    const time = getPersianTime(msg.created_at);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
+    
+    wrapper.innerHTML = `
+        <div class="chat-msg-avatar">
+            <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        </div>
+        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px;">
+            <div class="chat-msg-header" style="margin-bottom: 4px;">
+                <span class="chat-msg-name" style="color: #fff; font-size: 0.75rem; font-weight: bold;">${isMe ? 'شما' : msg.sender_name}</span>
+            </div>
+            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
+            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}</div>
+        </div>
+    `;
+
+    container.appendChild(wrapper);
 }
 
 async function sendPrivateMessage() {
@@ -315,6 +390,8 @@ async function sendPrivateMessage() {
     if (!text || !activePrivateChat) return;
     
     input.value = '';
+    input.style.height = 'auto';
+    
     await supabaseClient.from('private_messages').insert([{
         sender_name: currentName,
         receiver_name: activePrivateChat,
@@ -550,80 +627,4 @@ async function sendPanelChatMessage() {
         window.currentReply = null;
     }
 
-    await supabaseClient.from('messages').insert([msgData]);
-}
-
-window.openReplyModal = function(id, sender, text) {
-    document.getElementById('reply-modal').classList.add('active');
-    document.getElementById('reply-modal-text').innerText = `${sender}: ${text}`;
-    document.getElementById('reply-input-text').value = '';
-    setTimeout(() => document.getElementById('reply-input-text').focus(), 100);
-    window.currentReplyData = { id, sender, text };
-};
-
-window.closeReplyModal = function() {
-    document.getElementById('reply-modal').classList.remove('active');
-};
-
-window.submitReply = async function() {
-    const input = document.getElementById('reply-input-text');
-    const text = input.value.trim();
-    if (!text || !window.currentReplyData) return;
-    
-    const msgData = { 
-        text: text, 
-        sender_name: currentName,
-        reply_to_id: window.currentReplyData.id,
-        reply_to_text: window.currentReplyData.text,
-        reply_to_name: window.currentReplyData.sender
-    };
-    
-    closeReplyModal();
-    await supabaseClient.from('messages').insert([msgData]);
-};
-
-window.openEditModal = function(id, text) {
-    document.getElementById('edit-modal').classList.add('active');
-    const input = document.getElementById('edit-input-text');
-    input.value = text;
-    setTimeout(() => input.focus(), 100);
-    window.currentEditId = id;
-};
-
-window.closeEditModal = function() {
-    document.getElementById('edit-modal').classList.remove('active');
-};
-
-window.submitEdit = async function() {
-    const input = document.getElementById('edit-input-text');
-    const text = input.value.trim();
-    if (!text || !window.currentEditId) return;
-    
-    closeEditModal();
-    await supabaseClient.from('messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
-};
-
-window.addEventListener('load', async () => {
-    await loadProgress();
-    await loadProfile();
-    updateProfileUI();
-    updateCoinsUI();
-    renderChapters();
-    checkOnlineStatus();
-    const startBtn = document.getElementById('btn-start');
-    if (startBtn) {
-        startBtn.addEventListener('click', () => {
-            renderChapters();
-            showScreen('chapters-screen');
-        });
-    }
-    const offlineBtn = document.getElementById('offline-close-btn');
-    if (offlineBtn) {
-        offlineBtn.addEventListener('click', () => {
-            if (navigator.onLine) checkOnlineStatus();
-            else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
-        });
-    }
-});
-window.addEventListener('offline', checkOnlineStatus);
-window.addEventListener('online', checkOnlineStatus);
+    await supabase
