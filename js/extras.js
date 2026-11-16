@@ -1,3 +1,20 @@
+function getIranMidnight() {
+    const now = new Date();
+    const iranOffset = 3.5 * 60 * 60 * 1000;
+    const iranNow = new Date(now.getTime() + iranOffset);
+    iranNow.setUTCHours(24, 0, 0, 0);
+    return iranNow.getTime() - iranOffset;
+}
+
+function formatTimeRemaining(ms) {
+    if (ms <= 0) return '۰:۰۰:۰۰';
+    const hours = Math.floor(ms / (60 * 60 * 1000));
+    const mins = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
+    const secs = Math.floor((ms % (60 * 1000)) / 1000);
+    const pad = (n) => String(n).padStart(2, '0');
+    return pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+}
+
 function startGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
@@ -10,18 +27,15 @@ function updateGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
     if (!lastGiftOpen) { giftTimerEl.textContent = '--:--:--'; return; }
+    
     const elapsed = Date.now() - lastGiftOpen;
     const remaining = 24 * 60 * 60 * 1000 - elapsed;
-    if (remaining <= 0) {
-        giftTimerEl.textContent = '۰:۰۰:۰۰';
-        if (giftInterval) { clearInterval(giftInterval); giftInterval = null; }
-        return;
+    
+    giftTimerEl.textContent = formatTimeRemaining(remaining);
+    if (remaining <= 0 && giftInterval) { 
+        clearInterval(giftInterval); 
+        giftInterval = null; 
     }
-    const hours = Math.floor(remaining / (60 * 60 * 1000));
-    const mins = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-    const secs = Math.floor((remaining % (60 * 1000)) / 1000);
-    const pad = (n) => String(n).padStart(2, '0');
-    giftTimerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
 }
 
 function openGift(boxNumber) {
@@ -96,17 +110,12 @@ function initDailyChallenge() {
     }
     
     function updateDailyTimer() {
-        const now = new Date();
-        const midnight = new Date(now);
-        midnight.setHours(24, 0, 0, 0);
+        const now = Date.now();
+        const midnight = getIranMidnight();
         const diff = midnight - now;
-        if (diff <= 0) { timerEl.textContent = '۰:۰۰:۰۰'; return; }
-        const hours = Math.floor(diff / (60 * 60 * 1000));
-        const mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-        const secs = Math.floor((diff % (60 * 1000)) / 1000);
-        const pad = (n) => String(n).padStart(2, '0');
-        timerEl.textContent = pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+        timerEl.textContent = formatTimeRemaining(diff);
     }
+    
     updateDailyTimer();
     if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
     dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
