@@ -3,6 +3,7 @@ let privateChatSubscription = null;
 let friendRequestsSubscription = null;
 let cachedAvatarMap = {};
 let currentChatContext = 'public';
+let friendToDelete = null;
 
 function getStatusHTML(lastSeen) {
     if (!lastSeen) return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
@@ -72,6 +73,10 @@ function renderPanelContent(tabId) {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     چت‌ها
                 </button>
+                <button class="private-tab-btn" id="tab-btn-friends" onclick="switchPrivateTab('friends')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    دوستان
+                </button>
                 <button class="private-tab-btn" id="tab-btn-requests" onclick="switchPrivateTab('requests')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
                     درخواست‌ها
@@ -94,12 +99,15 @@ function renderPanelContent(tabId) {
 
 function switchPrivateTab(tab) {
     document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
+    document.getElementById('tab-btn-friends').classList.toggle('active', tab === 'friends');
     document.getElementById('tab-btn-requests').classList.toggle('active', tab === 'requests');
     const listContainer = document.getElementById('private-chat-list');
     listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">در حال دریافت...</p>';
     
     if (tab === 'chats') {
         loadChatsList(listContainer);
+    } else if (tab === 'friends') {
+        loadFriendsList(listContainer);
     } else {
         loadRequestsList(listContainer);
     }
@@ -224,6 +232,73 @@ async function loadChatsList(container) {
             </div>
         `;
     });
+}
+
+async function loadFriendsList(container) {
+    const { data: friends } = await supabaseClient.from('friend_requests')
+        .select('*')
+        .or(`and(sender_name.eq.${currentName},receiver_name.neq.${currentName}),and(receiver_name.eq.${currentName},sender_name.neq.${currentName})`)
+        .eq('status', 'accepted');
+
+    if (!friends || friends.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">لیست دوستان شما خالی است.</p>';
+        return;
+    }
+
+    const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index, last_seen');
+    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { avatar_index: p.avatar_index, last_seen: p.last_seen });
+
+    container.innerHTML = '';
+    friends.forEach(f => {
+        const otherUser = f.sender_name === currentName ? f.receiver_name : f.sender_name;
+        const uData = cachedAvatarMap[otherUser] || { avatar_index: -1, last_seen: null };
+        const avSrc = uData.avatar_index >= 0 ? avatarImages[uData.avatar_index] : defaultAvatar;
+
+        container.innerHTML += `
+            <div class="user-card">
+                <div class="user-card-info">
+                    <img src="${avSrc}">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
+                        ${getStatusHTML(uData.last_seen)}
+                    </div>
+                </div>
+                <button class="trash-btn" onclick="openDeleteFriendModal('${otherUser}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </div>
+        `;
+    });
+}
+
+function openDeleteFriendModal(user) {
+    friendToDelete = user;
+    document.getElementById('delete-friend-modal').classList.add('active');
+}
+
+function closeDeleteFriendModal() {
+    friendToDelete = null;
+    document.getElementById('delete-friend-modal').classList.remove('active');
+}
+
+async function confirmDeleteFriend() {
+    if (!friendToDelete) return;
+
+    await supabaseClient.from('friend_requests')
+        .delete()
+        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${friendToDelete}),and(sender_name.eq.${friendToDelete},receiver_name.eq.${currentName})`)
+        .eq('status', 'accepted');
+
+    await supabaseClient.from('private_messages')
+        .delete()
+        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${friendToDelete}),and(sender_name.eq.${friendToDelete},receiver_name.eq.${currentName})`);
+
+    if (activePrivateChat === friendToDelete) {
+        closePrivateChat();
+    }
+
+    closeDeleteFriendModal();
+    switchPrivateTab('friends');
 }
 
 async function loadRequestsList(container) {
