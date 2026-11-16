@@ -546,4 +546,84 @@ async function sendPanelChatMessage() {
     if (window.currentReply) {
         msgData.reply_to_id = window.currentReply.id;
         msgData.reply_to_text = window.currentReply.text;
-        msgData.reply_to_name = window.currentReply
+        msgData.reply_to_name = window.currentReply.sender;
+        window.currentReply = null;
+    }
+
+    await supabaseClient.from('messages').insert([msgData]);
+}
+
+window.openReplyModal = function(id, sender, text) {
+    document.getElementById('reply-modal').classList.add('active');
+    document.getElementById('reply-modal-text').innerText = `${sender}: ${text}`;
+    document.getElementById('reply-input-text').value = '';
+    setTimeout(() => document.getElementById('reply-input-text').focus(), 100);
+    window.currentReplyData = { id, sender, text };
+};
+
+window.closeReplyModal = function() {
+    document.getElementById('reply-modal').classList.remove('active');
+};
+
+window.submitReply = async function() {
+    const input = document.getElementById('reply-input-text');
+    const text = input.value.trim();
+    if (!text || !window.currentReplyData) return;
+    
+    const msgData = { 
+        text: text, 
+        sender_name: currentName,
+        reply_to_id: window.currentReplyData.id,
+        reply_to_text: window.currentReplyData.text,
+        reply_to_name: window.currentReplyData.sender
+    };
+    
+    closeReplyModal();
+    await supabaseClient.from('messages').insert([msgData]);
+};
+
+window.openEditModal = function(id, text) {
+    document.getElementById('edit-modal').classList.add('active');
+    const input = document.getElementById('edit-input-text');
+    input.value = text;
+    setTimeout(() => input.focus(), 100);
+    window.currentEditId = id;
+};
+
+window.closeEditModal = function() {
+    document.getElementById('edit-modal').classList.remove('active');
+};
+
+window.submitEdit = async function() {
+    const input = document.getElementById('edit-input-text');
+    const text = input.value.trim();
+    if (!text || !window.currentEditId) return;
+    
+    closeEditModal();
+    await supabaseClient.from('messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
+};
+
+window.addEventListener('load', async () => {
+    await loadProgress();
+    await loadProfile();
+    updateProfileUI();
+    updateCoinsUI();
+    renderChapters();
+    checkOnlineStatus();
+    const startBtn = document.getElementById('btn-start');
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            renderChapters();
+            showScreen('chapters-screen');
+        });
+    }
+    const offlineBtn = document.getElementById('offline-close-btn');
+    if (offlineBtn) {
+        offlineBtn.addEventListener('click', () => {
+            if (navigator.onLine) checkOnlineStatus();
+            else { checkOnlineStatus(); setTimeout(checkOnlineStatus, 100); }
+        });
+    }
+});
+window.addEventListener('offline', checkOnlineStatus);
+window.addEventListener('online', checkOnlineStatus);
