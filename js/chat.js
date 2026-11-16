@@ -23,6 +23,17 @@ function getVerifiedIcon(name) {
     return `<svg class="verified-badge ${colorClass}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="fill-opacity: 0.2;"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m16 9-5.5 5.5L8 12" stroke="#ffffff" stroke-width="2.5" fill="none"/></svg>`;
 }
 
+function getPersianDateString(dateStr) {
+    const date = new Date(dateStr);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const parts = new Intl.DateTimeFormat('fa-IR', options).formatToParts(date);
+    const weekday = parts.find(p => p.type === 'weekday').value;
+    const day = parts.find(p => p.type === 'day').value;
+    const month = parts.find(p => p.type === 'month').value;
+    const year = parts.find(p => p.type === 'year').value;
+    return `${weekday} ${day} ${month} ${year}`;
+}
+
 function renderPanelContent(tabId) {
     const container = document.getElementById('panel-content');
     if (!container) return;
@@ -227,12 +238,12 @@ async function loadRequestsList(container) {
     }
 
     const { data: profiles } = await supabaseClient.from('profiles').select('name, avatar_index');
-    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = p.avatar_index);
+    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { avatar_index: p.avatar_index });
 
     container.innerHTML = '';
     requests.forEach(r => {
-        const avIdx = cachedAvatarMap[r.sender_name] !== undefined ? cachedAvatarMap[r.sender_name].avatar_index : -1;
-        const avSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
+        const uData = cachedAvatarMap[r.sender_name] || { avatar_index: -1 };
+        const avSrc = uData.avatar_index >= 0 ? avatarImages[uData.avatar_index] : defaultAvatar;
 
         const date = new Date(r.created_at);
         const pDate = date.toLocaleDateString('fa-IR');
@@ -359,8 +370,18 @@ async function loadPrivateMessages() {
         .order('created_at', { ascending: true });
 
     container.innerHTML = '';
+    let lastDate = null;
     if (data) {
         data.forEach(msg => {
+            const msgDate = new Date(msg.created_at).toDateString();
+            if (lastDate !== msgDate) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'chat-header-date';
+                dateDiv.style.margin = '10px auto';
+                dateDiv.innerText = getPersianDateString(msg.created_at);
+                container.appendChild(dateDiv);
+                lastDate = msgDate;
+            }
             appendPrivateMessageUI(msg);
         });
     }
@@ -373,9 +394,24 @@ async function loadPrivateMessages() {
             const msg = payload.new;
             if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) || 
                 (msg.sender_name === activePrivateChat && msg.receiver_name === currentName)) {
+                
+                const msgDate = new Date(msg.created_at).toDateString();
+                let lastDate = null;
+                const wrappers = container.querySelectorAll('.chat-msg-wrapper');
+                if (wrappers.length > 0) {
+                    lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+                }
+                
+                if (lastDate !== msgDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'chat-header-date';
+                    dateDiv.style.margin = '10px auto';
+                    dateDiv.innerText = getPersianDateString(msg.created_at);
+                    container.appendChild(dateDiv);
+                }
+                
                 appendPrivateMessageUI(msg);
-                const cont = document.getElementById('private-messages-container');
-                if(cont) cont.scrollTop = cont.scrollHeight;
+                container.scrollTop = container.scrollHeight;
                 
                 if (msg.receiver_name === currentName) {
                     supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
@@ -438,6 +474,7 @@ function appendPrivateMessageUI(msg) {
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     wrapper.setAttribute('data-private-msg-id', msg.id);
+    wrapper.setAttribute('data-date', new Date(msg.created_at).toDateString());
     
     wrapper.innerHTML = `
         <div class="chat-msg-avatar">
