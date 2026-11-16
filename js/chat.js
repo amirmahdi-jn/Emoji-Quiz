@@ -231,7 +231,7 @@ async function loadRequestsList(container) {
 
     container.innerHTML = '';
     requests.forEach(r => {
-        const avIdx = cachedAvatarMap[r.sender_name] !== undefined ? cachedAvatarMap[r.sender_name] : -1;
+        const avIdx = cachedAvatarMap[r.sender_name] !== undefined ? cachedAvatarMap[r.sender_name].avatar_index : -1;
         const avSrc = avIdx >= 0 ? avatarImages[avIdx] : defaultAvatar;
 
         const date = new Date(r.created_at);
@@ -294,6 +294,11 @@ function listenForFriendRequests() {
 async function openPrivateChat(user, avatarSrc) {
     activePrivateChat = user;
     currentChatContext = 'private';
+    
+    if (!cachedAvatarMap[user]) {
+        const { data } = await supabaseClient.from('profiles').select('avatar_index, last_seen').eq('name', user).maybeSingle();
+        if (data) cachedAvatarMap[user] = data;
+    }
     
     const { data: pData } = await supabaseClient.from('profiles').select('last_seen').eq('name', user).maybeSingle();
     const statusHTML = getStatusHTML(pData ? pData.last_seen : null);
@@ -401,11 +406,21 @@ function appendPrivateMessageUI(msg) {
     if (!container) return;
 
     const isMe = msg.sender_name === currentName;
-    const otherUser = isMe ? msg.receiver_name : msg.sender_name;
-    const uData = cachedAvatarMap[otherUser] || { avatar_index: -1 };
-    const avatarSrc = uData.avatar_index >= 0 ? avatarImages[uData.avatar_index] : defaultAvatar;
+    
+    let avatarSrc = defaultAvatar;
+    if (isMe) {
+        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) {
+            avatarSrc = avatarImages[currentAvatarIndex];
+        }
+    } else {
+        const uData = cachedAvatarMap[msg.sender_name];
+        if (uData && uData.avatar_index >= 0 && avatarImages[uData.avatar_index]) {
+            avatarSrc = avatarImages[uData.avatar_index];
+        }
+    }
     
     const time = getPersianTime(msg.created_at);
+    const color = getUserColor(msg.sender_name);
 
     let replyHTML = '';
     if (msg.reply_to_text) {
@@ -430,7 +445,7 @@ function appendPrivateMessageUI(msg) {
         </div>
         <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
             <div class="chat-msg-header" style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <span class="chat-msg-name" style="color: #fff; font-size: 0.75rem; font-weight: bold;">${isMe ? 'شما' : msg.sender_name + getVerifiedIcon(msg.sender_name)}</span>
+                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;">${msg.sender_name} ${getVerifiedIcon(msg.sender_name)}</span>
                 ${menuBtnHTML}
             </div>
             ${replyHTML}
