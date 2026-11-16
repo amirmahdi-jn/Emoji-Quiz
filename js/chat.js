@@ -1,6 +1,6 @@
 let activePrivateChat = null;
 let privateChatSubscription = null;
-let friendRequestsSubscription = null;
+let privateTabSubscription = null;
 let cachedAvatarMap = {};
 let currentChatContext = 'public';
 let friendToDelete = null;
@@ -69,13 +69,14 @@ function renderPanelContent(tabId) {
                 </button>
             </div>
             <div class="private-tabs">
-                <button class="private-tab-btn active" id="tab-btn-chats" onclick="switchPrivateTab('chats')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    پیام‌ها
-                </button>
-                <button class="private-tab-btn" id="tab-btn-friends" onclick="switchPrivateTab('friends')">
+                <button class="private-tab-btn active" id="tab-btn-friends" onclick="switchPrivateTab('friends')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     دوستان
+                </button>
+                <button class="private-tab-btn" id="tab-btn-chats" onclick="switchPrivateTab('chats')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    پیام‌ها
+                    <span id="msg-badge" class="badge" style="display:none;">0</span>
                 </button>
                 <button class="private-tab-btn" id="tab-btn-requests" onclick="switchPrivateTab('requests')">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
@@ -85,8 +86,9 @@ function renderPanelContent(tabId) {
             </div>
             <div id="private-chat-list" style="flex:1; overflow-y:auto;"></div>
         `;
-        switchPrivateTab('chats');
-        listenForFriendRequests();
+        switchPrivateTab('friends');
+        updatePrivateBadges();
+        listenForPrivateEvents();
     }
 
     const titleEl = document.getElementById('panel-title');
@@ -97,10 +99,45 @@ function renderPanelContent(tabId) {
     }
 }
 
+async function updatePrivateBadges() {
+    const { count: msgCount } = await supabaseClient
+        .from('private_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_name', currentName)
+        .eq('is_read', false);
+    
+    const msgBadge = document.getElementById('msg-badge');
+    if (msgBadge) {
+        if (msgCount > 0) {
+            msgBadge.innerText = msgCount;
+            msgBadge.style.display = 'flex';
+        } else {
+            msgBadge.style.display = 'none';
+        }
+    }
+
+    const { count: reqCount } = await supabaseClient
+        .from('friend_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_name', currentName)
+        .eq('status', 'pending');
+    
+    const reqBadge = document.getElementById('req-badge');
+    if (reqBadge) {
+        if (reqCount > 0) {
+            reqBadge.innerText = reqCount;
+            reqBadge.style.display = 'flex';
+        } else {
+            reqBadge.style.display = 'none';
+        }
+    }
+}
+
 function switchPrivateTab(tab) {
-    document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
     document.getElementById('tab-btn-friends').classList.toggle('active', tab === 'friends');
+    document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
     document.getElementById('tab-btn-requests').classList.toggle('active', tab === 'requests');
+    
     const listContainer = document.getElementById('private-chat-list');
     listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">در حال دریافت...</p>';
     
@@ -111,6 +148,31 @@ function switchPrivateTab(tab) {
     } else {
         loadRequestsList(listContainer);
     }
+}
+
+function listenForPrivateEvents() {
+    if (privateTabSubscription) supabaseClient.removeChannel(privateTabSubscription);
+    privateTabSubscription = supabaseClient
+        .channel('public:private_events')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, () => {
+            updatePrivateBadges();
+            const activeTab = document.querySelector('.private-tab-btn.active')?.id;
+            if (activeTab === 'tab-btn-requests') {
+                loadRequestsList(document.getElementById('private-chat-list'));
+            } else if (activeTab === 'tab-btn-friends') {
+                loadFriendsList(document.getElementById('private-chat-list'));
+            }
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, (payload) => {
+            if (payload.new.receiver_name === currentName) {
+                updatePrivateBadges();
+                const activeTab = document.querySelector('.private-tab-btn.active')?.id;
+                if (activeTab === 'tab-btn-chats') {
+                    loadChatsList(document.getElementById('private-chat-list'));
+                }
+            }
+        })
+        .subscribe();
 }
 
 async function searchUserForChat() {
@@ -299,6 +361,7 @@ async function confirmDeleteFriend() {
 
     closeDeleteFriendModal();
     switchPrivateTab('friends');
+    updatePrivateBadges();
 }
 
 async function loadRequestsList(container) {
@@ -348,33 +411,13 @@ async function loadRequestsList(container) {
 async function acceptRequest(reqId) {
     await supabaseClient.from('friend_requests').update({ status: 'accepted' }).eq('id', reqId);
     switchPrivateTab('requests');
+    updatePrivateBadges();
 }
 
 async function rejectRequest(reqId) {
     await supabaseClient.from('friend_requests').update({ status: 'rejected' }).eq('id', reqId);
     switchPrivateTab('requests');
-}
-
-function listenForFriendRequests() {
-    if (friendRequestsSubscription) supabaseClient.removeChannel(friendRequestsSubscription);
-    friendRequestsSubscription = supabaseClient
-        .channel('public:friend_requests')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, async () => {
-            const { data: reqs } = await supabaseClient.from('friend_requests').select('id').eq('receiver_name', currentName).eq('status', 'pending');
-            const badge = document.getElementById('req-badge');
-            if (badge) {
-                if (reqs && reqs.length > 0) {
-                    badge.innerText = reqs.length;
-                    badge.style.display = 'flex';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-            if (document.getElementById('tab-btn-requests')?.classList.contains('active')) {
-                loadRequestsList(document.getElementById('private-chat-list'));
-            }
-        })
-        .subscribe();
+    updatePrivateBadges();
 }
 
 async function openPrivateChat(user, avatarSrc) {
@@ -419,7 +462,12 @@ async function openPrivateChat(user, avatarSrc) {
         .update({ is_read: true })
         .eq('receiver_name', currentName)
         .eq('sender_name', user)
-        .then();
+        .then(() => {
+            updatePrivateBadges();
+            if (document.getElementById('tab-btn-chats')?.classList.contains('active')) {
+                loadChatsList(document.getElementById('private-chat-list'));
+            }
+        });
 
     loadPrivateMessages();
 }
@@ -430,9 +478,7 @@ function closePrivateChat() {
     if (w) w.remove();
     activePrivateChat = null;
     currentChatContext = 'public';
-    if (document.getElementById('tab-btn-chats')?.classList.contains('active')) {
-        loadChatsList(document.getElementById('private-chat-list'));
-    }
+    updatePrivateBadges();
 }
 
 async function loadPrivateMessages() {
