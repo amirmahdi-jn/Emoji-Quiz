@@ -54,14 +54,10 @@
 }
 
 .msg-menu-btn {
-    position: absolute;
-    top: 8px;
-    left: 10px;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -70,12 +66,12 @@
 .msg-reply-btn {
     position: absolute;
     top: 50%;
-    right: -45px;
+    right: -50px;
     transform: translateY(-50%);
-    width: 34px;
-    height: 34px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 38px;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -83,13 +79,14 @@
     cursor: pointer;
     transition: 0.2s;
     z-index: 2;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
-.msg-reply-btn:active { background: rgba(255, 255, 255, 0.15); }
-.msg-reply-btn svg { width: 16px; height: 16px; stroke: #fff; fill: none; }
+.msg-reply-btn:active { background: rgba(255, 255, 255, 0.3); border-color: #ffffff; }
+.msg-reply-btn svg { width: 20px; height: 20px; }
 
 .chat-msg-wrapper.my-message .msg-reply-btn {
     right: auto;
-    left: -45px;
+    left: -50px;
 }
 
 .chat-input-row {
@@ -117,8 +114,8 @@
     color: white;
     border: none;
     border-radius: 12px;
-    padding: 0 15px;
-    height: 40px;
+    padding: 0 20px;
+    height: 44px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -197,12 +194,6 @@
     margin-right: 4px;
     margin-bottom: 2px;
 }
-.verified-badge.sky {
-    color: #38bdf8;
-}
-.verified-badge.red {
-    color: #f87171;
-}
-.verified-badge.green {
-    color: #22c55e;
-                       }
+.verified-badge.sky { color: #38bdf8; }
+.verified-badge.red { color: #f87171; }
+.verified-badge.green { color: #22c55e; }
