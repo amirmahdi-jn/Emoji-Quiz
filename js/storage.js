@@ -47,23 +47,22 @@ function getDeviceId() {
     return id;
 }
 
-function loadUsedCodes() {
-    try { return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || []; } catch (e) { return []; }
+function syncToDatabase() {
+    const solvedArray = Object.keys(solvedLevels).map(k => parseInt(k));
+    supabaseClient.from('profiles').upsert({
+        device_id: getDeviceId(),
+        name: currentName,
+        avatar_index: currentAvatarIndex,
+        coins: currentCoins,
+        diamonds: currentDiamonds,
+        solved_levels: solvedArray.length,
+        solved_levels_array: JSON.stringify(solvedArray),
+        remove_hint_uses: removeHintUses,
+        last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
+        last_challenge_date: lastChallengeDate,
+        challenge_correct: challengeCorrect
+    }, { onConflict: 'device_id' }).then();
 }
-
-function markCodeUsed(code) {
-    const used = loadUsedCodes();
-    if (!used.includes(code)) {
-        used.push(code);
-        try { localStorage.setItem(USED_CODES_KEY, JSON.stringify(used)); } catch (e) {}
-    }
-}
-
-function isCodeUsed(code) {
-    return loadUsedCodes().includes(code);
-}
-
-function saveProgress() {}
 
 function loadProgress() {
     currentCoins = 10;
@@ -91,7 +90,6 @@ async function loadProfile() {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             return;
         }
-        
         dbProfile = data;
     } catch (e) {
         document.getElementById('offline-overlay').classList.add('active');
@@ -104,12 +102,18 @@ async function loadProfile() {
         currentAvatarIndex = typeof dbProfile.avatar_index === 'number' ? dbProfile.avatar_index : -1;
         currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
         currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
+        removeHintUses = typeof dbProfile.remove_hint_uses === 'number' ? dbProfile.remove_hint_uses : 0;
+        lastGiftOpen = dbProfile.last_gift_open ? new Date(dbProfile.last_gift_open).getTime() : null;
+        lastChallengeDate = dbProfile.last_challenge_date || null;
+        challengeCorrect = dbProfile.challenge_correct || false;
         
-        if (typeof dbProfile.solved_levels === 'number') {
-            for (let i = 0; i < dbProfile.solved_levels; i++) {
-                solvedLevels[i] = true;
-            }
-            unlockedLevels = Math.max(1, dbProfile.solved_levels + 1);
+        solvedLevels = {};
+        if (dbProfile.solved_levels_array) {
+            try {
+                const arr = JSON.parse(dbProfile.solved_levels_array);
+                arr.forEach(idx => { solvedLevels[idx] = true; });
+                unlockedLevels = Math.max(1, arr.length + 1);
+            } catch(e) {}
         }
         
         updateProfileUI();
