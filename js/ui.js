@@ -8,11 +8,23 @@ function showScreen(screenId) {
 }
 
 function switchPanelTab(tabId) {
+    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
+    
     currentPanelTab = tabId;
     document.querySelectorAll('.panel-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
     });
     renderPanelContent(tabId);
+
+    if (isGuest) {
+        const textEl = document.getElementById('guest-restriction-text');
+        if (tabId === 'top-players') {
+            textEl.innerText = 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.';
+        } else {
+            textEl.innerText = 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
+        }
+        document.getElementById('guest-restriction-modal').classList.add('active');
+    }
 }
 
 function openModal(modalId) {
@@ -41,7 +53,7 @@ function openNameModal() {
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
-    input.value = currentName.startsWith('Guest') || currentName === 'Guest' ? '' : currentName;
+    input.value = currentName.startsWith('Guest.') || currentName === 'Guest' ? '' : currentName;
     overlay.classList.add('active');
     setTimeout(() => input.focus(), 200);
 }
@@ -78,29 +90,28 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
+    
     updateProfileUI();
     closeNameModal();
 
     try {
         await supabaseClient
             .from('profiles')
-            .upsert({
-                device_id: deviceId,
+            .update({
                 name: currentName,
                 avatar_index: currentAvatarIndex,
                 coins: currentCoins,
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
-            }, { onConflict: 'device_id' });
+            })
+            .eq('device_id', deviceId);
 
         if (oldName && oldName !== raw) {
             await supabaseClient.from('messages')
                 .update({ sender_name: currentName })
                 .eq('sender_name', oldName);
         }
-    } catch (e) {
-        console.error("Save Name Error:", e);
-    }
+    } catch (e) {}
 
     if (currentPanelTab === 'top-players') {
         fetchLeaderboard();
@@ -120,7 +131,6 @@ function renderAvatars() {
         const img = document.createElement('img');
         img.src = src;
         item.appendChild(img);
-        
         item.onclick = async () => {
             currentAvatarIndex = idx;
             if (preview) preview.src = src;
@@ -128,21 +138,12 @@ function renderAvatars() {
             
             try {
                 await supabaseClient.from('profiles')
-                    .upsert({
-                        device_id: getDeviceId(),
-                        name: currentName,
-                        avatar_index: idx,
-                        coins: currentCoins,
-                        diamonds: currentDiamonds,
-                        solved_levels: Object.keys(solvedLevels).length
-                    }, { onConflict: 'device_id' });
-            } catch (e) {
-                console.error("Avatar Save Error:", e);
-            }
+                    .update({ avatar_index: idx })
+                    .eq('device_id', getDeviceId());
+            } catch (e) {}
             
             if (currentPanelTab === 'top-players') fetchLeaderboard();
         };
-        
         if (idx < 3) row1.appendChild(item);
         else row2.appendChild(item);
     });
