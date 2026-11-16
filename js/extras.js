@@ -9,9 +9,8 @@ function startGiftTimer() {
 function updateGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
-    const lastOpen = localStorage.getItem(GIFT_KEY);
-    if (!lastOpen) { giftTimerEl.textContent = '--:--:--'; return; }
-    const elapsed = Date.now() - parseInt(lastOpen);
+    if (!lastGiftOpen) { giftTimerEl.textContent = '--:--:--'; return; }
+    const elapsed = Date.now() - lastGiftOpen;
     const remaining = 24 * 60 * 60 * 1000 - elapsed;
     if (remaining <= 0) {
         giftTimerEl.textContent = '۰:۰۰:۰۰';
@@ -26,9 +25,8 @@ function updateGiftTimer() {
 }
 
 function openGift(boxNumber) {
-    const lastOpen = localStorage.getItem(GIFT_KEY);
-    if (lastOpen) {
-        const elapsed = Date.now() - parseInt(lastOpen);
+    if (lastGiftOpen) {
+        const elapsed = Date.now() - lastGiftOpen;
         if (elapsed < 24 * 60 * 60 * 1000) { openModal('attention-modal'); return; }
     }
     const today = new Date().toDateString();
@@ -57,7 +55,10 @@ function openGift(boxNumber) {
         msgEl.textContent = prize.msg;
         msgEl.style.color = prize.type === 'empty' ? '#f87171' : '#4ade80';
     }
-    localStorage.setItem(GIFT_KEY, Date.now().toString());
+    
+    lastGiftOpen = Date.now();
+    syncToDatabase();
+    
     openModal('gift-result-modal');
 }
 
@@ -79,26 +80,13 @@ function initDailyChallenge() {
     const dailySubmit = document.getElementById('dailySubmitBtn');
     const dailyResult = document.getElementById('dailyResult');
     const timerEl = document.getElementById('dailyTimer');
-    function getDailyState() {
-        const saved = localStorage.getItem(DAILY_KEY);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                const today = new Date().toDateString();
-                if (data.date === today) return data;
-            } catch (e) {}
-        }
-        return null;
-    }
-    function setDailyState(answered, correct) {
-        const today = new Date().toDateString();
-        localStorage.setItem(DAILY_KEY, JSON.stringify({ date: today, answered: answered, correct: correct }));
-    }
-    const state = getDailyState();
-    if (state && state.answered) {
+    
+    const today = new Date().toDateString();
+    
+    if (lastChallengeDate === today) {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
-        if (state.correct) {
+        if (challengeCorrect) {
             dailyResult.textContent = 'امروز را پاسخ داده‌اید. (درست)';
             dailyResult.className = 'challenge-result success';
         } else {
@@ -106,6 +94,7 @@ function initDailyChallenge() {
             dailyResult.className = 'challenge-result fail';
         }
     }
+    
     function updateDailyTimer() {
         const now = new Date();
         const midnight = new Date(now);
@@ -121,12 +110,17 @@ function initDailyChallenge() {
     updateDailyTimer();
     if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
     dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
+    
     dailySubmit.addEventListener('click', () => {
         if (dailyInput.disabled) return;
         const answer = dailyInput.value.trim();
         if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
         const isCorrect = (answer === todayQuestion.answer);
-        setDailyState(true, isCorrect);
+        
+        lastChallengeDate = today;
+        challengeCorrect = isCorrect;
+        syncToDatabase();
+
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
         if (isCorrect) {
@@ -156,4 +150,4 @@ function checkOnlineStatus() {
             mainMenu.classList.add('active');
         }
     }
-         }
+}
