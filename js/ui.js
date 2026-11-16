@@ -1,7 +1,29 @@
+let firstPanelEntry = true;
+
+function showGuestModal(text) {
+    const textEl = document.getElementById('guest-restriction-text');
+    if (textEl) textEl.innerText = text;
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.add('blurred');
+    document.getElementById('guest-restriction-modal').classList.add('active');
+}
+
+function closeGuestModal() {
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.remove('blurred');
+    document.getElementById('guest-restriction-modal').classList.remove('active');
+}
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
+    
+    if (screenId !== 'panel-screen') {
+        firstPanelEntry = true;
+        closeGuestModal();
+    }
+
     if (screenId === 'chapters-screen') renderChapters();
     if (screenId === 'levels-screen') renderLevels();
     if (screenId === 'panel-screen') switchPanelTab('top-players');
@@ -9,7 +31,6 @@ function showScreen(screenId) {
 
 function switchPanelTab(tabId) {
     const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
-    
     currentPanelTab = tabId;
     document.querySelectorAll('.panel-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
@@ -17,13 +38,22 @@ function switchPanelTab(tabId) {
     renderPanelContent(tabId);
 
     if (isGuest) {
-        const textEl = document.getElementById('guest-restriction-text');
-        if (tabId === 'top-players') {
-            textEl.innerText = 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.';
+        const text = tabId === 'top-players' ? 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.' : 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
+        
+        if (firstPanelEntry) {
+            firstPanelEntry = false;
+            if (tabId === 'top-players') {
+                setTimeout(() => {
+                    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
+                        showGuestModal(text);
+                    }
+                }, 3000);
+            } else {
+                showGuestModal(text);
+            }
         } else {
-            textEl.innerText = 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
+            showGuestModal(text);
         }
-        document.getElementById('guest-restriction-modal').classList.add('active');
     }
 }
 
@@ -93,6 +123,7 @@ async function saveName() {
     
     updateProfileUI();
     closeNameModal();
+    closeGuestModal();
 
     try {
         await supabaseClient
