@@ -15,7 +15,8 @@ function renderPanelContent(tabId) {
     if (tabId === 'top-players') {
         container.innerHTML = `
             <p class="panel-hint" id="leaderboard-loading">در حال دریافت...</p>
-            <div id="global-leaderboard" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <div id="top-three-container" style="flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 2px solid var(--border-color); margin-bottom: 12px; display: none;"></div>
+            <div id="rest-leaderboard" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; display: none; padding-bottom: 20px;"></div>
         `;
         fetchLeaderboard();
     } else if (tabId === 'public-chat') {
@@ -51,12 +52,19 @@ function renderPanelContent(tabId) {
     }
 }
 
-const checkIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" stroke="#2ecc71" stroke-width="2" fill="rgba(46, 204, 113, 0.15)"/><path d="m8.5 12 2.5 2.5 4.5-4.5"/></svg>`;
+const flameIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>`;
+
+const goldMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#fef08a" stroke="#facc15" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#ca8a04" text-anchor="middle">I</text></svg>`;
+
+const silverMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="#64748b" text-anchor="middle">II</text></svg>`;
+
+const bronzeMedalSvg = `<svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 2 L10 9 L14 9 L18 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><path d="M18 2 L14 9 L10 9 L6 2 Z" fill="#fca5a5" stroke="#f87171" stroke-width="1"/><circle cx="12" cy="16" r="6" fill="#fed7aa" stroke="#fdba74" stroke-width="1.5"/><text x="12" y="19.5" font-family="Arial, sans-serif" font-size="7" font-weight="bold" fill="#9a3412" text-anchor="middle">III</text></svg>`;
 
 async function fetchLeaderboard() {
-    const list = document.getElementById('global-leaderboard');
+    const topThreeContainer = document.getElementById('top-three-container');
+    const restLeaderboard = document.getElementById('rest-leaderboard');
     const loading = document.getElementById('leaderboard-loading');
-    if (!list) return;
+    if (!topThreeContainer || !restLeaderboard) return;
 
     const { data, error } = await supabaseClient
         .from('profiles')
@@ -69,16 +77,22 @@ async function fetchLeaderboard() {
     if (loading) loading.style.display = 'none';
 
     if (error) {
-        list.innerHTML = '<p style="text-align:center; color:#f87171; font-size:0.8rem;">خطا در دریافت</p>';
+        topThreeContainer.innerHTML = '<p style="text-align:center; color:#f87171; font-size:0.8rem;">خطا در دریافت</p>';
+        topThreeContainer.style.display = 'flex';
         return;
     }
     
     if (!data || data.length === 0) {
-        list.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
+        topThreeContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
+        topThreeContainer.style.display = 'flex';
         return;
     }
 
-    list.innerHTML = '';
+    topThreeContainer.style.display = 'flex';
+    restLeaderboard.style.display = 'flex';
+    topThreeContainer.innerHTML = '';
+    restLeaderboard.innerHTML = '';
+
     data.forEach((profile, index) => {
         let rowColor = '#ffffff';
         if (index === 0) rowColor = '#ffd700';
@@ -93,21 +107,32 @@ async function fetchLeaderboard() {
             avatarSrc = avatarImages[profile.avatar_index];
         }
 
+        let rankHTML = '';
+        if (index === 0) rankHTML = goldMedalSvg;
+        else if (index === 1) rankHTML = silverMedalSvg;
+        else if (index === 2) rankHTML = bronzeMedalSvg;
+        else rankHTML = `<div style="font-weight: bold; font-size: 1.1rem; width: 28px; text-align: center; color: #ffffff;">${index + 1}</div>`;
+
         const row = document.createElement('div');
         row.style.cssText = `background: rgba(255, 255, 255, 0.05); padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; ${borderStyle}`;
 
         row.innerHTML = `
-            <div style="font-weight: bold; font-size: 1.1rem; width: 25px; color: ${rowColor};">${index + 1}</div>
+            <div style="display: flex; justify-content: center; align-items: center;">${rankHTML}</div>
             <div style="width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
                 <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: ${rowColor}; font-weight: bold;"></span>
-                <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${checkIconSvg} ${profile.solved_levels} مرحله حل شده</span>
+                <span style="font-size: 0.8rem; color: #ffffff; display: flex; align-items: center; gap: 4px;">${flameIconSvg} ${profile.solved_levels} مرحله حل شده</span>
             </div>
         `;
         row.querySelector('span[style*="font-weight: bold"]').innerHTML = profile.name + getVerifiedIcon(profile.name);
-        list.appendChild(row);
+        
+        if (index < 3) {
+            topThreeContainer.appendChild(row);
+        } else {
+            restLeaderboard.appendChild(row);
+        }
     });
 }
 
