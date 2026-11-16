@@ -219,7 +219,8 @@
 .private-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); }
 .private-chat-header .header-right { display: flex; align-items: center; gap: 10px; }
 .private-chat-header img { width: 40px; height: 40px; border-radius: 50%; }
-.private-chat-header span { color: #fff; font-weight: bold; font-size: 1rem; }
+.private-chat-header .name-status { display: flex; flex-direction: column; }
+.private-chat-header span.name { color: #fff; font-weight: bold; font-size: 1rem; }
 .private-chat-header .back-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; }
 .private-chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
 
@@ -264,3 +265,16 @@
     justify-content: center;
     align-items: center;
 }
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 4px;
+}
+.status-online { background: #22c55e; }
+.status-offline { background: #ef4444; }
+.status-text { font-size: 0.7rem; display: flex; align-items: center; gap: 4px; }
+.status-text.online { color: #22c55e; }
+.status-text.offline { color: #ef4444; }
