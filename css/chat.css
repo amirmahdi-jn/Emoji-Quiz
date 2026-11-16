@@ -197,3 +197,27 @@
 .verified-badge.sky { color: #38bdf8; }
 .verified-badge.red { color: #f87171; }
 .verified-badge.green { color: #22c55e; }
+
+.private-search-bar { display: flex; gap: 8px; margin-bottom: 15px; }
+.private-search-bar input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 15px; color: white; font-family: 'Vazirmatn'; outline: none; }
+.private-search-bar button { background: var(--primary-color); border: none; border-radius: 12px; width: 44px; color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+
+.private-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.private-tab-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 15px; color: var(--text-muted); font-family: 'Vazirmatn'; cursor: pointer; display: flex; align-items: center; gap: 5px; position: relative; flex: 1; justify-content: center; }
+.private-tab-btn.active { color: #fff; border-color: var(--primary-color); background: rgba(199, 36, 255, 0.1); }
+.badge { background: #ef4444; color: #fff; font-size: 0.65rem; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; position: absolute; top: -5px; right: -5px; }
+
+.user-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.user-card-info { display: flex; align-items: center; gap: 10px; }
+.user-card-info img { width: 40px; height: 40px; border-radius: 50%; }
+.user-card-info span { color: #fff; font-weight: bold; font-size: 0.9rem; }
+.user-card-action { background: var(--primary-color); color: #fff; border: none; border-radius: 8px; padding: 8px 12px; font-family: 'Vazirmatn'; cursor: pointer; font-size: 0.8rem; }
+.user-card-action.accept { background: #22c55e; }
+.user-card-action.reject { background: #ef4444; }
+
+.private-chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0518; z-index: 999; display: flex; flex-direction: column; }
+.private-chat-header { display: flex; align-items: center; padding: 15px; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); gap: 15px; }
+.private-chat-header img { width: 40px; height: 40px; border-radius: 50%; }
+.private-chat-header span { color: #fff; font-weight: bold; flex: 1; }
+.private-chat-header .back-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+.private-chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
