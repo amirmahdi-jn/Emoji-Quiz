@@ -1,3 +1,5 @@
+const timerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-left: 5px;"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`;
+
 function getIranMidnight() {
     const now = new Date();
     const iranOffset = 3.5 * 60 * 60 * 1000;
@@ -26,12 +28,19 @@ function startGiftTimer() {
 function updateGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
-    if (!lastGiftOpen) { giftTimerEl.textContent = '--:--:--'; return; }
+    if (!lastGiftOpen) { 
+        giftTimerEl.innerHTML = timerIcon + '--:--:--'; 
+        return; 
+    }
     
     const elapsed = Date.now() - lastGiftOpen;
-    const remaining = 24 * 60 * 60 * 1000 - elapsed;
+    let remaining = 24 * 60 * 60 * 1000 - elapsed;
     
-    giftTimerEl.textContent = formatTimeRemaining(remaining);
+    if (remaining > 24 * 60 * 60 * 1000) {
+        remaining = 24 * 60 * 60 * 1000;
+    }
+    
+    giftTimerEl.innerHTML = timerIcon + formatTimeRemaining(remaining);
     if (remaining <= 0 && giftInterval) { 
         clearInterval(giftInterval); 
         giftInterval = null; 
@@ -73,6 +82,9 @@ function openGift(boxNumber) {
     lastGiftOpen = Date.now();
     syncToDatabase();
     
+    const giftTimerEl = document.getElementById('giftTimer');
+    if (giftTimerEl) giftTimerEl.innerHTML = timerIcon + '23:59:59';
+
     openModal('gift-result-modal');
 }
 
@@ -84,7 +96,7 @@ function initDailyChallenge() {
     const todayQuestion = dailyQuestions[questionIndex];
     container.innerHTML =
         '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span><span>' + todayQuestion.emoji3 + '</span></div>' +
-        '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+        '<div class="challenge-timer" id="dailyTimer" style="display: flex; justify-content: center; align-items: center;">--:--:--</div>' +
         '<div class="challenge-input-row">' +
         '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
         '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
@@ -113,7 +125,7 @@ function initDailyChallenge() {
         const now = Date.now();
         const midnight = getIranMidnight();
         const diff = midnight - now;
-        timerEl.textContent = formatTimeRemaining(diff);
+        timerEl.innerHTML = timerIcon + formatTimeRemaining(diff);
     }
     
     updateDailyTimer();
