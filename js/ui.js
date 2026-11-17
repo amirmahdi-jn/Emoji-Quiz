@@ -1,4 +1,5 @@
 let firstPanelEntry = true;
+let panelHeartbeat = null;
 
 function showGuestModal(text) {
     const textEl = document.getElementById('guest-restriction-text');
@@ -18,6 +19,19 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
+
+    if (currentName && currentName !== 'Guest' && !currentName.startsWith('Guest.')) {
+        if (screenId === 'panel-screen') {
+            supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+            if (panelHeartbeat) clearInterval(panelHeartbeat);
+            panelHeartbeat = setInterval(() => {
+                supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+            }, 15000);
+        } else {
+            if (panelHeartbeat) clearInterval(panelHeartbeat);
+            supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
+        }
+    }
     
     if (screenId !== 'panel-screen') {
         firstPanelEntry = true;
@@ -141,6 +155,18 @@ async function saveName() {
             await supabaseClient.from('messages')
                 .update({ sender_name: currentName })
                 .eq('sender_name', oldName);
+            await supabaseClient.from('private_messages')
+                .update({ sender_name: currentName })
+                .eq('sender_name', oldName);
+            await supabaseClient.from('private_messages')
+                .update({ receiver_name: currentName })
+                .eq('receiver_name', oldName);
+            await supabaseClient.from('friend_requests')
+                .update({ sender_name: currentName })
+                .eq('sender_name', oldName);
+            await supabaseClient.from('friend_requests')
+                .update({ receiver_name: currentName })
+                .eq('receiver_name', oldName);
         }
     } catch (e) {}
 
