@@ -5,13 +5,16 @@ let cachedAvatarMap = {};
 let currentChatContext = 'public';
 let friendToDelete = null;
 
-const singleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 2px;"><path d="M20 6 9 17l-5-5"/></svg>`;
-const doubleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 2px;"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`;
+const singleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 4px;"><path d="M20 6 9 17l-5-5"/></svg>`;
+const doubleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 4px;"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`;
 
-function getStatusHTML(lastSeen) {
+function getStatusHTML(name, lastSeen) {
+    if (name === 'AmirMahdi') {
+        return `<div class="status-text online"><span class="status-dot status-online"></span>آنلاین</div>`;
+    }
     if (!lastSeen) return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
     const diff = Date.now() - new Date(lastSeen).getTime();
-    if (diff < 35000) {
+    if (diff < 25000) {
         return `<div class="status-text online"><span class="status-dot status-online"></span>آنلاین</div>`;
     }
     return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
@@ -224,7 +227,7 @@ async function searchUserForChat() {
                 <img src="${avatarSrc}">
                 <div style="display:flex; flex-direction:column; gap:4px;">
                     <span>${user.name} ${getVerifiedIcon(user.name)}</span>
-                    ${getStatusHTML(user.last_seen)}
+                    ${getStatusHTML(user.name, user.last_seen)}
                 </div>
             </div>
             ${actionBtn}
@@ -293,7 +296,7 @@ async function loadChatsList(container) {
                     <img src="${avSrc}">
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
-                        ${getStatusHTML(uData.last_seen)}
+                        ${getStatusHTML(otherUser, uData.last_seen)}
                     </div>
                 </div>
                 <div style="display:flex; align-items:center;">
@@ -331,7 +334,7 @@ async function loadFriendsList(container) {
                     <img src="${avSrc}">
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
-                        ${getStatusHTML(uData.last_seen)}
+                        ${getStatusHTML(otherUser, uData.last_seen)}
                     </div>
                 </div>
                 <button class="trash-btn" onclick="openDeleteFriendModal('${otherUser}')">
@@ -439,7 +442,7 @@ async function openPrivateChat(user, avatarSrc) {
     }
     
     const { data: pData } = await supabaseClient.from('profiles').select('last_seen').eq('name', user).maybeSingle();
-    const statusHTML = getStatusHTML(pData ? pData.last_seen : null);
+    const statusHTML = getStatusHTML(user, pData ? pData.last_seen : null);
 
     const chatWindow = document.createElement('div');
     chatWindow.className = 'private-chat-window';
@@ -761,12 +764,21 @@ async function initPanelChat() {
         profilesData.forEach(p => { avatarMap[p.name] = p.avatar_index; });
     }
 
-    chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
-    
+    chatMessages.innerHTML = '';
     if (!data || data.length === 0) {
-        chatMessages.innerHTML += '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی ارسال نشده است.</div>';
+        chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">هنوز پیامی ارسال نشده است.</div>';
     } else {
+        let lastDate = null;
         data.forEach(msg => {
+            const msgDate = new Date(msg.created_at).toDateString();
+            if (lastDate !== msgDate) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'chat-header-date';
+                dateDiv.style.margin = '10px auto';
+                dateDiv.innerText = getPersianDateString(msg.created_at);
+                chatMessages.appendChild(dateDiv);
+                lastDate = msgDate;
+            }
             const avatarIdx = avatarMap[msg.sender_name] !== undefined ? avatarMap[msg.sender_name] : -1;
             appendPanelChatMessage(msg, avatarIdx);
         });
@@ -784,6 +796,22 @@ async function initPanelChat() {
                     .eq('name', payload.new.sender_name)
                     .maybeSingle();
                 const avatarIdx = profileData && typeof profileData.avatar_index === 'number' ? profileData.avatar_index : -1;
+                
+                const msgDate = new Date(payload.new.created_at).toDateString();
+                let lastDate = null;
+                const wrappers = chatMessages.querySelectorAll('.chat-msg-wrapper');
+                if (wrappers.length > 0) {
+                    lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+                }
+                
+                if (lastDate !== msgDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'chat-header-date';
+                    dateDiv.style.margin = '10px auto';
+                    dateDiv.innerText = getPersianDateString(payload.new.created_at);
+                    chatMessages.appendChild(dateDiv);
+                }
+                
                 appendPanelChatMessage(payload.new, avatarIdx);
             })
         .on('postgres_changes',
@@ -817,7 +845,7 @@ function appendPanelChatMessage(msg, avatarIndex) {
     const chatMessages = document.getElementById('panel-chat-messages');
     if (!chatMessages) return;
     if (chatMessages.innerHTML.includes('هنوز پیامی ارسال نشده است.')) {
-        chatMessages.innerHTML = `<div class="chat-header-date" style="margin-bottom: 15px;">${getPersianDate()}</div>`;
+        chatMessages.innerHTML = '';
     }
 
     const color = getUserColor(msg.sender_name);
@@ -832,6 +860,7 @@ function appendPanelChatMessage(msg, avatarIndex) {
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     wrapper.setAttribute('data-msg-id', msg.id);
+    wrapper.setAttribute('data-date', new Date(msg.created_at).toDateString());
 
     let replyHTML = '';
     if (msg.reply_to_text) {
