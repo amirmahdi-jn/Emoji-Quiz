@@ -5,10 +5,13 @@ let cachedAvatarMap = {};
 let currentChatContext = 'public';
 let friendToDelete = null;
 
+const singleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 2px;"><path d="M20 6 9 17l-5-5"/></svg>`;
+const doubleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 2px;"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`;
+
 function getStatusHTML(lastSeen) {
     if (!lastSeen) return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
     const diff = Date.now() - new Date(lastSeen).getTime();
-    if (diff < 120000) {
+    if (diff < 35000) {
         return `<div class="status-text online"><span class="status-dot status-online"></span>آنلاین</div>`;
     }
     return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
@@ -559,6 +562,11 @@ async function loadPrivateMessages() {
                         }
                     }
                 }
+                
+                const tickEl = wrapper.querySelector('.msg-tick');
+                if (tickEl && msg.sender_name === currentName) {
+                    tickEl.innerHTML = msg.is_read ? doubleTickSvg : singleTickSvg;
+                }
             }
         })
         .subscribe();
@@ -591,6 +599,10 @@ function appendPrivateMessageUI(msg) {
     }
 
     let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
+    let tickHTML = '';
+    if (isMe) {
+        tickHTML = `<span class="msg-tick" style="margin-left: 4px;">${msg.is_read ? doubleTickSvg : singleTickSvg}</span>`;
+    }
 
     let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>` : '';
     
@@ -614,7 +626,9 @@ function appendPrivateMessageUI(msg) {
             </div>
             ${replyHTML}
             <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
-            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}${editHTML}</div>
+            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left; display: flex; align-items: center; justify-content: flex-end;">
+                ${tickHTML} <span dir="rtl">${time}${editHTML}</span>
+            </div>
             ${replyBtnHTML}
         </div>
     `;
@@ -939,11 +953,11 @@ window.submitEdit = async function() {
     }
 };
 
-setInterval(() => {
+window.addEventListener('beforeunload', () => {
     if (currentName && currentName !== 'Guest' && !currentName.startsWith('Guest.')) {
-        supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+        supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
     }
-}, 60000);
+});
 
 window.addEventListener('load', async () => {
     await loadProgress();
@@ -954,7 +968,7 @@ window.addEventListener('load', async () => {
     checkOnlineStatus();
     
     if (currentName && currentName !== 'Guest') {
-        supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
+        supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
     }
 
     const startBtn = document.getElementById('btn-start');
