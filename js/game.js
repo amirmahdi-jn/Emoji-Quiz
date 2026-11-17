@@ -164,7 +164,7 @@ function getAvailableLetters(wordArr) {
         }
     }
     
-    let finalKeys = [...uniqueLetters, ...extraLetters];
+    let finalKeys = [...letters, ...extraLetters];
     return finalKeys.sort(() => 0.5 - Math.random());
 }
 
