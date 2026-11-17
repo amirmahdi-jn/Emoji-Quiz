@@ -630,7 +630,7 @@ function appendPrivateMessageUI(msg) {
             ${replyHTML}
             <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
             <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left; display: flex; align-items: center; justify-content: flex-end;">
-                ${tickHTML} <span dir="rtl">${time}${editHTML}</span>
+                ${tickHTML} <span dir="rtl" style="margin-left: 6px;">${time}${editHTML}</span>
             </div>
             ${replyBtnHTML}
         </div>
