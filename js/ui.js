@@ -26,7 +26,7 @@ function showScreen(screenId) {
             if (panelHeartbeat) clearInterval(panelHeartbeat);
             panelHeartbeat = setInterval(() => {
                 supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
-            }, 15000);
+            }, 10000);
         } else {
             if (panelHeartbeat) clearInterval(panelHeartbeat);
             supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
