@@ -21,7 +21,21 @@
                 <div class="profile-avatar" onclick="openModal('profile-modal')">
                     <img id="headerAvatar" src="avatar0.jpg" alt="Avatar">
                 </div>
-                <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">Guest</div>
+                <div class="profile-stats-mini">
+                    <div class="mini-stat">
+                        <span id="profile-header-coins">100</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-coin-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                    </div>
+                    <div class="mini-stat">
+                        <span id="profile-header-trophy">0</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-trophy-icon"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </div>
+                    <div class="mini-stat">
+                        <span id="profile-header-diamonds">50</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-diamond-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+                    </div>
+                    <div class="profile-name" id="profileNameDisplay" onclick="openNameModal()">Guest</div>
+                </div>
             </div>
             <div class="panel-btn" onclick="showScreen('panel-screen')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -79,6 +93,20 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
             <h2 id="panel-title">برترین‌ها</h2>
+        </div>
+        <div class="panel-stats-bar">
+            <div class="panel-stat">
+                <span id="panel-header-coins">100</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="panel-coin-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            </div>
+            <div class="panel-stat">
+                <span id="panel-header-trophy">0</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="panel-trophy-icon"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+            <div class="panel-stat">
+                <span id="panel-header-diamonds">50</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="panel-diamond-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+            </div>
         </div>
         <div class="panel-content" id="panel-content"></div>
         <div class="panel-tabs">
@@ -189,7 +217,7 @@
         </div>
         <div class="game-stats-header" style="justify-content: center; padding: 0 20px 10px;">
             <div class="stat-pill">
-                <span id="online-header-coins">10</span>
+                <span id="online-header-coins">100</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coin-stat-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
             </div>
             <div class="stat-pill">
@@ -197,7 +225,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
             </div>
             <div class="stat-pill">
-                <span id="online-header-diamonds">10</span>
+                <span id="online-header-diamonds">50</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="diamond-stat-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
             </div>
         </div>
@@ -234,7 +262,7 @@
             </div>
             <div class="game-stats-header">
                 <div class="stat-pill">
-                    <span id="header-coins">10</span>
+                    <span id="header-coins">100</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coin-stat-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
                 </div>
                 <div class="stat-pill">
@@ -242,7 +270,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
                 </div>
                 <div class="stat-pill">
-                    <span id="header-diamonds">10</span>
+                    <span id="header-diamonds">50</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="diamond-stat-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
                 </div>
             </div>
@@ -677,7 +705,7 @@
         <div class="modal-content" style="text-align: center; direction: rtl;">
             <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">هشدار</h2>
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem; white-space: nowrap;">آیا مایل به ترک بازی هستید؟</p>
-            <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem; white-space: nowrap;">در صورت ترک، جام و الماس از شما کسر می‌شود.</p>
+            <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem; white-space: nowrap;">در صورت ترک، ۵ جام و ۵۰ سکه از شما کسر می‌شود.</p>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button class="btn-primary" style="background: #22c55e; box-shadow: 0 5px 20px rgba(34,197,94,0.4);" onclick="confirmLeaveGameYes()">بله</button>
                 <button class="btn-primary" style="background: #ef4444; box-shadow: 0 5px 20px rgba(239,68,68,0.4);" onclick="closeLeaveGameModal()">خیر</button>
