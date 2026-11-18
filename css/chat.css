@@ -12,17 +12,16 @@
 .chat-header-date {
     text-align: center;
     color: #fff;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
     background: rgba(199, 36, 255, 0.3);
-    padding: 5px 15px;
+    padding: 4px 12px;
     border-radius: 20px;
     display: block;
     width: fit-content;
-    margin: 10px auto;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    margin: 15px auto;
+    position: relative;
+    z-index: 1;
     border: 1px solid rgba(199, 36, 255, 0.5);
     align-self: center;
     flex-shrink: 0;
