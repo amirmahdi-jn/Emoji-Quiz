@@ -47,6 +47,7 @@ function syncToDatabase() {
         custom_avatar_url: currentCustomAvatarUrl,
         coins: currentCoins,
         diamonds: currentDiamonds,
+        trophies: currentTrophies,
         solved_levels: solvedArray.length,
         solved_levels_array: JSON.stringify(solvedArray),
         remove_hint_uses: removeHintUses,
@@ -59,11 +60,34 @@ function syncToDatabase() {
 function loadProgress() {
     currentCoins = 10;
     currentDiamonds = 10;
+    currentTrophies = 0;
     unlockedLevels = 1;
     solvedLevels = {};
     currentChapter = 1;
     currentLevelIndex = 0;
     removeHintUses = 0;
+}
+
+let myStatsSubscription = null;
+
+function subscribeToMyProfileStats() {
+    if (myStatsSubscription) supabaseClient.removeChannel(myStatsSubscription);
+    const deviceId = getDeviceId();
+    myStatsSubscription = supabaseClient
+        .channel('my_profile_stats_' + deviceId)
+        .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `device_id=eq.${deviceId}`
+        }, (payload) => {
+            const p = payload.new;
+            if (typeof p.coins === 'number') currentCoins = p.coins;
+            if (typeof p.diamonds === 'number') currentDiamonds = p.diamonds;
+            if (typeof p.trophies === 'number') currentTrophies = p.trophies;
+            updateAllStatsUI();
+        })
+        .subscribe();
 }
 
 async function loadProfile() {
@@ -94,6 +118,7 @@ async function loadProfile() {
         currentCustomAvatarUrl = dbProfile.custom_avatar_url || null;
         currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
         currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
+        currentTrophies = typeof dbProfile.trophies === 'number' ? dbProfile.trophies : 0;
         removeHintUses = typeof dbProfile.remove_hint_uses === 'number' ? dbProfile.remove_hint_uses : 0;
         lastGiftOpen = dbProfile.last_gift_open ? new Date(dbProfile.last_gift_open).getTime() : null;
         lastChallengeDate = dbProfile.last_challenge_date || null;
@@ -110,6 +135,7 @@ async function loadProfile() {
         
         updateProfileUI();
         updateCoinsUI();
+        subscribeToMyProfileStats();
         return;
     }
 
@@ -117,6 +143,7 @@ async function loadProfile() {
     currentCustomAvatarUrl = null;
     currentCoins = 10;
     currentDiamonds = 10;
+    currentTrophies = 0;
     
     try {
         await supabaseClient.from('profiles').insert({
@@ -125,7 +152,8 @@ async function loadProfile() {
             custom_avatar_url: null,
             solved_levels: 0,
             coins: currentCoins,
-            diamonds: currentDiamonds
+            diamonds: currentDiamonds,
+            trophies: 0
         });
     } catch (e) {
         document.getElementById('offline-overlay').classList.add('active');
@@ -135,6 +163,7 @@ async function loadProfile() {
 
     updateProfileUI();
     updateCoinsUI();
+    subscribeToMyProfileStats();
 }
 
 function updateProfileUI() {
@@ -150,9 +179,21 @@ function updateProfileUI() {
     if (previewEl) previewEl.src = avatarSrc;
 }
 
+function updateAllStatsUI() {
+    ['header-coins', 'online-header-coins'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = currentCoins;
+    });
+    ['header-trophy', 'online-header-trophy'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = currentTrophies;
+    });
+    ['header-diamonds', 'online-header-diamonds'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = currentDiamonds;
+    });
+}
+
 function updateCoinsUI() {
-    const hc = document.getElementById('header-coins');
-    if (hc) hc.innerText = currentCoins;
-    const hd = document.getElementById('header-diamonds');
-    if (hd) hd.innerText = currentDiamonds;
+    updateAllStatsUI();
 }
