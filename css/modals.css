@@ -22,6 +22,11 @@
 }
 .modal.active { display: flex; }
 
+#no-coin-modal,
+#no-diamond-modal {
+    z-index: 9999999 !important;
+}
+
 .modal-box {
     display: none;
     flex-direction: column;
