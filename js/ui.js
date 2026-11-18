@@ -1,5 +1,6 @@
 let firstPanelEntry = true;
 let panelHeartbeat = null;
+let globalProfilesSubscription = null;
 
 function showGuestModal(text) {
     const textEl = document.getElementById('guest-restriction-text');
@@ -106,12 +107,8 @@ async function handleAvatarUpload(event) {
     }
 
     if (currentDiamonds < 10) {
-        const ncModal = document.getElementById('no-coin-modal');
-        if (ncModal) {
-            ncModal.querySelector('h2').innerText = 'الماس کافی نداری!';
-            ncModal.querySelectorAll('.no-coin-line')[0].innerText = 'برای تغییر پروفایل به 10 الماس نیاز داری.';
-            ncModal.classList.add('active');
-        }
+        const ndModal = document.getElementById('no-diamond-modal');
+        if (ndModal) ndModal.classList.add('active');
         return;
     }
 
@@ -126,6 +123,9 @@ async function handleAvatarUpload(event) {
     reader.onload = function(e) {
         const previewEl = document.getElementById('profilePreview');
         if (previewEl) previewEl.src = e.target.result;
+        
+        const headerAvatar = document.getElementById('headerAvatar');
+        if (headerAvatar) headerAvatar.src = e.target.result;
     };
     reader.readAsDataURL(file);
 
@@ -253,4 +253,31 @@ function getPersianTime(dateStr) {
     const date = new Date(dateStr);
     const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     return new Intl.DateTimeFormat('fa-IR', options).format(date);
+}
+
+function initProfilesListener() {
+    if (globalProfilesSubscription) supabaseClient.removeChannel(globalProfilesSubscription);
+    globalProfilesSubscription = supabaseClient
+        .channel('public:global_profiles')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, (payload) => {
+            const updatedUser = payload.new;
+            if (updatedUser.name === currentName) {
+                currentCustomAvatarUrl = updatedUser.custom_avatar_url;
+                updateProfileUI();
+            }
+            
+            if (currentPanelTab === 'top-players' && document.getElementById('panel-screen').classList.contains('active')) {
+                fetchLeaderboard();
+            }
+            
+            if (document.getElementById('panel-screen').classList.contains('active')) {
+                const activeTab = document.querySelector('.private-tab-btn.active')?.id;
+                if (activeTab === 'tab-btn-friends') {
+                    loadFriendsList(document.getElementById('private-chat-list'));
+                } else if (activeTab === 'tab-btn-chats') {
+                    loadChatsList(document.getElementById('private-chat-list'));
+                }
+            }
+        })
+        .subscribe();
 }
