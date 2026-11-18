@@ -58,8 +58,8 @@ function syncToDatabase() {
 }
 
 function loadProgress() {
-    currentCoins = 10;
-    currentDiamonds = 10;
+    currentCoins = 100;
+    currentDiamonds = 50;
     currentTrophies = 0;
     unlockedLevels = 1;
     solvedLevels = {};
@@ -116,8 +116,8 @@ async function loadProfile() {
     if (dbProfile) {
         currentName = dbProfile.name || 'Guest';
         currentCustomAvatarUrl = dbProfile.custom_avatar_url || null;
-        currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
-        currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
+        currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 100;
+        currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 50;
         currentTrophies = typeof dbProfile.trophies === 'number' ? dbProfile.trophies : 0;
         removeHintUses = typeof dbProfile.remove_hint_uses === 'number' ? dbProfile.remove_hint_uses : 0;
         lastGiftOpen = dbProfile.last_gift_open ? new Date(dbProfile.last_gift_open).getTime() : null;
@@ -129,7 +129,8 @@ async function loadProfile() {
             try {
                 const arr = JSON.parse(dbProfile.solved_levels_array);
                 arr.forEach(idx => { solvedLevels[idx] = true; });
-                unlockedLevels = Math.max(1, arr.length + 1);
+                unlockedLevels = arr.length ? Math.max(...arr) + 2 : 1;
+                if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
             } catch(e) {}
         }
         
@@ -141,8 +142,8 @@ async function loadProfile() {
 
     currentName = 'Guest';
     currentCustomAvatarUrl = null;
-    currentCoins = 10;
-    currentDiamonds = 10;
+    currentCoins = 100;
+    currentDiamonds = 50;
     currentTrophies = 0;
     
     try {
@@ -180,15 +181,18 @@ function updateProfileUI() {
 }
 
 function updateAllStatsUI() {
-    ['header-coins', 'online-header-coins'].forEach(id => {
+    const coinIds = ['header-coins', 'online-header-coins', 'profile-header-coins', 'panel-header-coins'];
+    coinIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentCoins;
     });
-    ['header-trophy', 'online-header-trophy'].forEach(id => {
+    const trophyIds = ['header-trophy', 'online-header-trophy', 'profile-header-trophy', 'panel-header-trophy'];
+    trophyIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentTrophies;
     });
-    ['header-diamonds', 'online-header-diamonds'].forEach(id => {
+    const diamondIds = ['header-diamonds', 'online-header-diamonds', 'profile-header-diamonds', 'panel-header-diamonds'];
+    diamondIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentDiamonds;
     });
