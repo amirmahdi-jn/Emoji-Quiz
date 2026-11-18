@@ -3,7 +3,6 @@ const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const defaultAvatar = 'avatar0.jpg';
-const avatarImages = ['avatar1.jpg','avatar2.jpg','avatar3.jpg','avatar4.jpg','avatar5.jpg','avatar6.jpg'];
 
 let currentLevelIndex = 0;
 let currentChapter = 1;
@@ -18,7 +17,7 @@ const TOTAL_LEVELS = 180;
 const LEVELS_PER_CHAPTER = 15;
 const TOTAL_CHAPTERS = 12;
 
-let currentAvatarIndex = -1;
+let currentCustomAvatarUrl = null;
 let currentName = 'Guest';
 
 let lastGiftOpen = null;
@@ -36,11 +35,6 @@ let currentPaymentKey = null;
 let currentPaymentAmount = 0;
 let currentPaymentType = null;
 let currentPanelTab = 'top-players';
-
-const colors = [
-    '#e11d48', '#2563eb', '#16a34a', '#d97706', '#9333ea', 
-    '#0d9488', '#ea580c', '#4f46e5', '#c026d3', '#475569'
-];
 
 const ICONS = {
     lock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>`,
