@@ -41,8 +41,8 @@
             </div>
             
             <div class="mode-buttons-container">
-                <button class="btn-mode" onclick="startTwoPlayerMode()">آنلاین</button>
-                <button class="btn-mode" onclick="startSinglePlayerMode()">آفلاین</button>
+                <button class="btn-mode" onclick="startTwoPlayerMode()">بازی آنلاین</button>
+                <button class="btn-mode" onclick="startSinglePlayerMode()">بازی آفلاین</button>
             </div>
             
             <div class="menu-buttons">
@@ -104,7 +104,7 @@
             </button>
             <h2 class="mode-title">
                 <span style="color: #ef4444;">نوع حالت : </span>
-                <span style="color: #ffffff;">آفلاین</span>
+                <span style="color: #ffffff;">بازی آفلاین</span>
             </h2>
         </div>
         <div class="section-title">فصل های بازی</div>
@@ -118,7 +118,7 @@
             </button>
             <h2 class="mode-title">
                 <span style="color: #ef4444;">نوع حالت : </span>
-                <span style="color: #ffffff;">آنلاین</span>
+                <span style="color: #ffffff;">بازی آنلاین</span>
             </h2>
         </div>
         <div class="section-title">بازی‌ها</div>
@@ -187,6 +187,20 @@
                 <span style="color: #ffffff;" id="game-title-name">دوز</span>
             </h2>
         </div>
+        <div class="game-stats-header" style="justify-content: center; padding: 0 20px 10px;">
+            <div class="stat-pill">
+                <span id="online-header-coins">10</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coin-stat-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            </div>
+            <div class="stat-pill">
+                <span id="online-header-trophy">0</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+            <div class="stat-pill">
+                <span id="online-header-diamonds">10</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="diamond-stat-icon"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>
+            </div>
+        </div>
         <div id="online-game-body" class="online-game-body"></div>
     </div>
 
@@ -222,6 +236,10 @@
                 <div class="stat-pill">
                     <span id="header-coins">10</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coin-stat-icon"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                </div>
+                <div class="stat-pill">
+                    <span id="header-trophy">0</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
                 </div>
                 <div class="stat-pill">
                     <span id="header-diamonds">10</span>
