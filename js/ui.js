@@ -82,7 +82,10 @@ function openModal(modalId) {
     }
     if (modalId === 'challenge-modal') initDailyChallenge();
     if (modalId === 'gift-modal') startGiftTimer();
-    if (modalId === 'profile-modal') renderAvatars();
+    if (modalId === 'profile-modal') {
+        const previewEl = document.getElementById('profilePreview');
+        if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
+    }
 }
 
 function closeModal() {
@@ -91,6 +94,57 @@ function closeModal() {
     document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
     if (giftInterval) { clearInterval(giftInterval); giftInterval = null; }
     if (dailyChallengeInterval) { clearInterval(dailyChallengeInterval); dailyChallengeInterval = null; }
+}
+
+async function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
+        showGuestModal('برای تغییر پروفایل، ابتدا باید نام بگذارید.');
+        return;
+    }
+
+    if (currentDiamonds < 10) {
+        const ncModal = document.getElementById('no-coin-modal');
+        if (ncModal) {
+            ncModal.querySelector('h2').innerText = 'الماس کافی نداری!';
+            ncModal.querySelectorAll('.no-coin-line')[0].innerText = 'برای تغییر پروفایل به 10 الماس نیاز داری.';
+            ncModal.classList.add('active');
+        }
+        return;
+    }
+
+    currentDiamonds -= 10;
+    updateCoinsUI();
+    syncToDatabase();
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${getDeviceId()}_${Date.now()}.${fileExt}`;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewEl = document.getElementById('profilePreview');
+        if (previewEl) previewEl.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, file);
+    
+    if (error) {
+        console.error(error);
+        currentDiamonds += 10;
+        updateCoinsUI();
+        syncToDatabase();
+        alert('خطا در آپلود عکس.');
+        return;
+    }
+
+    const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
+    
+    currentCustomAvatarUrl = publicUrl;
+    syncToDatabase();
+    updateProfileUI();
 }
 
 function openNameModal() {
@@ -144,7 +198,7 @@ async function saveName() {
             .from('profiles')
             .update({
                 name: currentName,
-                avatar_index: currentAvatarIndex,
+                custom_avatar_url: currentCustomAvatarUrl,
                 coins: currentCoins,
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
@@ -175,38 +229,6 @@ async function saveName() {
     }
 }
 
-function renderAvatars() {
-    const row1 = document.getElementById('row1');
-    const row2 = document.getElementById('row2');
-    const preview = document.getElementById('modalPreview');
-    if (!row1 || !row2) return;
-    row1.innerHTML = '';
-    row2.innerHTML = '';
-    avatarImages.forEach((src, idx) => {
-        const item = document.createElement('div');
-        item.className = 'avatar-item';
-        const img = document.createElement('img');
-        img.src = src;
-        item.appendChild(img);
-        item.onclick = async () => {
-            currentAvatarIndex = idx;
-            if (preview) preview.src = src;
-            updateProfileUI();
-            
-            try {
-                await supabaseClient.from('profiles')
-                    .update({ avatar_index: idx })
-                    .eq('device_id', getDeviceId());
-            } catch (e) {}
-            
-            if (currentPanelTab === 'top-players') fetchLeaderboard();
-        };
-        if (idx < 3) row1.appendChild(item);
-        else row2.appendChild(item);
-    });
-    if (preview) preview.src = (currentAvatarIndex >= 0) ? avatarImages[currentAvatarIndex] : defaultAvatar;
-}
-
 function getUserColor(username) {
     if (!username) return '#475569';
     const palette = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
@@ -215,18 +237,6 @@ function getUserColor(username) {
         hash = username.charCodeAt(i) + ((hash << 5) - hash);
     }
     return palette[Math.abs(hash) % palette.length];
-}
-
-function getUserInitial(username) {
-    if (!username) return '?';
-    return username.charAt(0).toUpperCase();
-}
-
-function getAvatarForUser(username) {
-    if (username === currentName && currentAvatarIndex >= 0) {
-        return avatarImages[currentAvatarIndex];
-    }
-    return defaultAvatar;
 }
 
 function getPersianDate() {
