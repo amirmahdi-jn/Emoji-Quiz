@@ -1,14 +1,14 @@
 .chapters-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
     padding: 20px;
     overflow-y: auto;
 }
 .chapter-card {
     background: var(--panel-bg);
-    border-radius: 25px;
-    padding: 20px 10px;
+    border-radius: 30px;
+    padding: 30px 15px;
     text-align: center;
     border: 1px solid var(--border-color);
     cursor: pointer;
@@ -17,19 +17,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 .chapter-card:active { transform: scale(0.98); }
 .chapter-card.locked { opacity: 0.6; cursor: not-allowed; }
-.chapter-card h3 { font-size: 1.3rem; }
-.chapter-card p { font-size: 0.75rem; color: var(--text-muted); }
+.chapter-card h3 { font-size: 1.6rem; }
+.chapter-card p { font-size: 0.85rem; color: var(--text-muted); }
 .chapter-card .lock-icon { display: flex; align-items: center; justify-content: center; opacity: 0.6; margin-top: auto; }
-.chapter-card .lock-icon svg { width: 28px; height: 28px; }
-.chapter-progress { margin-top: 6px; position: relative; width: 44px; height: 44px; }
+.chapter-card .lock-icon svg { width: 32px; height: 32px; }
+.chapter-progress { margin-top: 8px; position: relative; width: 56px; height: 56px; }
 .chapter-progress svg { transform: rotate(-90deg); width: 100%; height: 100%; }
 .chapter-progress .progress-track { stroke: rgba(255, 255, 255, 0.08); }
 .chapter-progress .progress-value { stroke: var(--primary-color); stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; filter: drop-shadow(0 0 4px var(--primary-glow)); }
-.chapter-progress .progress-text-sm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.6rem; font-weight: bold; color: var(--text-color); }
+.chapter-progress .progress-text-sm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.7rem; font-weight: bold; color: var(--text-color); }
 
 .progress-container { padding: 0 20px 15px; }
 .progress-text { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--primary-color); margin-bottom: 8px; }
