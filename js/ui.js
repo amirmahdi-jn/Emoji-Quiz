@@ -358,6 +358,7 @@ function openOnlineGame(gameKey) {
     currentOnlineGame = gameKey;
     const nameEl = document.getElementById('search-game-name');
     if (nameEl) nameEl.innerText = ONLINE_GAME_NAMES[gameKey];
+    updateSearchText('منتظر پیوستن حریف...');
     showScreen('online-search-screen');
     startOnlineMatchmaking(gameKey);
 }
@@ -365,7 +366,6 @@ function openOnlineGame(gameKey) {
 function startOnlineMatchmaking(gameKey) {
     if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
     if (gameKey === 'tictactoe') {
-        updateSearchText('در حال جستجوی حریف...');
         startTTTMatchmaking();
     } else {
         updateSearchText('این بازی به‌زودی اضافه می‌شود...');
