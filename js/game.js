@@ -210,7 +210,6 @@ function checkAnswer() {
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
     if (guessClean === answerClean) {
         if (!solvedLevels[currentLevelIndex]) { 
-            currentCoins += 5; 
             solvedLevels[currentLevelIndex] = true; 
         }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
