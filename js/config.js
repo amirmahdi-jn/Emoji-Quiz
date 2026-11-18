@@ -8,6 +8,7 @@ let currentLevelIndex = 0;
 let currentChapter = 1;
 let currentCoins = 10;
 let currentDiamonds = 10;
+let currentTrophies = 0;
 let currentWord = [];
 let currentGuess = [];
 let unlockedLevels = 1;
