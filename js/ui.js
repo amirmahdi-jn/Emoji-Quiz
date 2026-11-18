@@ -30,6 +30,7 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
+    updateAllStatsUI();
 
     if (currentName && currentName !== 'Guest' && !currentName.startsWith('Guest.')) {
         if (screenId === 'panel-screen') {
@@ -61,6 +62,7 @@ function switchPanelTab(tabId) {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
     });
     renderPanelContent(tabId);
+    updateAllStatsUI();
 
     if (isGuest) {
         const text = tabId === 'top-players' ? 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.' : 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
@@ -91,6 +93,7 @@ function openModal(modalId) {
         target.classList.add('active');
         overlay.classList.add('active');
     }
+    updateAllStatsUI();
     if (modalId === 'challenge-modal') initDailyChallenge();
     if (modalId === 'gift-modal') startGiftTimer();
     if (modalId === 'profile-modal') {
@@ -171,38 +174,37 @@ async function handleAvatarUpload(event) {
     const previewEl = document.getElementById('profilePreview');
     const headerAvatar = document.getElementById('headerAvatar');
     
-    const compressedBlob = await compressImage(file, 500, 500);
-    const fileName = `avatar_${getDeviceId()}.jpg`;
-    
-    const localUrl = URL.createObjectURL(compressedBlob);
-    if (previewEl) previewEl.src = localUrl;
-    
-    const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
-    
-    if (error) {
-        console.error(error);
+    try {
+        const compressedBlob = await compressImage(file, 500, 500);
+        const fileName = `avatar_${getDeviceId()}.jpg`;
+        
+        const localUrl = URL.createObjectURL(compressedBlob);
+        if (previewEl) previewEl.src = localUrl;
+        
+        const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
+        
+        if (error) {
+            if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
+            return;
+        }
+
+        const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
+        
+        currentCustomAvatarUrl = `${publicUrl}?t=${Date.now()}`;
+        currentDiamonds -= 10;
+        
+        syncToDatabase();
+        updateProfileUI();
+        updateCoinsUI();
+
+        if (previewEl) previewEl.src = currentCustomAvatarUrl;
+        if (headerAvatar) headerAvatar.src = currentCustomAvatarUrl;
+    } catch (e) {
+    } finally {
         if (loadingOverlay) loadingOverlay.classList.remove('active');
         isUploadingAvatar = false;
-        alert('خطا در آپلود عکس. لطفا دوباره تلاش کنید.');
-        if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
-        return;
+        event.target.value = '';
     }
-
-    const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
-    
-    currentCustomAvatarUrl = `${publicUrl}?t=${Date.now()}`;
-    currentDiamonds -= 10;
-    
-    syncToDatabase();
-    updateProfileUI();
-    updateCoinsUI();
-
-    if (previewEl) previewEl.src = currentCustomAvatarUrl;
-    if (headerAvatar) headerAvatar.src = currentCustomAvatarUrl;
-    
-    if (loadingOverlay) loadingOverlay.classList.remove('active');
-    isUploadingAvatar = false;
-    event.target.value = '';
 }
 
 function openNameModal() {
@@ -236,9 +238,9 @@ async function saveName() {
             .from('profiles')
             .select('name, device_id')
             .ilike('name', raw)
-            .maybeSingle();
+            .limit(1);
 
-        if (existingName && existingName.device_id !== deviceId) {
+        if (existingName && existingName.length > 0 && existingName[0].device_id !== deviceId) {
             document.getElementById('duplicate-alert-modal').classList.add('active');
             return;
         }
@@ -348,45 +350,3 @@ const ONLINE_GAME_NAMES = {
     tictactoe: 'دوز',
     dots: 'نقطه خط'
 };
-
-function updateSearchText(text) {
-    const el = document.getElementById('search-status-text');
-    if (el) el.innerText = text;
-}
-
-function openOnlineGame(gameKey) {
-    currentOnlineGame = gameKey;
-    const nameEl = document.getElementById('search-game-name');
-    if (nameEl) nameEl.innerText = ONLINE_GAME_NAMES[gameKey];
-    updateSearchText('منتظر پیوستن حریف...');
-    showScreen('online-search-screen');
-    startOnlineMatchmaking(gameKey);
-}
-
-function startOnlineMatchmaking(gameKey) {
-    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
-    if (gameKey === 'tictactoe') {
-        startTTTMatchmaking();
-    } else {
-        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
-    }
-}
-
-async function cancelOnlineSearch() {
-    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
-    if (currentOnlineGame === 'tictactoe') {
-        await cancelTTTSearch();
-    }
-    currentOnlineGame = null;
-    showScreen('two-player-screen');
-}
-
-async function leaveOnlineGame() {
-    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
-    if (currentOnlineGame === 'tictactoe') {
-        await leaveTTTGame();
-    } else {
-        currentOnlineGame = null;
-        showScreen('two-player-screen');
-    }
-}
