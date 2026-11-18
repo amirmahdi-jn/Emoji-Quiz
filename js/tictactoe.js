@@ -6,12 +6,11 @@ let tttLocalTurnStart = 0;
 let tttTimeoutFired = false;
 
 const TTT_TROPHY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
-
 const TTT_DIAMOND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>`;
 
 async function startTTTMatchmaking() {
     tttEnteringGame = false;
-    
+
     const { data: waitingGames } = await supabaseClient
         .from('ttt_games')
         .select('*')
@@ -19,7 +18,7 @@ async function startTTTMatchmaking() {
         .neq('player1_name', currentName)
         .order('created_at', { ascending: true })
         .limit(1);
-    
+
     if (waitingGames && waitingGames.length > 0) {
         const game = waitingGames[0];
         const mySymbol = game.player1_symbol === 'X' ? 'O' : 'X';
@@ -36,7 +35,7 @@ async function startTTTMatchmaking() {
             .eq('status', 'waiting')
             .select()
             .maybeSingle();
-        
+
         if (joined) {
             tttGame = joined;
             subscribeToTTTGame(joined.id);
@@ -50,7 +49,7 @@ async function startTTTMatchmaking() {
             return;
         }
     }
-    
+
     const mySymbol = Math.random() < 0.5 ? 'X' : 'O';
     const { data: created } = await supabaseClient
         .from('ttt_games')
@@ -64,7 +63,7 @@ async function startTTTMatchmaking() {
         })
         .select()
         .maybeSingle();
-    
+
     if (created) {
         tttGame = created;
         subscribeToTTTGame(created.id);
@@ -84,7 +83,7 @@ function subscribeToTTTGame(gameId) {
             tttGame = payload.new;
             const searchActive = document.getElementById('online-search-screen').classList.contains('active');
             const gameActive = document.getElementById('online-game-screen').classList.contains('active');
-            
+
             if (tttGame.status === 'playing' && searchActive && !tttEnteringGame) {
                 tttEnteringGame = true;
                 updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
@@ -134,7 +133,7 @@ async function enterTTTGame() {
 function renderTTTGame() {
     const body = document.getElementById('online-game-body');
     if (!body || !tttGame) return;
-    
+
     if (!document.getElementById('ttt-board')) {
         body.innerHTML = `
             <div class="ttt-container">
@@ -158,31 +157,31 @@ function renderTTTGame() {
             </div>
         `;
     }
-    
+
     const isPlayer1 = tttGame.player1_name === currentName;
     const mySymbol = isPlayer1 ? tttGame.player1_symbol : tttGame.player2_symbol;
     const oppSymbol = isPlayer1 ? tttGame.player2_symbol : tttGame.player1_symbol;
     const oppName = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
     const isMyTurn = tttGame.current_turn === currentName;
-    
+
     const mySymEl = document.getElementById('ttt-my-symbol');
     if (mySymEl) { mySymEl.textContent = mySymbol; mySymEl.className = 'ttt-player-symbol ' + mySymbol.toLowerCase(); }
-    
+
     const oppSymEl = document.getElementById('ttt-opp-symbol');
     if (oppSymEl) { oppSymEl.textContent = oppSymbol; oppSymEl.className = 'ttt-player-symbol ' + oppSymbol.toLowerCase(); }
-    
+
     const oppNameEl = document.getElementById('ttt-opp-name');
     if (oppNameEl) oppNameEl.textContent = oppName || 'در انتظار...';
-    
+
     const myAvatarEl = document.getElementById('ttt-my-avatar');
     if (myAvatarEl) myAvatarEl.src = currentCustomAvatarUrl || defaultAvatar;
-    
+
     const oppAvatarEl = document.getElementById('ttt-opp-avatar');
     if (oppAvatarEl && oppName) {
         const oppProfile = cachedAvatarMap[oppName];
         oppAvatarEl.src = (oppProfile && oppProfile.custom_avatar_url) ? oppProfile.custom_avatar_url : defaultAvatar;
     }
-    
+
     const statusEl = document.getElementById('ttt-status-text');
     if (statusEl) {
         if (tttGame.status === 'finished') {
@@ -193,92 +192,103 @@ function renderTTTGame() {
             statusEl.textContent = isMyTurn ? 'نوبت شماست' : 'نوبت حریف';
         }
     }
-    
+
     renderTTTBoard();
 }
 
 function renderTTTBoard() {
     const boardEl = document.getElementById('ttt-board');
     if (!boardEl || !tttGame) return;
-    
+
     const board = tttGame.board || ["","","","","","","","",""];
     const isMyTurn = tttGame.current_turn === currentName && tttGame.status === 'playing';
     const winningCells = getTTTWinningCells(board);
-    
+
     boardEl.innerHTML = '';
     board.forEach((cell, idx) => {
         const cellEl = document.createElement('div');
-        cellEl.className = 'ttt-cell' + (cell ? ' filled ' + cell.toLowerCase() : '');
+        cellEl.className = 'ttt-cell';
+        if (cell === 'X') cellEl.classList.add('x', 'filled');
+        else if (cell === 'O') cellEl.classList.add('o', 'filled');
         if (winningCells.includes(idx)) cellEl.classList.add('winning');
-        cellEl.textContent = cell || '';
-        if (!cell && isMyTurn) {
-            cellEl.onclick = () => handleTTTCellClick(idx);
+        cellEl.textContent = cell;
+        if (isMyTurn && !cell && !winningCells.length && tttGame.status === 'playing') {
+            cellEl.onclick = () => makeTTTMove(idx);
         }
         boardEl.appendChild(cellEl);
     });
 }
 
-const TTT_PATTERNS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-
 function getTTTWinningCells(board) {
-    for (const p of TTT_PATTERNS) {
-        if (board[p[0]] && board[p[0]] === board[p[1]] && board[p[0]] === board[p[2]]) return p;
+    const lines = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+    ];
+    for (const line of lines) {
+        const [a,b,c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            return line;
+        }
     }
     return [];
 }
 
-function checkTTTWinner(board) {
-    for (const p of TTT_PATTERNS) {
-        if (board[p[0]] && board[p[0]] === board[p[1]] && board[p[0]] === board[p[2]]) return board[p[0]];
+function getTTTResult() {
+    if (!tttGame) return null;
+    const board = tttGame.board || [];
+    const winningCells = getTTTWinningCells(board);
+    if (winningCells.length) {
+        const winnerSym = board[winningCells[0]];
+        const player1Won = tttGame.player1_symbol === winnerSym;
+        return player1Won ? 'player1_win' : 'player2_win';
     }
-    if (board.every(c => c !== '')) return 'draw';
+    if (board.length === 9 && board.every(c => c)) {
+        return 'draw';
+    }
     return null;
 }
 
-async function handleTTTCellClick(index) {
+async function makeTTTMove(index) {
     if (!tttGame || tttGame.status !== 'playing') return;
     if (tttGame.current_turn !== currentName) return;
-    if (tttTimeoutFired) return;
-    
     const board = [...(tttGame.board || ["","","","","","","","",""])];
     if (board[index]) return;
-    
+
     const isPlayer1 = tttGame.player1_name === currentName;
     const mySymbol = isPlayer1 ? tttGame.player1_symbol : tttGame.player2_symbol;
     board[index] = mySymbol;
-    
-    const winner = checkTTTWinner(board);
-    const nextTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
-    const now = new Date().toISOString();
-    
-    const oldGame = { ...tttGame };
-    tttGame = {
-        ...tttGame,
+
+    const winningCells = getTTTWinningCells(board);
+    const isDraw = board.every(c => c);
+    let newStatus = 'playing';
+    let nextTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+    let result = null;
+
+    if (winningCells.length) {
+        newStatus = 'finished';
+        result = isPlayer1 ? 'player1_win' : 'player2_win';
+    } else if (isDraw) {
+        newStatus = 'finished';
+        result = 'draw';
+    }
+
+    const updateData = {
         board: board,
         current_turn: nextTurn,
-        status: winner ? 'finished' : 'playing',
-        winner: winner || null
+        status: newStatus,
+        updated_at: new Date().toISOString()
     };
-    renderTTTGame();
-    if (winner) {
-        stopTTTTimer();
-        checkTTTGameEnd();
-    }
-    
-    const updates = {
-        board: board,
-        current_turn: nextTurn,
-        updated_at: now
-    };
-    if (winner) {
-        updates.status = 'finished';
-        updates.winner = winner;
-    }
-    
-    const { error } = await supabaseClient.from('ttt_games').update(updates).eq('id', oldGame.id);
-    if (error) {
-        tttGame = oldGame;
-        renderTTTGame();
+    if (result) updateData.result = result;
+
+    const { error } = await supabaseClient
+        .from('ttt_games')
+        .update(updateData)
+        .eq('id', tttGame.id);
+
+    if (error && result) {
+        delete updateData.result;
+        await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
     }
 }
 
@@ -288,161 +298,194 @@ function resetTTTTimer() {
 }
 
 function startTTTTimer() {
-    stopTTTTimer();
-    tickTTTTimer();
-    tttTimerInterval = setInterval(tickTTTTimer, 250);
-}
-
-function stopTTTTimer() {
-    if (tttTimerInterval) {
-        clearInterval(tttTimerInterval);
-        tttTimerInterval = null;
-    }
-}
-
-function toPersianNumber(num) {
-    const digits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    return String(num).replace(/\d/g, d => digits[parseInt(d)]);
-}
-
-function tickTTTTimer() {
-    if (!tttGame || tttGame.status !== 'playing') {
-        stopTTTTimer();
-        const timerEl = document.getElementById('ttt-timer');
-        if (timerEl) { timerEl.textContent = ''; timerEl.classList.remove('urgent'); }
-        return;
-    }
-    
-    const elapsed = Date.now() - tttLocalTurnStart;
-    const remainingMs = Math.max(0, 10000 - elapsed);
-    const remainingSec = Math.ceil(remainingMs / 1000);
-    
-    const timerEl = document.getElementById('ttt-timer');
-    if (timerEl) {
-        timerEl.textContent = toPersianNumber(remainingSec);
-        if (remainingSec <= 3) {
-            timerEl.classList.add('urgent');
-        } else {
-            timerEl.classList.remove('urgent');
+    if (tttTimerInterval) clearInterval(tttTimerInterval);
+    tttTimerInterval = setInterval(() => {
+        if (!tttGame || tttGame.status !== 'playing') {
+            const timerEl = document.getElementById('ttt-timer');
+            if (timerEl) timerEl.textContent = '';
+            return;
         }
-    }
-    
-    if (elapsed >= 10000 && !tttTimeoutFired) {
-        tttTimeoutFired = true;
-        handleTTTTimeout();
-    }
+        const elapsed = Math.floor((Date.now() - tttLocalTurnStart) / 1000);
+        const remaining = 30 - elapsed;
+        const timerEl = document.getElementById('ttt-timer');
+        if (timerEl) {
+            if (remaining > 0) {
+                timerEl.textContent = remaining + 's';
+                if (remaining <= 10) timerEl.classList.add('urgent');
+                else timerEl.classList.remove('urgent');
+            } else {
+                timerEl.textContent = '0s';
+                timerEl.classList.add('urgent');
+                if (!tttTimeoutFired && tttGame.current_turn === currentName) {
+                    tttTimeoutFired = true;
+                    handleTTTTimeout();
+                }
+            }
+        }
+    }, 250);
 }
 
 async function handleTTTTimeout() {
     if (!tttGame || tttGame.status !== 'playing') return;
-    
-    const oldCurrentTurn = tttGame.current_turn;
-    const isPlayer1 = oldCurrentTurn === tttGame.player1_name;
-    const newTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
-    const now = new Date().toISOString();
-    
-    tttGame = {
-        ...tttGame,
-        current_turn: newTurn
+    if (tttGame.current_turn !== currentName) return;
+
+    const board = [...(tttGame.board || ["","","","","","","","",""])];
+    const emptyCells = board.map((c, i) => c === '' ? i : -1).filter(i => i >= 0);
+    if (emptyCells.length === 0) return;
+    const randomIdx = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+    const isPlayer1 = tttGame.player1_name === currentName;
+    const mySymbol = isPlayer1 ? tttGame.player1_symbol : tttGame.player2_symbol;
+    board[randomIdx] = mySymbol;
+
+    const winningCells = getTTTWinningCells(board);
+    const isDraw = board.every(c => c);
+    let newStatus = 'playing';
+    let nextTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+    let result = null;
+
+    if (winningCells.length) {
+        newStatus = 'finished';
+        result = isPlayer1 ? 'player1_win' : 'player2_win';
+    } else if (isDraw) {
+        newStatus = 'finished';
+        result = 'draw';
+    }
+
+    const updateData = {
+        board: board,
+        current_turn: nextTurn,
+        status: newStatus,
+        updated_at: new Date().toISOString()
     };
-    renderTTTGame();
-    
-    await supabaseClient.from('ttt_games')
-        .update({
-            current_turn: newTurn,
-            updated_at: now
-        })
-        .eq('id', tttGame.id)
-        .eq('current_turn', oldCurrentTurn);
+    if (result) updateData.result = result;
+
+    const { error } = await supabaseClient
+        .from('ttt_games')
+        .update(updateData)
+        .eq('id', tttGame.id);
+
+    if (error && result) {
+        delete updateData.result;
+        await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
+    }
 }
 
 function checkTTTGameEnd() {
     if (!tttGame) return;
     if (tttGame.status !== 'finished') return;
     if (document.getElementById('ttt-result-overlay')) return;
-    
-    stopTTTTimer();
-    
+
+    const result = tttGame.result || getTTTResult();
+    if (!result) return;
+
     const isPlayer1 = tttGame.player1_name === currentName;
-    const mySymbol = isPlayer1 ? tttGame.player1_symbol : tttGame.player2_symbol;
-    const winner = tttGame.winner;
-    
-    let titleClass, titleText, achievementsHTML = '';
-    if (winner === 'draw') {
-        titleClass = 'draw';
-        titleText = 'مساوی!';
-    } else if (winner === mySymbol) {
-        titleClass = 'win';
-        titleText = 'بردی! 😃';
-        achievementsHTML = `
-            <div class="ttt-achievements-title">دستاورد ها :</div>
-            <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">۱</span>
-                <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
-            </div>
-            <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">۵</span>
-                <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
-            </div>
-        `;
+    const oppName = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+
+    let titleHTML = '';
+    let titleColor = '';
+    let trophyHTML = '';
+
+    if (result === 'draw') {
+        titleHTML = 'مساوی! 😐';
+        titleColor = '#9ca3af';
     } else {
-        titleClass = 'lose';
-        titleText = 'باختی! ☹️';
+        const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
+        if (iWon) {
+            titleHTML = 'بردی! 🏆';
+            titleColor = '#22c55e';
+            trophyHTML = `
+                <div class="ttt-achievements-title">دستاورد</div>
+                <div class="ttt-achievement-row">
+                    <span class="ttt-achievement-num">+1</span>
+                    <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
+                </div>
+                <div class="ttt-achievement-row">
+                    <span class="ttt-achievement-num">+25</span>
+                    <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
+                </div>
+            `;
+        } else {
+            titleHTML = 'باختی! 😢';
+            titleColor = '#f87171';
+        }
     }
-    
+
+    if (result !== 'draw') {
+        const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
+        if (iWon) {
+            currentDiamonds += 25;
+            updateCoinsUI();
+            syncToDatabase();
+        }
+    }
+
+    if (tttTimerInterval) clearInterval(tttTimerInterval);
+
     const overlay = document.createElement('div');
-    overlay.id = 'ttt-result-overlay';
     overlay.className = 'ttt-result-overlay';
+    overlay.id = 'ttt-result-overlay';
     overlay.innerHTML = `
         <div class="ttt-result-content">
-            <div class="ttt-result-title ${titleClass}">${titleText}</div>
-            ${achievementsHTML}
+            <div class="ttt-result-title" style="color:${titleColor};">${titleHTML}</div>
+            ${trophyHTML}
             <div class="ttt-result-buttons">
-                <button class="ttt-result-btn secondary" onclick="leaveTTTGame()">خروج</button>
+                <button class="ttt-result-btn secondary" onclick="exitTTTGame()">خروج</button>
             </div>
         </div>
     `;
     document.body.appendChild(overlay);
 }
 
-async function cancelTTTSearch() {
-    stopTTTTimer();
+function exitTTTGame() {
+    const overlay = document.getElementById('ttt-result-overlay');
+    if (overlay) overlay.remove();
+    if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
-    
-    if (tttGame && tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
-        await supabaseClient.from('ttt_games').delete().eq('id', tttGame.id);
-    }
-    
     tttGame = null;
     tttEnteringGame = false;
     tttTimeoutFired = false;
+    showScreen('two-player-screen');
 }
 
-async function leaveTTTGame() {
-    stopTTTTimer();
-    const existing = document.getElementById('ttt-result-overlay');
-    if (existing) existing.remove();
-    
+function leaveOnlineGame() {
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
-    
-    if (tttGame) {
-        if (tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
-            await supabaseClient.from('ttt_games').delete().eq('id', tttGame.id);
-        } else if (tttGame.status === 'playing') {
-            const oppSymbol = tttGame.player1_name === currentName ? tttGame.player2_symbol : tttGame.player1_symbol;
-            await supabaseClient.from('ttt_games').update({
-                status: 'finished',
-                winner: oppSymbol,
-                updated_at: new Date().toISOString()
-            }).eq('id', tttGame.id);
-        }
-    }
-    
+    if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
+    const overlay = document.getElementById('ttt-result-overlay');
+    if (overlay) overlay.remove();
     tttGame = null;
     tttEnteringGame = false;
     tttTimeoutFired = false;
-    currentOnlineGame = null;
-    const body = document.getElementById('online-game-body');
-    if (body) body.innerHTML = '';
+    showScreen('two-player-screen');
+}
+
+function updateSearchText(text) {
+    const el = document.getElementById('search-status-text');
+    if (el) el.textContent = text;
+}
+
+function openOnlineGame(gameType) {
+    if (gameType !== 'tictactoe') return;
+    if (currentCoins < 25) {
+        openModal('no-coin-modal');
+        return;
+    }
+    currentCoins -= 25;
+    updateCoinsUI();
+    syncToDatabase();
+    const nameEl = document.getElementById('search-game-name');
+    if (nameEl) nameEl.innerText = 'دوز';
+    updateSearchText('منتظر پیوستن حریف...');
+    showScreen('online-search-screen');
+    startTTTMatchmaking();
+}
+
+function cancelOnlineSearch() {
+    if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
+    if (tttGame && tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
+        supabaseClient.from('ttt_games').delete().eq('id', tttGame.id).then();
+    }
+    tttGame = null;
+    tttEnteringGame = false;
     showScreen('two-player-screen');
 }
