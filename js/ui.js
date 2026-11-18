@@ -231,6 +231,16 @@ async function saveName() {
         return;
     }
 
+    if (raw === currentName) {
+        closeNameModal();
+        return;
+    }
+
+    if (currentDiamonds < 10) {
+        document.getElementById('no-diamond-modal').classList.add('active');
+        return;
+    }
+
     const deviceId = getDeviceId();
 
     try {
@@ -248,13 +258,10 @@ async function saveName() {
 
     const oldName = currentName;
     currentName = raw;
-    
-    updateProfileUI();
-    closeNameModal();
-    closeGuestModal();
+    currentDiamonds -= 10;
 
     try {
-        await supabaseClient
+        const { error } = await supabaseClient
             .from('profiles')
             .update({
                 name: currentName,
@@ -264,6 +271,20 @@ async function saveName() {
                 solved_levels: Object.keys(solvedLevels).length
             })
             .eq('device_id', deviceId);
+
+        if (error) {
+            currentName = oldName;
+            currentDiamonds += 10;
+            updateProfileUI();
+            updateCoinsUI();
+            return;
+        }
+
+        updateProfileUI();
+        updateCoinsUI();
+        closeNameModal();
+        closeGuestModal();
+        syncToDatabase();
 
         if (oldName && oldName !== raw) {
             await supabaseClient.from('messages')
@@ -282,10 +303,15 @@ async function saveName() {
                 .update({ receiver_name: currentName })
                 .eq('receiver_name', oldName);
         }
-    } catch (e) {}
 
-    if (currentPanelTab === 'top-players') {
-        fetchLeaderboard();
+        if (currentPanelTab === 'top-players') {
+            fetchLeaderboard();
+        }
+    } catch (e) {
+        currentName = oldName;
+        currentDiamonds += 10;
+        updateProfileUI();
+        updateCoinsUI();
     }
 }
 
