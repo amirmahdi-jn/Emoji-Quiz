@@ -94,14 +94,18 @@ function initDailyChallenge() {
     const dayOfMonth = new Date().getDate();
     const questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
     const todayQuestion = dailyQuestions[questionIndex];
+    
     container.innerHTML =
-        '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span><span>' + todayQuestion.emoji3 + '</span></div>' +
-        '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+        '<div class="challenge-top-row">' +
+            '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span><span>' + todayQuestion.emoji3 + '</span></div>' +
+            '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
+        '</div>' +
         '<div class="challenge-input-row">' +
-        '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
-        '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
+            '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
+            '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
         '</div>' +
         '<div class="challenge-result" id="dailyResult"></div>';
+        
     const dailyInput = document.getElementById('dailyInput');
     const dailySubmit = document.getElementById('dailySubmitBtn');
     const dailyResult = document.getElementById('dailyResult');
