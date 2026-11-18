@@ -39,7 +39,11 @@
                 <h1>Emoji Quiz</h1>
                 <p>ذهن خود را به چالش بکشید!</p>
             </div>
-            <button id="btn-start" class="btn-primary">شروع بازی</button>
+            
+            <div class="mode-buttons-container">
+                <button class="btn-mode" onclick="startTwoPlayerMode()">دو نفره</button>
+                <button class="btn-mode" onclick="startSinglePlayerMode()">یک نفره</button>
+            </div>
             
             <div class="menu-buttons">
                 <button class="btn-secondary btn-shop" onclick="openModal('shop-modal')">
@@ -94,13 +98,31 @@
     </div>
 
     <div id="chapters-screen" class="screen">
-        <div class="header">
-            <button class="btn-back" onclick="showScreen('main-menu')">
+        <div class="header" style="position: relative; justify-content: center; align-items: flex-end; padding-bottom: 25px;">
+            <button class="btn-back" style="position: absolute; right: 20px; top: 20px;" onclick="showScreen('main-menu')">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
-            <h2>فصل های بازی</h2>
+            <h2 style="text-align: center; font-size: 1.3rem; width: 100%; margin-top: 10px;">
+                <span style="color: #ef4444;">نوع حالت : </span>
+                <span style="color: #ffffff;">یک نفره</span>
+            </h2>
         </div>
         <div class="chapters-grid" id="chapters-grid"></div>
+    </div>
+
+    <div id="two-player-screen" class="screen">
+        <div class="header" style="position: relative; justify-content: center; align-items: flex-end; padding-bottom: 25px;">
+            <button class="btn-back" style="position: absolute; right: 20px; top: 20px;" onclick="showScreen('main-menu')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+            </button>
+            <h2 style="text-align: center; font-size: 1.3rem; width: 100%; margin-top: 10px;">
+                <span style="color: #ef4444;">نوع حالت : </span>
+                <span style="color: #ffffff;">دو نفره</span>
+            </h2>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; color: var(--text-muted);">
+            <p>در حال توسعه...</p>
+        </div>
     </div>
 
     <div id="levels-screen" class="screen">
