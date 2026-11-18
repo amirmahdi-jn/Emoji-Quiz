@@ -17,12 +17,15 @@
     background: rgba(199, 36, 255, 0.3);
     padding: 5px 15px;
     border-radius: 20px;
-    display: inline-block;
-    margin: 0 auto 15px auto;
+    display: block;
+    width: fit-content;
+    margin: 10px auto;
     position: sticky;
     top: 0;
     z-index: 10;
     border: 1px solid rgba(199, 36, 255, 0.5);
+    align-self: center;
+    flex-shrink: 0;
 }
 
 .chat-msg-wrapper {
