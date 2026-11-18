@@ -339,3 +339,42 @@ function initProfilesListener() {
         })
         .subscribe();
 }
+
+let currentOnlineGame = null;
+let onlineSearchInterval = null;
+
+const ONLINE_GAME_NAMES = {
+    rps: 'سنگ کاغذ قیچی',
+    tictactoe: 'دوز',
+    dots: 'نقطه خط'
+};
+
+function openOnlineGame(gameKey) {
+    currentOnlineGame = gameKey;
+    const nameEl = document.getElementById('search-game-name');
+    if (nameEl) nameEl.innerText = ONLINE_GAME_NAMES[gameKey];
+    showScreen('online-search-screen');
+    
+    const statusEl = document.getElementById('search-status-text');
+    if (statusEl) statusEl.innerText = 'لطفاً منتظر بمانید';
+    
+    startOnlineMatchmaking(gameKey);
+}
+
+function startOnlineMatchmaking(gameKey) {
+    if (onlineSearchInterval) clearInterval(onlineSearchInterval);
+    const statusEl = document.getElementById('search-status-text');
+    if (statusEl) statusEl.innerText = 'در حال ساخت بازی ' + ONLINE_GAME_NAMES[gameKey] + '... (به‌زودی)';
+}
+
+function cancelOnlineSearch() {
+    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
+    currentOnlineGame = null;
+    showScreen('two-player-screen');
+}
+
+function leaveOnlineGame() {
+    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
+    currentOnlineGame = null;
+    showScreen('two-player-screen');
+}
