@@ -34,16 +34,8 @@ function getHardwareId() {
 function getDeviceId() {
     let id = getCookie(DEVICE_KEY);
     if (id) return id;
-    try {
-        id = localStorage.getItem(DEVICE_KEY);
-        if (id) {
-            setCookie(DEVICE_KEY, id, 365);
-            return id;
-        }
-    } catch (e) {}
     id = getHardwareId() + '_' + Math.random().toString(36).substr(2, 5);
     setCookie(DEVICE_KEY, id, 365);
-    try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
     return id;
 }
 
