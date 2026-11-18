@@ -210,53 +210,65 @@
 .gift-box:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.1); }
 .gift-box svg { width: 32px; height: 32px; stroke: var(--primary-color); fill: none; stroke-width: 2; }
 .gift-box span { font-size: 0.8rem; color: var(--text-color); font-weight: bold; }
+
 .gift-timer {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--text-color);
     direction: ltr;
     background: rgba(0, 0, 0, 0.3);
-    padding: 8px 20px;
+    padding: 8px 24px;
     border-radius: 30px;
     border: 1px solid var(--border-color);
-    margin: 15px auto 10px;
+    margin: 20px auto 15px auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     width: fit-content;
-    min-width: 160px;
+    min-width: 150px;
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
 
+.challenge-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 15px 0;
+    flex-wrap: wrap;
+}
+
 .challenge-emoji-row {
-    font-size: 28px;
-    letter-spacing: 4px;
-    margin: 10px 0 15px;
+    font-size: 24px;
+    letter-spacing: 2px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 30px;
-    padding: 8px 14px;
-    display: inline-block;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
+
 .challenge-timer {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: var(--text-color);
     direction: ltr;
     background: rgba(0, 0, 0, 0.3);
-    padding: 5px 15px;
+    padding: 8px 16px;
     border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    width: fit-content;
-    min-width: 120px;
-    margin: 8px auto;
+    gap: 6px;
+    border: 1px solid var(--border-color);
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
+
 .challenge-input-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; flex-wrap: nowrap; width: 100%; }
 .challenge-input-row input {
     flex: 1;
