@@ -1,5 +1,23 @@
 const timerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`;
 
+function closeSimpleModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay && !overlay.querySelector('.modal-box.active') && !overlay.querySelector('.guide-modal-content.active')) {
+        overlay.classList.remove('active');
+    }
+    document.body.style.pointerEvents = '';
+}
+
+function closeNoCoinModal() {
+    closeSimpleModal('no-coin-modal');
+}
+
+function closeNoDiamondModal() {
+    closeSimpleModal('no-diamond-modal');
+}
+
 function getIranMidnight() {
     const now = new Date();
     const iranOffset = 3.5 * 60 * 60 * 1000;
@@ -28,22 +46,22 @@ function startGiftTimer() {
 function updateGiftTimer() {
     const giftTimerEl = document.getElementById('giftTimer');
     if (!giftTimerEl) return;
-    if (!lastGiftOpen) { 
-        giftTimerEl.innerHTML = timerIcon + '--:--:--'; 
-        return; 
+    if (!lastGiftOpen) {
+        giftTimerEl.innerHTML = timerIcon + '--:--:--';
+        return;
     }
-    
+
     const elapsed = Date.now() - lastGiftOpen;
     let remaining = 24 * 60 * 60 * 1000 - elapsed;
-    
+
     if (remaining > 24 * 60 * 60 * 1000) {
         remaining = 24 * 60 * 60 * 1000;
     }
-    
+
     giftTimerEl.innerHTML = timerIcon + formatTimeRemaining(remaining);
-    if (remaining <= 0 && giftInterval) { 
-        clearInterval(giftInterval); 
-        giftInterval = null; 
+    if (remaining <= 0 && giftInterval) {
+        clearInterval(giftInterval);
+        giftInterval = null;
     }
 }
 
@@ -78,10 +96,10 @@ function openGift(boxNumber) {
         msgEl.textContent = prize.msg;
         msgEl.style.color = prize.type === 'empty' ? '#f87171' : '#4ade80';
     }
-    
+
     lastGiftOpen = Date.now();
     syncToDatabase();
-    
+
     const giftTimerEl = document.getElementById('giftTimer');
     if (giftTimerEl) giftTimerEl.innerHTML = timerIcon + '23:59:59';
 
@@ -94,7 +112,7 @@ function initDailyChallenge() {
     const dayOfMonth = new Date().getDate();
     const questionIndex = (dayOfMonth - 1) % dailyQuestions.length;
     const todayQuestion = dailyQuestions[questionIndex];
-    
+
     container.innerHTML =
         '<div class="challenge-top-row">' +
             '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span><span>' + todayQuestion.emoji3 + '</span></div>' +
@@ -105,14 +123,14 @@ function initDailyChallenge() {
             '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
         '</div>' +
         '<div class="challenge-result" id="dailyResult"></div>';
-        
+
     const dailyInput = document.getElementById('dailyInput');
     const dailySubmit = document.getElementById('dailySubmitBtn');
     const dailyResult = document.getElementById('dailyResult');
     const timerEl = document.getElementById('dailyTimer');
-    
+
     const today = new Date().toDateString();
-    
+
     if (lastChallengeDate === today) {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
@@ -124,24 +142,24 @@ function initDailyChallenge() {
             dailyResult.className = 'challenge-result fail';
         }
     }
-    
+
     function updateDailyTimer() {
         const now = Date.now();
         const midnight = getIranMidnight();
         const diff = midnight - now;
         timerEl.innerHTML = timerIcon + formatTimeRemaining(diff);
     }
-    
+
     updateDailyTimer();
     if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
     dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
-    
+
     dailySubmit.addEventListener('click', () => {
         if (dailyInput.disabled) return;
         const answer = dailyInput.value.trim();
         if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
         const isCorrect = (answer === todayQuestion.answer);
-        
+
         lastChallengeDate = today;
         challengeCorrect = isCorrect;
         syncToDatabase();
@@ -164,7 +182,7 @@ function initDailyChallenge() {
 function checkOnlineStatus() {
     const overlay = document.getElementById('offline-overlay');
     if (!overlay) return;
-    
+
     if (!navigator.onLine) {
         overlay.classList.add('active');
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
