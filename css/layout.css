@@ -299,7 +299,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     cursor: pointer;
     transition: transform 0.2s;
 }
@@ -331,13 +331,35 @@
     object-fit: cover;
     display: block;
 }
-.online-game-item span {
+.online-game-item > span {
     color: var(--text-color);
     font-size: 0.8rem;
     font-weight: bold;
     text-align: center;
     line-height: 1.3;
     white-space: nowrap;
+}
+.online-game-cost {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: bold;
+    direction: rtl;
+    white-space: nowrap;
+}
+.online-game-cost .cost-label {
+    color: #ef4444;
+}
+.online-game-cost .cost-amount {
+    color: #ffffff;
+}
+.online-game-cost .cost-coin-icon {
+    width: 14px;
+    height: 14px;
+    stroke: #f1c40f;
+    flex-shrink: 0;
 }
 
 .online-placeholder {
@@ -535,11 +557,42 @@
 .ttt-result-title {
     font-size: 1.5rem;
     font-weight: 900;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    text-align: center;
 }
 .ttt-result-title.win { color: var(--success-color); }
 .ttt-result-title.lose { color: #f87171; }
 .ttt-result-title.draw { color: var(--coin-color); }
+
+.ttt-achievements-title {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 15px 0 10px 0;
+}
+.ttt-achievement-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    direction: rtl;
+    margin: 8px 0;
+}
+.ttt-achievement-num {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.ttt-achievement-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ttt-achievement-icon svg {
+    display: block;
+}
+
 .ttt-result-buttons {
     display: flex;
     gap: 10px;
@@ -569,8 +622,10 @@
 
 @media (max-width: 400px) {
     .online-game-icon { width: 78px; height: 78px; }
-    .online-game-item span { font-size: 0.72rem; }
+    .online-game-item > span { font-size: 0.72rem; }
     .online-games-grid { gap: 18px; padding: 30px 15px; }
+    .online-game-cost { font-size: 0.65rem; }
+    .online-game-cost .cost-coin-icon { width: 12px; height: 12px; }
     .ttt-cell { font-size: 2.5rem; }
     .ttt-player-avatar { width: 38px; height: 38px; }
 }
