@@ -179,7 +179,7 @@
 
     <div id="online-game-screen" class="screen">
         <div class="header mode-header">
-            <button class="btn-back" onclick="leaveOnlineGame()">
+            <button class="btn-back" onclick="confirmLeaveGame()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
             <h2 class="mode-title">
@@ -670,6 +670,18 @@
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem; text-align: center;">کاربر گرامی!</p>
             <p id="guest-restriction-text" style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem; white-space: nowrap; text-align: center;">برای ورود به این بخش، ابتدا باید نام بگذارید.</p>
             <button class="btn-primary" style="margin-top: 15px;" onclick="closeGuestModal()">باشه</button>
+        </div>
+    </div>
+
+    <div id="leave-game-modal" class="modal">
+        <div class="modal-content" style="text-align: center; direction: rtl;">
+            <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">هشدار</h2>
+            <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem; white-space: nowrap;">آیا مایل به ترک بازی هستید؟</p>
+            <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem; white-space: nowrap;">در صورت ترک، جام و الماس از شما کسر می‌شود.</p>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-primary" style="background: #22c55e; box-shadow: 0 5px 20px rgba(34,197,94,0.4);" onclick="confirmLeaveGameYes()">بله</button>
+                <button class="btn-primary" style="background: #ef4444; box-shadow: 0 5px 20px rgba(239,68,68,0.4);" onclick="closeLeaveGameModal()">خیر</button>
+            </div>
         </div>
     </div>
 
