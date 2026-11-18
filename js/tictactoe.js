@@ -4,13 +4,13 @@ let tttTimerInterval = null;
 let tttEnteringGame = false;
 let tttLocalTurnStart = 0;
 let tttTimeoutFired = false;
+let tttLeaveConfirmOpen = false;
 
 const TTT_TROPHY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
 const TTT_DIAMOND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3 8 9l4 13 4-13-2.5-6"/><path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/><path d="M2 9h20"/></svg>`;
 
 async function startTTTMatchmaking() {
     tttEnteringGame = false;
-
     const { data: waitingGames } = await supabaseClient
         .from('ttt_games')
         .select('*')
@@ -380,44 +380,69 @@ function checkTTTGameEnd() {
     if (!result) return;
 
     const isPlayer1 = tttGame.player1_name === currentName;
-    const oppName = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+    const isLeftResult = result === 'player1_left' || result === 'player2_left';
+    const leftPlayer1 = result === 'player1_left';
+    const iLeft = (leftPlayer1 && isPlayer1) || (!leftPlayer1 && !isPlayer1 && isLeftResult);
+    const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
 
     let titleHTML = '';
     let titleColor = '';
-    let trophyHTML = '';
+    let bodyHTML = '';
 
     if (result === 'draw') {
-        titleHTML = 'مساوی! 😐';
+        titleHTML = 'مساوی! 🤝';
         titleColor = '#9ca3af';
+    } else if (iLeft) {
+        titleHTML = 'باختی! ☹️';
+        titleColor = '#f87171';
+        bodyHTML = `
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">-1</span>
+                <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
+            </div>
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">-5</span>
+                <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
+            </div>
+        `;
+        currentTrophies = Math.max(0, currentTrophies - 1);
+        currentDiamonds = Math.max(0, currentDiamonds - 5);
+        updateCoinsUI();
+        syncToDatabase();
+    } else if (iWon) {
+        titleHTML = 'بردی! 😃';
+        titleColor = '#22c55e';
+        bodyHTML = `
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">+1</span>
+                <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
+            </div>
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">+5</span>
+                <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
+            </div>
+        `;
+        currentTrophies += 1;
+        currentDiamonds += 5;
+        updateCoinsUI();
+        syncToDatabase();
     } else {
-        const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
-        if (iWon) {
-            titleHTML = 'بردی! 🏆';
-            titleColor = '#22c55e';
-            trophyHTML = `
-                <div class="ttt-achievements-title">دستاورد</div>
-                <div class="ttt-achievement-row">
-                    <span class="ttt-achievement-num">+1</span>
-                    <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
-                </div>
-                <div class="ttt-achievement-row">
-                    <span class="ttt-achievement-num">+25</span>
-                    <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
-                </div>
-            `;
-        } else {
-            titleHTML = 'باختی! 😢';
-            titleColor = '#f87171';
-        }
-    }
-
-    if (result !== 'draw') {
-        const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
-        if (iWon) {
-            currentDiamonds += 25;
-            updateCoinsUI();
-            syncToDatabase();
-        }
+        titleHTML = 'باختی! ☹️';
+        titleColor = '#f87171';
+        bodyHTML = `
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">-1</span>
+                <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
+            </div>
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">-5</span>
+                <span class="ttt-achievement-icon">${TTT_DIAMOND_ICON}</span>
+            </div>
+        `;
+        currentTrophies = Math.max(0, currentTrophies - 1);
+        currentDiamonds = Math.max(0, currentDiamonds - 5);
+        updateCoinsUI();
+        syncToDatabase();
     }
 
     if (tttTimerInterval) clearInterval(tttTimerInterval);
@@ -428,7 +453,7 @@ function checkTTTGameEnd() {
     overlay.innerHTML = `
         <div class="ttt-result-content">
             <div class="ttt-result-title" style="color:${titleColor};">${titleHTML}</div>
-            ${trophyHTML}
+            ${bodyHTML}
             <div class="ttt-result-buttons">
                 <button class="ttt-result-btn secondary" onclick="exitTTTGame()">خروج</button>
             </div>
@@ -448,11 +473,58 @@ function exitTTTGame() {
     showScreen('two-player-screen');
 }
 
+function confirmLeaveGame() {
+    if (!tttGame || tttGame.status !== 'playing') {
+        leaveOnlineGame();
+        return;
+    }
+    if (tttLeaveConfirmOpen) return;
+    tttLeaveConfirmOpen = true;
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.add('blurred');
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeLeaveGameModal() {
+    tttLeaveConfirmOpen = false;
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.remove('blurred');
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function confirmLeaveGameYes() {
+    closeLeaveGameModal();
+    if (tttGame && tttGame.status === 'playing') {
+        const isPlayer1 = tttGame.player1_name === currentName;
+        const result = isPlayer1 ? 'player1_left' : 'player2_left';
+        const nextTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+        const updateData = {
+            status: 'finished',
+            result: result,
+            current_turn: nextTurn,
+            updated_at: new Date().toISOString()
+        };
+        await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
+        currentTrophies = Math.max(0, currentTrophies - 1);
+        currentDiamonds = Math.max(0, currentDiamonds - 5);
+        updateCoinsUI();
+        syncToDatabase();
+    }
+    leaveOnlineGame();
+}
+
 function leaveOnlineGame() {
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
     if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
     const overlay = document.getElementById('ttt-result-overlay');
     if (overlay) overlay.remove();
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.remove('active');
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.remove('blurred');
+    tttLeaveConfirmOpen = false;
     tttGame = null;
     tttEnteringGame = false;
     tttTimeoutFired = false;
@@ -465,7 +537,11 @@ function updateSearchText(text) {
 }
 
 function openOnlineGame(gameType) {
-    if (gameType !== 'tictactoe') return;
+    if (gameType !== 'tictactoe') {
+        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
+        showScreen('online-search-screen');
+        return;
+    }
     if (currentCoins < 25) {
         openModal('no-coin-modal');
         return;
@@ -484,6 +560,9 @@ function cancelOnlineSearch() {
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
     if (tttGame && tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
         supabaseClient.from('ttt_games').delete().eq('id', tttGame.id).then();
+        currentCoins += 25;
+        updateCoinsUI();
+        syncToDatabase();
     }
     tttGame = null;
     tttEnteringGame = false;
