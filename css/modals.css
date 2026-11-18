@@ -237,11 +237,11 @@
     justify-content: center;
     gap: 10px;
     margin: 10px 0 15px 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .challenge-emoji-row {
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: 2px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 30px;
