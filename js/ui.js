@@ -349,32 +349,44 @@ const ONLINE_GAME_NAMES = {
     dots: 'نقطه خط'
 };
 
+function updateSearchText(text) {
+    const el = document.getElementById('search-status-text');
+    if (el) el.innerText = text;
+}
+
 function openOnlineGame(gameKey) {
     currentOnlineGame = gameKey;
     const nameEl = document.getElementById('search-game-name');
     if (nameEl) nameEl.innerText = ONLINE_GAME_NAMES[gameKey];
     showScreen('online-search-screen');
-    
-    const statusEl = document.getElementById('search-status-text');
-    if (statusEl) statusEl.innerText = 'لطفاً منتظر بمانید';
-    
     startOnlineMatchmaking(gameKey);
 }
 
 function startOnlineMatchmaking(gameKey) {
-    if (onlineSearchInterval) clearInterval(onlineSearchInterval);
-    const statusEl = document.getElementById('search-status-text');
-    if (statusEl) statusEl.innerText = 'در حال ساخت بازی ' + ONLINE_GAME_NAMES[gameKey] + '... (به‌زودی)';
+    if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
+    if (gameKey === 'tictactoe') {
+        updateSearchText('در حال جستجوی حریف...');
+        startTTTMatchmaking();
+    } else {
+        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
+    }
 }
 
-function cancelOnlineSearch() {
+async function cancelOnlineSearch() {
     if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
+    if (currentOnlineGame === 'tictactoe') {
+        await cancelTTTSearch();
+    }
     currentOnlineGame = null;
     showScreen('two-player-screen');
 }
 
-function leaveOnlineGame() {
+async function leaveOnlineGame() {
     if (onlineSearchInterval) { clearInterval(onlineSearchInterval); onlineSearchInterval = null; }
-    currentOnlineGame = null;
-    showScreen('two-player-screen');
+    if (currentOnlineGame === 'tictactoe') {
+        await leaveTTTGame();
+    } else {
+        currentOnlineGame = null;
+        showScreen('two-player-screen');
+    }
 }
