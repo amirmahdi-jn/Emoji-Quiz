@@ -1097,6 +1097,7 @@ window.addEventListener('load', async () => {
     updateCoinsUI();
     renderChapters();
     checkOnlineStatus();
+    initProfilesListener();
     
     if (currentName && currentName !== 'Guest') {
         supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
