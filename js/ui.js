@@ -1,6 +1,7 @@
 let firstPanelEntry = true;
 let panelHeartbeat = null;
 let globalProfilesSubscription = null;
+let isUploadingAvatar = false;
 
 function showGuestModal(text) {
     const textEl = document.getElementById('guest-restriction-text');
@@ -97,6 +98,48 @@ function closeModal() {
     if (dailyChallengeInterval) { clearInterval(dailyChallengeInterval); dailyChallengeInterval = null; }
 }
 
+function triggerAvatarUpload() {
+    if (isUploadingAvatar) return;
+    document.getElementById('avatar-upload').click();
+}
+
+function compressImage(file, maxWidth, maxHeight) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    resolve(blob);
+                }, 'image/jpeg', 0.85);
+            };
+        };
+    });
+}
+
 async function handleAvatarUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -112,39 +155,45 @@ async function handleAvatarUpload(event) {
         return;
     }
 
-    currentDiamonds -= 10;
-    updateCoinsUI();
-    syncToDatabase();
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${getDeviceId()}_${Date.now()}.${fileExt}`;
+    isUploadingAvatar = true;
+    const loadingOverlay = document.getElementById('upload-loading');
+    if (loadingOverlay) loadingOverlay.classList.add('active');
     
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const previewEl = document.getElementById('profilePreview');
-        if (previewEl) previewEl.src = e.target.result;
-        
-        const headerAvatar = document.getElementById('headerAvatar');
-        if (headerAvatar) headerAvatar.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-
-    const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, file);
+    const previewEl = document.getElementById('profilePreview');
+    const headerAvatar = document.getElementById('headerAvatar');
+    
+    const compressedBlob = await compressImage(file, 500, 500);
+    const fileName = `avatar_${getDeviceId()}.jpg`;
+    
+    const localUrl = URL.createObjectURL(compressedBlob);
+    if (previewEl) previewEl.src = localUrl;
+    
+    const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
     
     if (error) {
         console.error(error);
-        currentDiamonds += 10;
-        updateCoinsUI();
-        syncToDatabase();
-        alert('خطا در آپلود عکس.');
+        if (loadingOverlay) loadingOverlay.classList.remove('active');
+        isUploadingAvatar = false;
+        alert('خطا در آپلود عکس. لطفا دوباره تلاش کنید.');
+        if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
         return;
     }
 
     const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
     
-    currentCustomAvatarUrl = publicUrl;
+    currentCustomAvatarUrl = `${publicUrl}?t=${Date.now()}`;
+    currentDiamonds -= 10;
+    
     syncToDatabase();
     updateProfileUI();
+    updateCoinsUI();
+
+    if (previewEl) previewEl.src = currentCustomAvatarUrl;
+    if (headerAvatar) headerAvatar.src = currentCustomAvatarUrl;
+    
+    if (loadingOverlay) loadingOverlay.classList.remove('active');
+    isUploadingAvatar = false;
+    event.target.value = '';
 }
 
 function openNameModal() {
