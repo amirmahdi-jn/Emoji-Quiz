@@ -9,9 +9,6 @@ const singleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height
 const doubleTickSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 4px;"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`;
 
 function getStatusHTML(name, lastSeen) {
-    if (name === 'AmirMahdi') {
-        return `<div class="status-text online"><span class="status-dot status-online"></span>آنلاین</div>`;
-    }
     if (!lastSeen) return `<div class="status-text offline"><span class="status-dot status-offline"></span>آفلاین</div>`;
     const diff = Date.now() - new Date(lastSeen).getTime();
     if (diff < 25000) {
@@ -176,6 +173,34 @@ function listenForPrivateEvents() {
                 if (activeTab === 'tab-btn-chats') {
                     loadChatsList(document.getElementById('private-chat-list'));
                 }
+            }
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, (payload) => {
+            const updatedUser = payload.new;
+            if (!cachedAvatarMap[updatedUser.name]) {
+                cachedAvatarMap[updatedUser.name] = { avatar_index: updatedUser.avatar_index, last_seen: updatedUser.last_seen };
+            } else {
+                cachedAvatarMap[updatedUser.name].last_seen = updatedUser.last_seen;
+                cachedAvatarMap[updatedUser.name].avatar_index = updatedUser.avatar_index;
+            }
+
+            if (activePrivateChat === updatedUser.name) {
+                const statusContainer = document.querySelector('.private-chat-header .name-status');
+                if (statusContainer) {
+                    const oldStatus = statusContainer.querySelector('.status-text');
+                    if (oldStatus) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = getStatusHTML(updatedUser.name, updatedUser.last_seen);
+                        statusContainer.replaceChild(tempDiv.firstElementChild, oldStatus);
+                    }
+                }
+            }
+
+            const activeTab = document.querySelector('.private-tab-btn.active')?.id;
+            if (activeTab === 'tab-btn-friends') {
+                loadFriendsList(document.getElementById('private-chat-list'));
+            } else if (activeTab === 'tab-btn-chats') {
+                loadChatsList(document.getElementById('private-chat-list'));
             }
         })
         .subscribe();
@@ -510,7 +535,6 @@ async function loadPrivateMessages() {
             if (lastDate !== msgDate) {
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'chat-header-date';
-                dateDiv.style.margin = '10px auto';
                 dateDiv.innerText = getPersianDateString(msg.created_at);
                 container.appendChild(dateDiv);
                 lastDate = msgDate;
@@ -528,26 +552,27 @@ async function loadPrivateMessages() {
             if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) || 
                 (msg.sender_name === activePrivateChat && msg.receiver_name === currentName)) {
                 
-                const msgDate = new Date(msg.created_at).toDateString();
-                let lastDate = null;
-                const wrappers = container.querySelectorAll('.chat-msg-wrapper');
-                if (wrappers.length > 0) {
-                    lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
-                }
-                
-                if (lastDate !== msgDate) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.className = 'chat-header-date';
-                    dateDiv.style.margin = '10px auto';
-                    dateDiv.innerText = getPersianDateString(msg.created_at);
-                    container.appendChild(dateDiv);
-                }
-                
-                appendPrivateMessageUI(msg);
-                container.scrollTop = container.scrollHeight;
-                
-                if (msg.receiver_name === currentName) {
-                    supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
+                if (!document.querySelector(`[data-private-msg-id="${msg.id}"]`)) {
+                    const msgDate = new Date(msg.created_at).toDateString();
+                    let lastDate = null;
+                    const wrappers = container.querySelectorAll('.chat-msg-wrapper');
+                    if (wrappers.length > 0) {
+                        lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+                    }
+                    
+                    if (lastDate !== msgDate) {
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'chat-header-date';
+                        dateDiv.innerText = getPersianDateString(msg.created_at);
+                        container.appendChild(dateDiv);
+                    }
+                    
+                    appendPrivateMessageUI(msg);
+                    container.scrollTop = container.scrollHeight;
+                    
+                    if (msg.receiver_name === currentName) {
+                        supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
+                    }
                 }
             }
         })
@@ -660,7 +685,29 @@ async function sendPrivateMessage() {
         window.currentReply = null;
     }
     
-    await supabaseClient.from('private_messages').insert([msgData]);
+    const { data, error } = await supabaseClient.from('private_messages').insert([msgData]).select();
+    if (data && data.length > 0) {
+        const msg = data[0];
+        const container = document.getElementById('private-messages-container');
+        if (container && !document.querySelector(`[data-private-msg-id="${msg.id}"]`)) {
+            const msgDate = new Date(msg.created_at).toDateString();
+            let lastDate = null;
+            const wrappers = container.querySelectorAll('.chat-msg-wrapper');
+            if (wrappers.length > 0) {
+                lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+            }
+            
+            if (lastDate !== msgDate) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'chat-header-date';
+                dateDiv.innerText = getPersianDateString(msg.created_at);
+                container.appendChild(dateDiv);
+            }
+            
+            appendPrivateMessageUI(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+    }
 }
 
 const flameIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>`;
@@ -774,7 +821,6 @@ async function initPanelChat() {
             if (lastDate !== msgDate) {
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'chat-header-date';
-                dateDiv.style.margin = '10px auto';
                 dateDiv.innerText = getPersianDateString(msg.created_at);
                 chatMessages.appendChild(dateDiv);
                 lastDate = msgDate;
@@ -790,6 +836,8 @@ async function initPanelChat() {
         .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'messages' },
             async (payload) => {
+                if (document.querySelector(`[data-msg-id="${payload.new.id}"]`)) return;
+                
                 const { data: profileData } = await supabaseClient
                     .from('profiles')
                     .select('avatar_index')
@@ -807,7 +855,6 @@ async function initPanelChat() {
                 if (lastDate !== msgDate) {
                     const dateDiv = document.createElement('div');
                     dateDiv.className = 'chat-header-date';
-                    dateDiv.style.margin = '10px auto';
                     dateDiv.innerText = getPersianDateString(payload.new.created_at);
                     chatMessages.appendChild(dateDiv);
                 }
@@ -918,7 +965,31 @@ async function sendPanelChatMessage() {
         window.currentReply = null;
     }
 
-    await supabaseClient.from('messages').insert([msgData]);
+    const { data } = await supabaseClient.from('messages').insert([msgData]).select();
+    if (data && data.length > 0) {
+        const msg = data[0];
+        const chatMessages = document.getElementById('panel-chat-messages');
+        if (chatMessages && !document.querySelector(`[data-msg-id="${msg.id}"]`)) {
+            if (chatMessages.innerHTML.includes('هنوز پیامی ارسال نشده است.')) {
+                chatMessages.innerHTML = '';
+            }
+            const msgDate = new Date(msg.created_at).toDateString();
+            let lastDate = null;
+            const wrappers = chatMessages.querySelectorAll('.chat-msg-wrapper');
+            if (wrappers.length > 0) {
+                lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+            }
+            
+            if (lastDate !== msgDate) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'chat-header-date';
+                dateDiv.innerText = getPersianDateString(msg.created_at);
+                chatMessages.appendChild(dateDiv);
+            }
+            appendPanelChatMessage(msg, currentAvatarIndex);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
 }
 
 window.openReplyModal = function(id, sender, text) {
@@ -950,9 +1021,46 @@ window.submitReply = async function() {
     
     if (currentChatContext === 'private' && activePrivateChat) {
         msgData.receiver_name = activePrivateChat;
-        await supabaseClient.from('private_messages').insert([msgData]);
+        const { data } = await supabaseClient.from('private_messages').insert([msgData]).select();
+        if (data && data.length > 0) {
+            const msg = data[0];
+            const container = document.getElementById('private-messages-container');
+            if (container && !document.querySelector(`[data-private-msg-id="${msg.id}"]`)) {
+                const msgDate = new Date(msg.created_at).toDateString();
+                let lastDate = null;
+                const wrappers = container.querySelectorAll('.chat-msg-wrapper');
+                if (wrappers.length > 0) lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+                if (lastDate !== msgDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'chat-header-date';
+                    dateDiv.innerText = getPersianDateString(msg.created_at);
+                    container.appendChild(dateDiv);
+                }
+                appendPrivateMessageUI(msg);
+                container.scrollTop = container.scrollHeight;
+            }
+        }
     } else {
-        await supabaseClient.from('messages').insert([msgData]);
+        const { data } = await supabaseClient.from('messages').insert([msgData]).select();
+        if (data && data.length > 0) {
+            const msg = data[0];
+            const chatMessages = document.getElementById('panel-chat-messages');
+            if (chatMessages && !document.querySelector(`[data-msg-id="${msg.id}"]`)) {
+                if (chatMessages.innerHTML.includes('هنوز پیامی ارسال نشده است.')) chatMessages.innerHTML = '';
+                const msgDate = new Date(msg.created_at).toDateString();
+                let lastDate = null;
+                const wrappers = chatMessages.querySelectorAll('.chat-msg-wrapper');
+                if (wrappers.length > 0) lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
+                if (lastDate !== msgDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'chat-header-date';
+                    dateDiv.innerText = getPersianDateString(msg.created_at);
+                    chatMessages.appendChild(dateDiv);
+                }
+                appendPanelChatMessage(msg, currentAvatarIndex);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
     }
 };
 
