@@ -197,8 +197,8 @@
     margin-bottom: 2px;
 }
 .verified-badge.sky { color: #38bdf8; }
-.verified-badge.red { color: #f87171; }
-.verified-badge.green { color: #22c55e; }
+.verified-badge.purple { color: #a855f7; }
+.verified-badge.yellow { color: #eab308; }
 
 .private-search-bar { display: flex; gap: 8px; margin-bottom: 15px; }
 .private-search-bar input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 15px; color: white; font-family: 'Vazirmatn'; outline: none; }
