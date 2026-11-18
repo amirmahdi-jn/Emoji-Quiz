@@ -113,4 +113,62 @@ function initDailyChallenge() {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
         if (challengeCorrect) {
-            dailyResult.textContent
+            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (درست)';
+            dailyResult.className = 'challenge-result success';
+        } else {
+            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (نادرست)';
+            dailyResult.className = 'challenge-result fail';
+        }
+    }
+    
+    function updateDailyTimer() {
+        const now = Date.now();
+        const midnight = getIranMidnight();
+        const diff = midnight - now;
+        timerEl.innerHTML = timerIcon + formatTimeRemaining(diff);
+    }
+    
+    updateDailyTimer();
+    if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
+    dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
+    
+    dailySubmit.addEventListener('click', () => {
+        if (dailyInput.disabled) return;
+        const answer = dailyInput.value.trim();
+        if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
+        const isCorrect = (answer === todayQuestion.answer);
+        
+        lastChallengeDate = today;
+        challengeCorrect = isCorrect;
+        syncToDatabase();
+
+        dailyInput.disabled = true;
+        dailySubmit.disabled = true;
+        if (isCorrect) {
+            currentDiamonds += 5;
+            updateCoinsUI();
+            dailyResult.textContent = 'درست! ۵ الماس دریافت کردید.';
+            dailyResult.className = 'challenge-result success';
+        } else {
+            dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
+            dailyResult.className = 'challenge-result fail';
+        }
+    });
+    dailyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') dailySubmit.click(); });
+}
+
+function checkOnlineStatus() {
+    const overlay = document.getElementById('offline-overlay');
+    if (!overlay) return;
+    
+    if (!navigator.onLine) {
+        overlay.classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    } else {
+        overlay.classList.remove('active');
+        const mainMenu = document.getElementById('main-menu');
+        if (mainMenu && !document.querySelector('.screen.active')) {
+            mainMenu.classList.add('active');
+        }
+    }
+}
