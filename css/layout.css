@@ -239,9 +239,11 @@
     font-size: 1.2rem;
     font-weight: bold;
     color: var(--text-color);
-    margin-top: -10px;
-    margin-bottom: 15px;
+    margin-top: 15px;
+    margin-bottom: 20px;
 }
+
+.chapters-grid { margin-top: 10px; }
 
 #offline-overlay {
     position: fixed;
