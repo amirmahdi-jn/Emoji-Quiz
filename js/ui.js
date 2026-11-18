@@ -17,6 +17,15 @@ function closeGuestModal() {
     document.getElementById('guest-restriction-modal').classList.remove('active');
 }
 
+function startSinglePlayerMode() {
+    renderChapters();
+    showScreen('chapters-screen');
+}
+
+function startTwoPlayerMode() {
+    showScreen('two-player-screen');
+}
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
