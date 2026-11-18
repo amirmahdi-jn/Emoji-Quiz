@@ -83,11 +83,13 @@
 .main-stats-row {
     position: absolute;
     top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 82px;
+    right: 82px;
     display: flex;
-    gap: 6px;
+    justify-content: space-evenly;
+    align-items: center;
     z-index: 10;
+    pointer-events: none;
 }
 .main-stat-pill {
     display: flex;
@@ -104,6 +106,7 @@
     color: #fff;
     box-sizing: border-box;
     min-width: 48px;
+    pointer-events: auto;
 }
 .main-coin-icon { width: 13px; height: 13px; stroke: var(--coin-color); }
 .main-trophy-icon { width: 13px; height: 13px; stroke: #f97316; }
@@ -666,5 +669,8 @@
         gap: 3px;
     }
     .main-coin-icon, .main-trophy-icon, .main-diamond-icon { width: 11px; height: 11px; }
-    .main-stats-row { gap: 4px; }
+    .main-stats-row {
+        left: 74px;
+        right: 74px;
+    }
 }
