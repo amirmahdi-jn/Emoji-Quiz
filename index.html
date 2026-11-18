@@ -121,6 +121,58 @@
                 <span style="color: #ffffff;">آنلاین</span>
             </h2>
         </div>
+        <div class="section-title">بازی‌ها</div>
+        <div class="online-games-grid">
+            <div class="online-game-item" onclick="openOnlineGame('rps')">
+                <div class="online-game-icon">
+                    <img src="Picture1.jpg" alt="سنگ کاغذ قیچی">
+                </div>
+                <span>سنگ کاغذ قیچی</span>
+            </div>
+            <div class="online-game-item" onclick="openOnlineGame('tictactoe')">
+                <div class="online-game-icon">
+                    <img src="Picture2.jpg" alt="دوز">
+                </div>
+                <span>دوز</span>
+            </div>
+            <div class="online-game-item" onclick="openOnlineGame('dots')">
+                <div class="online-game-icon">
+                    <img src="Picture3.jpg" alt="نقطه خط">
+                </div>
+                <span>نقطه خط</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="online-search-screen" class="screen">
+        <div class="header mode-header">
+            <button class="btn-back" onclick="cancelOnlineSearch()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+            </button>
+            <h2 class="mode-title">
+                <span style="color: #ef4444;">بازی : </span>
+                <span style="color: #ffffff;" id="search-game-name">سنگ کاغذ قیچی</span>
+            </h2>
+        </div>
+        <div class="online-placeholder">
+            <div class="spinner-big"></div>
+            <div class="online-placeholder-title">در حال جستجوی حریف...</div>
+            <div class="online-placeholder-text" id="search-status-text">لطفاً منتظر بمانید</div>
+            <button class="online-placeholder-cancel" onclick="cancelOnlineSearch()">انصراف</button>
+        </div>
+    </div>
+
+    <div id="online-game-screen" class="screen">
+        <div class="header mode-header">
+            <button class="btn-back" onclick="leaveOnlineGame()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
+            </button>
+            <h2 class="mode-title">
+                <span style="color: #ef4444;">بازی : </span>
+                <span style="color: #ffffff;" id="game-title-name">سنگ کاغذ قیچی</span>
+            </h2>
+        </div>
+        <div id="online-game-body" class="online-game-body"></div>
     </div>
 
     <div id="levels-screen" class="screen">
