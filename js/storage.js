@@ -181,18 +181,15 @@ function updateProfileUI() {
 }
 
 function updateAllStatsUI() {
-    const coinIds = ['header-coins', 'online-header-coins', 'profile-header-coins', 'panel-header-coins'];
-    coinIds.forEach(id => {
+    ['header-coins', 'online-header-coins', 'main-coins'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentCoins;
     });
-    const trophyIds = ['header-trophy', 'online-header-trophy', 'profile-header-trophy', 'panel-header-trophy'];
-    trophyIds.forEach(id => {
+    ['header-trophy', 'online-header-trophy', 'main-trophy'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentTrophies;
     });
-    const diamondIds = ['header-diamonds', 'online-header-diamonds', 'profile-header-diamonds', 'panel-header-diamonds'];
-    diamondIds.forEach(id => {
+    ['header-diamonds', 'online-header-diamonds', 'main-diamonds'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = currentDiamonds;
     });
