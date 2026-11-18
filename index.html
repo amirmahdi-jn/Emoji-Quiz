@@ -293,7 +293,7 @@
             <h2 style="color: #f1c40f;">سکه کافی نداری!</h2>
             <p class="no-coin-line">برای ادامه به سکه بیشتری نیاز داری.</p>
             <p class="no-coin-line">لطفا جهت خرید سکه به فروشگاه مراجعه کنید.</p>
-            <button class="btn-primary" onclick="document.getElementById('no-coin-modal').classList.remove('active')">باشه</button>
+            <button class="btn-primary" onclick="closeNoCoinModal()">باشه</button>
         </div>
     </div>
 
@@ -302,7 +302,7 @@
             <h2 style="color: #60a5fa;">الماس کافی نداری!</h2>
             <p class="no-coin-line">برای ادامه به الماس بیشتری نیاز داری.</p>
             <p class="no-coin-line">لطفا جهت خرید الماس به فروشگاه مراجعه کنید.</p>
-            <button class="btn-primary" onclick="document.getElementById('no-diamond-modal').classList.remove('active')">باشه</button>
+            <button class="btn-primary" onclick="closeNoDiamondModal()">باشه</button>
         </div>
     </div>
 
@@ -633,7 +633,7 @@
             <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">کاربر گرامی!</p>
             <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا از حروف و اعداد انگلیسی استفاده نمایید.</p>
-            <button class="btn-primary" style="margin-top: 15px;" onclick="document.getElementById('alert-modal').classList.remove('active')">باشه</button>
+            <button class="btn-primary" style="margin-top: 15px;" onclick="closeSimpleModal('alert-modal')">باشه</button>
         </div>
     </div>
 
@@ -642,7 +642,7 @@
             <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">این نام قبلاً استفاده شده است.</p>
             <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا یک نام جدید وارد کنید.</p>
-            <button class="btn-primary" style="margin-top: 15px;" onclick="document.getElementById('duplicate-alert-modal').classList.remove('active')">باشه</button>
+            <button class="btn-primary" style="margin-top: 15px;" onclick="closeSimpleModal('duplicate-alert-modal')">باشه</button>
         </div>
     </div>
 
