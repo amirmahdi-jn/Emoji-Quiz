@@ -211,16 +211,23 @@
 .gift-box svg { width: 32px; height: 32px; stroke: var(--primary-color); fill: none; stroke-width: 2; }
 .gift-box span { font-size: 0.8rem; color: var(--text-color); font-weight: bold; }
 .gift-timer {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-color);
     direction: ltr;
     background: rgba(0, 0, 0, 0.3);
-    padding: 6px 20px;
+    padding: 8px 20px;
     border-radius: 30px;
     border: 1px solid var(--border-color);
-    margin: 10px 0 5px;
-    display: inline-block;
+    margin: 15px auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: fit-content;
+    min-width: 160px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .challenge-emoji-row {
@@ -234,14 +241,21 @@
     color: var(--text-color);
 }
 .challenge-timer {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: var(--text-color);
     direction: ltr;
     background: rgba(0, 0, 0, 0.3);
-    padding: 4px 15px;
+    padding: 5px 15px;
     border-radius: 30px;
-    display: inline-block;
-    margin: 8px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: fit-content;
+    min-width: 120px;
+    margin: 8px auto;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 .challenge-input-row { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; flex-wrap: nowrap; width: 100%; }
 .challenge-input-row input {
