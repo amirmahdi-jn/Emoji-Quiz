@@ -52,7 +52,7 @@ function syncToDatabase() {
     supabaseClient.from('profiles').upsert({
         device_id: getDeviceId(),
         name: currentName,
-        avatar_index: currentAvatarIndex,
+        custom_avatar_url: currentCustomAvatarUrl,
         coins: currentCoins,
         diamonds: currentDiamonds,
         solved_levels: solvedArray.length,
@@ -99,7 +99,7 @@ async function loadProfile() {
 
     if (dbProfile) {
         currentName = dbProfile.name || 'Guest';
-        currentAvatarIndex = typeof dbProfile.avatar_index === 'number' ? dbProfile.avatar_index : -1;
+        currentCustomAvatarUrl = dbProfile.custom_avatar_url || null;
         currentCoins = typeof dbProfile.coins === 'number' ? dbProfile.coins : 10;
         currentDiamonds = typeof dbProfile.diamonds === 'number' ? dbProfile.diamonds : 10;
         removeHintUses = typeof dbProfile.remove_hint_uses === 'number' ? dbProfile.remove_hint_uses : 0;
@@ -122,7 +122,7 @@ async function loadProfile() {
     }
 
     currentName = 'Guest';
-    currentAvatarIndex = -1;
+    currentCustomAvatarUrl = null;
     currentCoins = 10;
     currentDiamonds = 10;
     
@@ -130,7 +130,7 @@ async function loadProfile() {
         await supabaseClient.from('profiles').insert({
             name: currentName,
             device_id: deviceId,
-            avatar_index: -1,
+            custom_avatar_url: null,
             solved_levels: 0,
             coins: currentCoins,
             diamonds: currentDiamonds
@@ -148,11 +148,14 @@ async function loadProfile() {
 function updateProfileUI() {
     const nameEl = document.getElementById('profileNameDisplay');
     const avatarEl = document.getElementById('headerAvatar');
+    const previewEl = document.getElementById('profilePreview');
+    
     if (nameEl) nameEl.innerText = currentName;
-    if (avatarEl) {
-        if (currentAvatarIndex >= 0 && avatarImages[currentAvatarIndex]) avatarEl.src = avatarImages[currentAvatarIndex];
-        else avatarEl.src = defaultAvatar;
-    }
+    
+    let avatarSrc = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
+    
+    if (avatarEl) avatarEl.src = avatarSrc;
+    if (previewEl) previewEl.src = avatarSrc;
 }
 
 function updateCoinsUI() {
