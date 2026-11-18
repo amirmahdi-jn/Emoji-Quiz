@@ -1,4 +1,4 @@
-const timerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-left: 5px;"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`;
+const timerIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`;
 
 function getIranMidnight() {
     const now = new Date();
@@ -9,7 +9,7 @@ function getIranMidnight() {
 }
 
 function formatTimeRemaining(ms) {
-    if (ms <= 0) return '۰:۰۰:۰۰';
+    if (ms <= 0) return '۰۰:۰۰:۰۰';
     const hours = Math.floor(ms / (60 * 60 * 1000));
     const mins = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
     const secs = Math.floor((ms % (60 * 1000)) / 1000);
@@ -96,7 +96,7 @@ function initDailyChallenge() {
     const todayQuestion = dailyQuestions[questionIndex];
     container.innerHTML =
         '<div class="challenge-emoji-row"><span>' + todayQuestion.emoji1 + '</span><span>' + todayQuestion.emoji2 + '</span><span>' + todayQuestion.emoji3 + '</span></div>' +
-        '<div class="challenge-timer" id="dailyTimer" style="display: flex; justify-content: center; align-items: center;">--:--:--</div>' +
+        '<div class="challenge-timer" id="dailyTimer">--:--:--</div>' +
         '<div class="challenge-input-row">' +
         '<input type="text" id="dailyInput" placeholder="پاسخ..." autocomplete="off">' +
         '<button class="challenge-btn" id="dailySubmitBtn">ثبت</button>' +
@@ -113,62 +113,4 @@ function initDailyChallenge() {
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
         if (challengeCorrect) {
-            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (درست)';
-            dailyResult.className = 'challenge-result success';
-        } else {
-            dailyResult.textContent = 'امروز را پاسخ داده‌اید. (نادرست)';
-            dailyResult.className = 'challenge-result fail';
-        }
-    }
-    
-    function updateDailyTimer() {
-        const now = Date.now();
-        const midnight = getIranMidnight();
-        const diff = midnight - now;
-        timerEl.innerHTML = timerIcon + formatTimeRemaining(diff);
-    }
-    
-    updateDailyTimer();
-    if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
-    dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
-    
-    dailySubmit.addEventListener('click', () => {
-        if (dailyInput.disabled) return;
-        const answer = dailyInput.value.trim();
-        if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
-        const isCorrect = (answer === todayQuestion.answer);
-        
-        lastChallengeDate = today;
-        challengeCorrect = isCorrect;
-        syncToDatabase();
-
-        dailyInput.disabled = true;
-        dailySubmit.disabled = true;
-        if (isCorrect) {
-            currentDiamonds += 5;
-            updateCoinsUI();
-            dailyResult.textContent = 'درست! ۵ الماس دریافت کردید.';
-            dailyResult.className = 'challenge-result success';
-        } else {
-            dailyResult.textContent = 'نادرست. پاسخ صحیح : «' + todayQuestion.answer + '»';
-            dailyResult.className = 'challenge-result fail';
-        }
-    });
-    dailyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') dailySubmit.click(); });
-}
-
-function checkOnlineStatus() {
-    const overlay = document.getElementById('offline-overlay');
-    if (!overlay) return;
-    
-    if (!navigator.onLine) {
-        overlay.classList.add('active');
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    } else {
-        overlay.classList.remove('active');
-        const mainMenu = document.getElementById('main-menu');
-        if (mainMenu && !document.querySelector('.screen.active')) {
-            mainMenu.classList.add('active');
-        }
-    }
-}
+            dailyResult.textContent
