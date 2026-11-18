@@ -6,8 +6,8 @@ const defaultAvatar = 'avatar0.jpg';
 
 let currentLevelIndex = 0;
 let currentChapter = 1;
-let currentCoins = 10;
-let currentDiamonds = 10;
+let currentCoins = 100;
+let currentDiamonds = 50;
 let currentTrophies = 0;
 let currentWord = [];
 let currentGuess = [];
