@@ -757,6 +757,7 @@ async function fetchLeaderboard() {
         .from('profiles')
         .select('name, solved_levels, custom_avatar_url, created_at, trophies')
         .neq('name', 'Guest')
+        .order('trophies', { ascending: false, nullsFirst: false })
         .order('solved_levels', { ascending: false })
         .order('created_at', { ascending: true })
         .limit(50);
