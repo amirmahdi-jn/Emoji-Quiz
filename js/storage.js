@@ -54,7 +54,9 @@ function syncToDatabase() {
         last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
         last_challenge_date: lastChallengeDate,
         challenge_correct: challengeCorrect
-    }, { onConflict: 'device_id' }).then();
+    }, { onConflict: 'device_id' }).then(() => {
+        updateAllStatsUI();
+    });
 }
 
 function loadProgress() {
@@ -100,16 +102,14 @@ async function loadProfile() {
             .select('*')
             .eq('device_id', deviceId)
             .maybeSingle();
-            
+
         if (error) {
             document.getElementById('offline-overlay').classList.add('active');
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             return;
         }
         dbProfile = data;
     } catch (e) {
         document.getElementById('offline-overlay').classList.add('active');
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         return;
     }
 
@@ -123,19 +123,24 @@ async function loadProfile() {
         lastGiftOpen = dbProfile.last_gift_open ? new Date(dbProfile.last_gift_open).getTime() : null;
         lastChallengeDate = dbProfile.last_challenge_date || null;
         challengeCorrect = dbProfile.challenge_correct || false;
-        
+
         solvedLevels = {};
         if (dbProfile.solved_levels_array) {
             try {
                 const arr = JSON.parse(dbProfile.solved_levels_array);
                 arr.forEach(idx => { solvedLevels[idx] = true; });
-                unlockedLevels = arr.length ? Math.max(...arr) + 2 : 1;
-                if (unlockedLevels > TOTAL_LEVELS) unlockedLevels = TOTAL_LEVELS;
-            } catch(e) {}
+                let maxConsecutive = -1;
+                const sorted = [...arr].sort((a, b) => a - b);
+                for (const idx of sorted) {
+                    if (idx === maxConsecutive + 1) maxConsecutive = idx;
+                    else break;
+                }
+                unlockedLevels = Math.min(maxConsecutive + 2, TOTAL_LEVELS);
+            } catch (e) {}
         }
-        
+
         updateProfileUI();
-        updateCoinsUI();
+        updateAllStatsUI();
         subscribeToMyProfileStats();
         return;
     }
@@ -145,7 +150,7 @@ async function loadProfile() {
     currentCoins = 100;
     currentDiamonds = 50;
     currentTrophies = 0;
-    
+
     try {
         await supabaseClient.from('profiles').insert({
             name: currentName,
@@ -158,12 +163,11 @@ async function loadProfile() {
         });
     } catch (e) {
         document.getElementById('offline-overlay').classList.add('active');
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         return;
     }
 
     updateProfileUI();
-    updateCoinsUI();
+    updateAllStatsUI();
     subscribeToMyProfileStats();
 }
 
@@ -171,11 +175,11 @@ function updateProfileUI() {
     const nameEl = document.getElementById('profileNameDisplay');
     const avatarEl = document.getElementById('headerAvatar');
     const previewEl = document.getElementById('profilePreview');
-    
+
     if (nameEl) nameEl.innerText = currentName;
-    
+
     let avatarSrc = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
-    
+
     if (avatarEl) avatarEl.src = avatarSrc;
     if (previewEl) previewEl.src = avatarSrc;
 }
