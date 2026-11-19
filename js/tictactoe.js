@@ -556,11 +556,7 @@ function updateSearchText(text) {
 }
 
 function openOnlineGame(gameType) {
-    if (gameType !== 'tictactoe') {
-        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
-        showScreen('online-search-screen');
-        return;
-    }
+    if (gameType !== 'tictactoe') return;
     if (currentCoins < 25) {
         openModal('no-coin-modal');
         return;
