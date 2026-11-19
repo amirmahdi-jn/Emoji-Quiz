@@ -2,6 +2,7 @@ let firstPanelEntry = true;
 let panelHeartbeat = null;
 let globalProfilesSubscription = null;
 let isUploadingAvatar = false;
+let panelRefreshTimer = null;
 
 function showGuestModal(text) {
     const textEl = document.getElementById('guest-restriction-text');
@@ -38,13 +39,13 @@ function showScreen(screenId) {
             if (panelHeartbeat) clearInterval(panelHeartbeat);
             panelHeartbeat = setInterval(() => {
                 supabaseClient.from('profiles').update({ last_seen: new Date().toISOString() }).eq('name', currentName).then();
-            }, 10000);
+            }, 15000);
         } else {
-            if (panelHeartbeat) clearInterval(panelHeartbeat);
+            if (panelHeartbeat) { clearInterval(panelHeartbeat); panelHeartbeat = null; }
             supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
         }
     }
-    
+
     if (screenId !== 'panel-screen') {
         firstPanelEntry = true;
         closeGuestModal();
@@ -66,7 +67,7 @@ function switchPanelTab(tabId) {
 
     if (isGuest) {
         const text = tabId === 'top-players' ? 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.' : 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
-        
+
         if (firstPanelEntry) {
             firstPanelEntry = false;
             if (tabId === 'top-players') {
@@ -143,7 +144,7 @@ function compressImage(file, maxWidth, maxHeight) {
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                
+
                 canvas.toBlob((blob) => {
                     resolve(blob);
                 }, 'image/jpeg', 0.85);
@@ -170,29 +171,29 @@ async function handleAvatarUpload(event) {
     isUploadingAvatar = true;
     const loadingOverlay = document.getElementById('upload-loading');
     if (loadingOverlay) loadingOverlay.classList.add('active');
-    
+
     const previewEl = document.getElementById('profilePreview');
     const headerAvatar = document.getElementById('headerAvatar');
-    
+
     try {
         const compressedBlob = await compressImage(file, 500, 500);
         const fileName = `avatar_${getDeviceId()}.jpg`;
-        
+
         const localUrl = URL.createObjectURL(compressedBlob);
         if (previewEl) previewEl.src = localUrl;
-        
+
         const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
-        
+
         if (error) {
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
             return;
         }
 
         const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
-        
+
         currentCustomAvatarUrl = `${publicUrl}?t=${Date.now()}`;
         currentDiamonds -= 10;
-        
+
         syncToDatabase();
         updateProfileUI();
         updateCoinsUI();
@@ -341,6 +342,22 @@ function getPersianTime(dateStr) {
     return new Intl.DateTimeFormat('fa-IR', options).format(date);
 }
 
+function debouncedPanelRefresh() {
+    if (panelRefreshTimer) clearTimeout(panelRefreshTimer);
+    panelRefreshTimer = setTimeout(() => {
+        if (!document.getElementById('panel-screen').classList.contains('active')) return;
+        if (currentPanelTab === 'top-players') {
+            fetchLeaderboard();
+        }
+        const activeTab = document.querySelector('.private-tab-btn.active')?.id;
+        if (activeTab === 'tab-btn-friends') {
+            loadFriendsList(document.getElementById('private-chat-list'));
+        } else if (activeTab === 'tab-btn-chats') {
+            loadChatsList(document.getElementById('private-chat-list'));
+        }
+    }, 1500);
+}
+
 function initProfilesListener() {
     if (globalProfilesSubscription) supabaseClient.removeChannel(globalProfilesSubscription);
     globalProfilesSubscription = supabaseClient
@@ -351,19 +368,7 @@ function initProfilesListener() {
                 currentCustomAvatarUrl = updatedUser.custom_avatar_url;
                 updateProfileUI();
             }
-            
-            if (currentPanelTab === 'top-players' && document.getElementById('panel-screen').classList.contains('active')) {
-                fetchLeaderboard();
-            }
-            
-            if (document.getElementById('panel-screen').classList.contains('active')) {
-                const activeTab = document.querySelector('.private-tab-btn.active')?.id;
-                if (activeTab === 'tab-btn-friends') {
-                    loadFriendsList(document.getElementById('private-chat-list'));
-                } else if (activeTab === 'tab-btn-chats') {
-                    loadChatsList(document.getElementById('private-chat-list'));
-                }
-            }
+            debouncedPanelRefresh();
         })
         .subscribe();
 }
