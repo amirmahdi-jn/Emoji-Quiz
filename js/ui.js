@@ -396,7 +396,5 @@ let currentOnlineGame = null;
 let onlineSearchInterval = null;
 
 const ONLINE_GAME_NAMES = {
-    rps: 'سنگ کاغذ قیچی',
-    tictactoe: 'دوز',
-    dots: 'نقطه خط'
+    tictactoe: 'دوز'
 };
