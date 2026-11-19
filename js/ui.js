@@ -3,6 +3,7 @@ let panelHeartbeat = null;
 let globalProfilesSubscription = null;
 let isUploadingAvatar = false;
 let panelRefreshTimer = null;
+let lastPanelRefreshTime = 0;
 
 function showGuestModal(text) {
     const textEl = document.getElementById('guest-restriction-text');
@@ -343,6 +344,10 @@ function getPersianTime(dateStr) {
 }
 
 function debouncedPanelRefresh() {
+    const now = Date.now();
+    if (now - lastPanelRefreshTime < 1000) return;
+    lastPanelRefreshTime = now;
+
     if (panelRefreshTimer) clearTimeout(panelRefreshTimer);
     panelRefreshTimer = setTimeout(() => {
         if (!document.getElementById('panel-screen').classList.contains('active')) return;
@@ -355,20 +360,34 @@ function debouncedPanelRefresh() {
         } else if (activeTab === 'tab-btn-chats') {
             loadChatsList(document.getElementById('private-chat-list'));
         }
-    }, 1500);
+    }, 100);
 }
 
 function initProfilesListener() {
     if (globalProfilesSubscription) supabaseClient.removeChannel(globalProfilesSubscription);
     globalProfilesSubscription = supabaseClient
         .channel('public:global_profiles')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
+            debouncedPanelRefresh();
+        })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, (payload) => {
             const updatedUser = payload.new;
-            if (updatedUser.name === currentName) {
+            const oldUser = payload.old || {};
+
+            if (updatedUser.name === currentName && oldUser.custom_avatar_url !== updatedUser.custom_avatar_url) {
                 currentCustomAvatarUrl = updatedUser.custom_avatar_url;
                 updateProfileUI();
             }
-            debouncedPanelRefresh();
+
+            const meaningfulChange =
+                oldUser.trophies !== updatedUser.trophies ||
+                oldUser.solved_levels !== updatedUser.solved_levels ||
+                oldUser.custom_avatar_url !== updatedUser.custom_avatar_url ||
+                oldUser.name !== updatedUser.name;
+
+            if (meaningfulChange) {
+                debouncedPanelRefresh();
+            }
         })
         .subscribe();
 }
