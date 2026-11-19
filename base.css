@@ -1,0 +1,29 @@
+:root {
+    --bg-color: #120924;
+    --panel-bg: #23153b;
+    --panel-bg-light: #2d1b4a;
+    --primary-color: #c724ff;
+    --primary-glow: rgba(199, 36, 255, 0.5);
+    --text-color: #ffffff;
+    --text-muted: #a08fb5;
+    --coin-color: #f1c40f;
+    --border-color: #3d235e;
+    --success-color: #2ecc71;
+}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Vazirmatn', sans-serif;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    background-image: radial-gradient(circle at top right, #2a0f4a, transparent 50%), radial-gradient(circle at bottom left, #1a0b2e, transparent 50%);
+}
