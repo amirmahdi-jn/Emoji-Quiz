@@ -46,7 +46,7 @@ async function startTTTMatchmaking() {
                     tttEnteringGame = true;
                     enterTTTGame();
                 }
-            }, 500);
+            }, 150);
             return;
         }
     }
@@ -90,7 +90,7 @@ function subscribeToTTTGame(gameId) {
                 updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
                 setTimeout(() => {
                     enterTTTGame();
-                }, 500);
+                }, 150);
             } else if (gameActive) {
                 if (tttGame.status === 'playing') {
                     resetTTTTimer();
@@ -107,7 +107,9 @@ async function fetchTTTPlayerProfiles() {
     if (!tttGame) return;
     const names = [tttGame.player1_name, tttGame.player2_name].filter(Boolean);
     if (names.length === 0) return;
-    const { data } = await supabaseClient.from('profiles').select('name, custom_avatar_url').in('name', names);
+    const toFetch = names.filter(n => !cachedAvatarMap[n] || cachedAvatarMap[n].custom_avatar_url === undefined);
+    if (toFetch.length === 0) return;
+    const { data } = await supabaseClient.from('profiles').select('name, custom_avatar_url').in('name', toFetch);
     if (data) {
         data.forEach(p => {
             if (!cachedAvatarMap[p.name]) cachedAvatarMap[p.name] = {};
@@ -125,13 +127,15 @@ async function enterTTTGame() {
     if (!tttGame || tttGame.status !== 'finished') {
         tttRewarded = false;
     }
-    await fetchTTTPlayerProfiles();
     renderTTTGame();
     if (tttGame && tttGame.status === 'playing') {
         resetTTTTimer();
         startTTTTimer();
     }
     checkTTTGameEnd();
+    fetchTTTPlayerProfiles().then(() => {
+        if (tttGame) renderTTTGame();
+    });
 }
 
 function renderTTTGame() {
@@ -326,7 +330,7 @@ function startTTTTimer() {
                 }
             }
         }
-    }, 250);
+    }, 500);
 }
 
 async function handleTTTTimeout() {
@@ -420,7 +424,7 @@ function checkTTTGameEnd() {
         titleColor = '#22c55e';
         bodyHTML = `
             <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">+6</span>
+                <span class="ttt-achievement-num">+10</span>
                 <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
             </div>
             <div class="ttt-achievement-row">
@@ -430,7 +434,7 @@ function checkTTTGameEnd() {
         `;
         if (!tttRewarded) {
             tttRewarded = true;
-            currentTrophies += 6;
+            currentTrophies += 10;
             currentCoins += 50;
             updateCoinsUI();
             syncToDatabase();
@@ -440,7 +444,7 @@ function checkTTTGameEnd() {
         titleColor = '#f87171';
         bodyHTML = `
             <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">-3</span>
+                <span class="ttt-achievement-num">-5</span>
                 <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
             </div>
             <div class="ttt-achievement-row">
@@ -450,7 +454,7 @@ function checkTTTGameEnd() {
         `;
         if (!tttRewarded) {
             tttRewarded = true;
-            currentTrophies = Math.max(0, currentTrophies - 3);
+            currentTrophies = Math.max(0, currentTrophies - 5);
             currentCoins = Math.max(0, currentCoins - 25);
             updateCoinsUI();
             syncToDatabase();
@@ -521,7 +525,7 @@ async function confirmLeaveGameYes() {
         };
         await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
         tttRewarded = true;
-        currentTrophies = Math.max(0, currentTrophies - 3);
+        currentTrophies = Math.max(0, currentTrophies - 5);
         currentCoins = Math.max(0, currentCoins - 25);
         updateCoinsUI();
         syncToDatabase();
