@@ -7,11 +7,14 @@ let tttTimeoutFired = false;
 let tttLeaveConfirmOpen = false;
 let tttRewarded = false;
 let currentOnlineGameType = null;
+let tttPollInterval = null;
+let tttEntryPaid = false;
 
 const TTT_TROPHY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
 const TTT_COIN_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f1c40f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>`;
 
 function cleanupTTTState() {
+    if (tttPollInterval) { clearInterval(tttPollInterval); tttPollInterval = null; }
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
     if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
     const overlay = document.getElementById('ttt-result-overlay');
@@ -20,9 +23,13 @@ function cleanupTTTState() {
     tttEnteringGame = false;
     tttTimeoutFired = false;
     tttRewarded = false;
+    tttEntryPaid = false;
 }
 
 function cleanupRpsStateSafe() {
+    if (typeof rpsPollInterval !== 'undefined' && rpsPollInterval) {
+        clearInterval(rpsPollInterval);
+    }
     if (typeof rpsSubscription !== 'undefined' && rpsSubscription) {
         supabaseClient.removeChannel(rpsSubscription);
     }
@@ -31,6 +38,48 @@ function cleanupRpsStateSafe() {
     }
     const overlay = document.getElementById('rps-result-overlay');
     if (overlay) overlay.remove();
+}
+
+function openOnlineGame(gameType) {
+    if (gameType !== 'tictactoe' && gameType !== 'rps') {
+        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
+        showScreen('online-search-screen');
+        return;
+    }
+
+    if (currentCoins < 25) {
+        openModal('no-coin-modal');
+        return;
+    }
+
+    if (gameType === 'tictactoe') {
+        cleanupRpsStateSafe();
+        rpsGame = null;
+        rpsEnteringGame = false;
+        rpsShowingReveal = false;
+        rpsRewarded = false;
+        rpsEntryPaid = false;
+        if (typeof rpsPollInterval !== 'undefined' && rpsPollInterval) clearInterval(rpsPollInterval);
+    } else if (gameType === 'rps') {
+        cleanupTTTState();
+        tttEntryPaid = false;
+    }
+
+    currentOnlineGameType = gameType;
+
+    if (gameType === 'tictactoe') {
+        const nameEl = document.getElementById('search-game-name');
+        if (nameEl) nameEl.innerText = 'دوز';
+        updateSearchText('منتظر پیوستن حریف...');
+        showScreen('online-search-screen');
+        startTTTMatchmaking();
+    } else {
+        const nameEl = document.getElementById('search-game-name');
+        if (nameEl) nameEl.innerText = 'سنگ کاغذ قیچی';
+        updateSearchText('منتظر پیوستن حریف...');
+        showScreen('online-search-screen');
+        startRpsMatchmaking();
+    }
 }
 
 async function startTTTMatchmaking() {
@@ -45,7 +94,6 @@ async function startTTTMatchmaking() {
         .limit(1);
 
     if (queryError) {
-        refundOnlineEntry();
         updateSearchText('خطا در اتصال. لطفا دوباره تلاش کنید.');
         setTimeout(() => {
             currentOnlineGameType = null;
@@ -72,7 +120,6 @@ async function startTTTMatchmaking() {
             .maybeSingle();
 
         if (joinError) {
-            refundOnlineEntry();
             updateSearchText('خطا در اتصال. لطفا دوباره تلاش کنید.');
             setTimeout(() => {
                 currentOnlineGameType = null;
@@ -110,7 +157,6 @@ async function startTTTMatchmaking() {
         .maybeSingle();
 
     if (createError || !created) {
-        refundOnlineEntry();
         updateSearchText('خطا در ساخت بازی. لطفا دوباره تلاش کنید.');
         setTimeout(() => {
             currentOnlineGameType = null;
@@ -121,12 +167,26 @@ async function startTTTMatchmaking() {
 
     tttGame = created;
     subscribeToTTTGame(created.id);
-}
 
-function refundOnlineEntry() {
-    currentCoins += 25;
-    updateCoinsUI();
-    syncToDatabase();
+    if (tttPollInterval) clearInterval(tttPollInterval);
+    tttPollInterval = setInterval(async () => {
+        if (!tttGame || tttGame.status !== 'waiting') {
+            clearInterval(tttPollInterval);
+            return;
+        }
+        const { data } = await supabaseClient.from('ttt_games').select('*').eq('id', tttGame.id).maybeSingle();
+        if (data && data.status === 'playing') {
+            clearInterval(tttPollInterval);
+            tttGame = data;
+            if (!tttEnteringGame) {
+                tttEnteringGame = true;
+                updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
+                setTimeout(() => {
+                    if (currentOnlineGameType === 'tictactoe') enterTTTGame();
+                }, 150);
+            }
+        }
+    }, 2000);
 }
 
 function subscribeToTTTGame(gameId) {
@@ -181,6 +241,15 @@ async function fetchTTTPlayerProfiles() {
 async function enterTTTGame() {
     if (currentOnlineGameType !== 'tictactoe') return;
     if (!tttGame) return;
+
+    if (tttPollInterval) clearInterval(tttPollInterval);
+
+    if (!tttEntryPaid) {
+        tttEntryPaid = true;
+        currentCoins -= 25;
+        updateCoinsUI();
+        syncToDatabase();
+    }
 
     showScreen('online-game-screen');
     const titleEl = document.getElementById('game-title-name');
@@ -607,62 +676,21 @@ function updateSearchText(text) {
     if (el) el.textContent = text;
 }
 
-function openOnlineGame(gameType) {
-    if (gameType !== 'tictactoe' && gameType !== 'rps') {
-        updateSearchText('این بازی به‌زودی اضافه می‌شود...');
-        showScreen('online-search-screen');
-        return;
-    }
-
-    if (gameType === 'tictactoe') {
-        cleanupRpsStateSafe();
-        rpsGame = null;
-        rpsEnteringGame = false;
-        rpsShowingReveal = false;
-        rpsRewarded = false;
-    } else {
-        cleanupTTTState();
-    }
-
-    if (currentCoins < 25) {
-        openModal('no-coin-modal');
-        return;
-    }
-
-    currentCoins -= 25;
-    updateCoinsUI();
-    syncToDatabase();
-    currentOnlineGameType = gameType;
-
-    if (gameType === 'tictactoe') {
-        const nameEl = document.getElementById('search-game-name');
-        if (nameEl) nameEl.innerText = 'دوز';
-        updateSearchText('منتظر پیوستن حریف...');
-        showScreen('online-search-screen');
-        startTTTMatchmaking();
-    } else {
-        const nameEl = document.getElementById('search-game-name');
-        if (nameEl) nameEl.innerText = 'سنگ کاغذ قیچی';
-        updateSearchText('منتظر پیوستن حریف...');
-        showScreen('online-search-screen');
-        startRpsMatchmaking();
-    }
-}
-
 function cancelOnlineSearch() {
     if (currentOnlineGameType === 'rps') {
         cancelOnlineSearchRps();
         return;
     }
+    if (tttPollInterval) clearInterval(tttPollInterval);
     if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
     if (tttGame && tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
         supabaseClient.from('ttt_games').delete().eq('id', tttGame.id).then();
     }
-    refundOnlineEntry();
     tttGame = null;
     tttEnteringGame = false;
     tttTimeoutFired = false;
     tttRewarded = false;
+    tttEntryPaid = false;
     currentOnlineGameType = null;
     showScreen('two-player-screen');
 }
