@@ -40,7 +40,7 @@ function renderChapters() {
         const isUnlocked = isChapterUnlocked(i);
         const solvedInChapter = getSolvedInChapter(i);
         const percent = (solvedInChapter / LEVELS_PER_CHAPTER) * 100;
-        
+
         const startLevel = (i - 1) * LEVELS_PER_CHAPTER + 1;
         const endLevel = i * LEVELS_PER_CHAPTER;
         const stageText = `مرحله ${startLevel} تا ${endLevel}`;
@@ -96,7 +96,6 @@ function renderLevels() {
 function startLevel(index) {
     currentLevelIndex = index;
     removeHintUses = 0;
-    syncToDatabase();
     const levelData = gameData[index];
     if (!levelData) return;
     const gameLevel = document.getElementById('game-level');
@@ -109,7 +108,7 @@ function startLevel(index) {
     currentGuess = new Array(currentWord.length).fill('');
     renderSlots();
     renderKeyboard();
-    updateCoinsUI();
+    updateAllStatsUI();
     showScreen('game-screen');
 }
 
@@ -138,11 +137,11 @@ function renderSlots() {
 function getAvailableLetters(wordArr) {
     let letters = wordArr.filter(c => c !== ' ');
     let uniqueLetters = [...new Set(letters)];
-    
+
     const similarGroups = [
         ['س', 'ص', 'ث'], ['ز', 'ذ', 'ض', 'ظ'], ['ت', 'ط'], ['ح', 'ه'], ['ق', 'غ', 'ک', 'گ'], ['ا', 'آ', 'أ', 'إ']
     ];
-    
+
     function isSimilar(char, targetArray) {
         for (let group of similarGroups) {
             if (group.includes(char) && group.some(g => targetArray.includes(g))) {
@@ -153,17 +152,17 @@ function getAvailableLetters(wordArr) {
     }
 
     const extraPool = ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ح', 'ژ', 'چ', 'پ', 'گ', 'ک', 'م', 'ط', 'ظ', 'ذ', 'ز', 'ی', 'س', 'ش', 'ل', 'ت', 'ب', 'ج', 'د', 'ر', 'ن', 'و', 'ه'];
-    
+
     let shuffledPool = extraPool.sort(() => 0.5 - Math.random());
     let extraLetters = [];
-    
+
     for (let char of shuffledPool) {
         if (extraLetters.length >= 6) break;
         if (!uniqueLetters.includes(char) && !isSimilar(char, uniqueLetters)) {
             extraLetters.push(char);
         }
     }
-    
+
     let finalKeys = [...letters, ...extraLetters];
     return finalKeys.sort(() => 0.5 - Math.random());
 }
@@ -209,11 +208,12 @@ function checkAnswer() {
     const guessClean = currentGuess.join('').replace(/\s+/g, '');
     const answerClean = gameData[currentLevelIndex].answer.replace(/\s+/g, '');
     if (guessClean === answerClean) {
-        if (!solvedLevels[currentLevelIndex]) { 
-            solvedLevels[currentLevelIndex] = true; 
+        if (!solvedLevels[currentLevelIndex]) {
+            solvedLevels[currentLevelIndex] = true;
+            currentCoins += 10;
         }
         if (currentLevelIndex + 1 === unlockedLevels && unlockedLevels < TOTAL_LEVELS) unlockedLevels++;
-        updateCoinsUI();
+        updateAllStatsUI();
         syncToDatabase();
 
         const correctEl = document.getElementById('correct-answer-text');
@@ -260,10 +260,10 @@ function buyHint(type) {
     if (type === 'remove') cost = 25;
     if (type === 'letter') cost = 5;
     if (type === 'reveal') cost = 50;
-    
+
     if (currentCoins >= cost) {
         currentCoins -= cost;
-        updateCoinsUI();
+        updateAllStatsUI();
         syncToDatabase();
 
         if (type === 'reveal') {
