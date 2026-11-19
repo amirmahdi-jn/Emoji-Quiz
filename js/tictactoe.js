@@ -8,7 +8,6 @@ let tttLeaveConfirmOpen = false;
 let tttRewarded = false;
 let tttMovePending = false;
 let tttSearchInterval = null;
-let tttLastRenderedStatus = null;
 
 const TTT_TROPHY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
 const TTT_COIN_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f1c40f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>`;
@@ -19,7 +18,6 @@ function clearTTTSearchInterval() {
 
 async function startTTTMatchmaking() {
     tttEnteringGame = false;
-    tttLastRenderedStatus = null;
     clearTTTSearchInterval();
 
     try {
@@ -76,7 +74,10 @@ async function startTTTMatchmaking() {
             .maybeSingle();
 
         if (!created || error) {
-            updateSearchText('خطا در ساخت بازی. دوباره تلاش کنید.');
+            currentCoins += 25;
+            updateAllStatsUI();
+            syncToDatabase();
+            updateSearchText('خطا در ساخت بازی. سکه برگشت داده شد.');
             return;
         }
 
@@ -101,6 +102,9 @@ async function startTTTMatchmaking() {
             }
         }, 2000);
     } catch (e) {
+        currentCoins += 25;
+        updateAllStatsUI();
+        syncToDatabase();
         updateSearchText('خطا در اتصال. دوباره تلاش کنید.');
     }
 }
@@ -128,6 +132,10 @@ function subscribeToTTTGame(gameId) {
                 enterTTTGame();
             } else if (gameActive) {
                 tttMovePending = false;
+                if (tttGame.status === 'playing') {
+                    resetTTTTimer();
+                    startTTTTimer();
+                }
                 renderTTTGame();
                 checkTTTGameEnd();
             }
@@ -231,14 +239,6 @@ function renderTTTGame() {
     }
 
     renderTTTBoard();
-
-    if (tttGame.status === 'playing' && tttLastRenderedStatus !== tttGame.status) {
-        tttLastRenderedStatus = tttGame.status;
-        resetTTTTimer();
-        startTTTTimer();
-    } else if (tttLastRenderedStatus !== tttGame.status) {
-        tttLastRenderedStatus = tttGame.status;
-    }
 }
 
 function renderTTTBoard() {
@@ -512,4 +512,144 @@ function checkTTTGameEnd() {
             </div>
             <div class="ttt-achievement-row">
                 <span class="ttt-achievement-num">-25</span>
-                <span class="ttt-achievement-icon">${TTT_COIN_ICON
+                <span class="ttt-achievement-icon">${TTT_COIN_ICON}</span>
+            </div>
+        `;
+        if (!tttRewarded) {
+            tttRewarded = true;
+            currentTrophies = Math.max(0, currentTrophies - 5);
+            currentCoins = Math.max(0, currentCoins - 25);
+            updateAllStatsUI();
+            syncToDatabase();
+        }
+    }
+
+    if (tttTimerInterval) clearInterval(tttTimerInterval);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'ttt-result-overlay';
+    overlay.id = 'ttt-result-overlay';
+    overlay.innerHTML = `
+        <div class="ttt-result-content">
+            <div class="ttt-result-title" style="color:${titleColor};">${titleHTML}</div>
+            ${bodyHTML}
+            <div class="ttt-result-buttons">
+                <button class="ttt-result-btn secondary" onclick="exitTTTGame()">خروج</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function exitTTTGame() {
+    const overlay = document.getElementById('ttt-result-overlay');
+    if (overlay) overlay.remove();
+    if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
+    if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
+    clearTTTSearchInterval();
+    tttGame = null;
+    tttEnteringGame = false;
+    tttTimeoutFired = false;
+    tttRewarded = false;
+    tttMovePending = false;
+    showScreen('two-player-screen');
+}
+
+function confirmLeaveGame() {
+    if (!tttGame || tttGame.status !== 'playing') {
+        leaveOnlineGame();
+        return;
+    }
+    if (tttLeaveConfirmOpen) return;
+    tttLeaveConfirmOpen = true;
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.add('blurred');
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeLeaveGameModal() {
+    tttLeaveConfirmOpen = false;
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.remove('active');
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.remove('blurred');
+}
+
+async function confirmLeaveGameYes() {
+    closeLeaveGameModal();
+    if (tttGame && tttGame.status === 'playing') {
+        const isPlayer1 = tttGame.player1_name === currentName;
+        const result = isPlayer1 ? 'player1_left' : 'player2_left';
+        const nextTurn = isPlayer1 ? tttGame.player2_name : tttGame.player1_name;
+        const updateData = {
+            status: 'finished',
+            result: result,
+            current_turn: nextTurn,
+            updated_at: new Date().toISOString()
+        };
+        await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
+        tttRewarded = true;
+        currentTrophies = Math.max(0, currentTrophies - 5);
+        currentCoins = Math.max(0, currentCoins - 25);
+        updateAllStatsUI();
+        syncToDatabase();
+    }
+    leaveOnlineGame();
+}
+
+function leaveOnlineGame() {
+    if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
+    if (tttTimerInterval) { clearInterval(tttTimerInterval); tttTimerInterval = null; }
+    clearTTTSearchInterval();
+    const overlay = document.getElementById('ttt-result-overlay');
+    if (overlay) overlay.remove();
+    const modal = document.getElementById('leave-game-modal');
+    if (modal) modal.classList.remove('active');
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) activeScreen.classList.remove('blurred');
+    tttLeaveConfirmOpen = false;
+    tttGame = null;
+    tttEnteringGame = false;
+    tttTimeoutFired = false;
+    tttRewarded = false;
+    tttMovePending = false;
+    showScreen('two-player-screen');
+}
+
+function updateSearchText(text) {
+    const el = document.getElementById('search-status-text');
+    if (el) el.textContent = text;
+}
+
+function openOnlineGame(gameType) {
+    if (gameType !== 'tictactoe') return;
+    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
+        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+        return;
+    }
+    if (currentCoins < 25) {
+        openModal('no-coin-modal');
+        return;
+    }
+    currentCoins -= 25;
+    updateAllStatsUI();
+    syncToDatabase();
+    const nameEl = document.getElementById('search-game-name');
+    if (nameEl) nameEl.innerText = 'دوز';
+    updateSearchText('منتظر پیوستن حریف...');
+    showScreen('online-search-screen');
+    startTTTMatchmaking();
+}
+
+function cancelOnlineSearch() {
+    clearTTTSearchInterval();
+    if (tttSubscription) { supabaseClient.removeChannel(tttSubscription); tttSubscription = null; }
+    if (tttGame && tttGame.status === 'waiting' && tttGame.player1_name === currentName) {
+        supabaseClient.from('ttt_games').delete().eq('id', tttGame.id).then();
+    }
+    tttGame = null;
+    tttEnteringGame = false;
+    tttMovePending = false;
+    showScreen('two-player-screen');
+}
