@@ -122,7 +122,9 @@ async function enterTTTGame() {
     if (titleEl) titleEl.innerText = 'دوز';
     const body = document.getElementById('online-game-body');
     if (body) body.innerHTML = '';
-    tttRewarded = false;
+    if (!tttGame || tttGame.status !== 'finished') {
+        tttRewarded = false;
+    }
     await fetchTTTPlayerProfiles();
     renderTTTGame();
     if (tttGame && tttGame.status === 'playing') {
@@ -384,8 +386,15 @@ function checkTTTGameEnd() {
     const isPlayer1 = tttGame.player1_name === currentName;
     const leftPlayer1 = result === 'player1_left';
     const isLeftResult = result === 'player1_left' || result === 'player2_left';
-    const iLeft = isLeftResult && ((leftPlayer1 && isPlayer1) || (!leftPlayer1 && !isPlayer1));
-    const iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
+
+    let iWon, iLeft;
+    if (isLeftResult) {
+        iLeft = (leftPlayer1 && isPlayer1) || (!leftPlayer1 && !isPlayer1);
+        iWon = !iLeft;
+    } else {
+        iLeft = false;
+        iWon = (result === 'player1_win' && isPlayer1) || (result === 'player2_win' && !isPlayer1);
+    }
 
     let titleHTML = '';
     let titleColor = '';
@@ -394,12 +403,24 @@ function checkTTTGameEnd() {
     if (result === 'draw') {
         titleHTML = 'مساوی! 🤝';
         titleColor = '#9ca3af';
+        bodyHTML = `
+            <div class="ttt-achievement-row">
+                <span class="ttt-achievement-num">+25</span>
+                <span class="ttt-achievement-icon">${TTT_COIN_ICON}</span>
+            </div>
+        `;
+        if (!tttRewarded) {
+            tttRewarded = true;
+            currentCoins += 25;
+            updateCoinsUI();
+            syncToDatabase();
+        }
     } else if (iWon) {
-        titleHTML = 'بردی! 😃';
+        titleHTML = iLeft ? 'حریف رفت، بردی! 🎉' : 'بردی! 😃';
         titleColor = '#22c55e';
         bodyHTML = `
             <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">+5</span>
+                <span class="ttt-achievement-num">+6</span>
                 <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
             </div>
             <div class="ttt-achievement-row">
@@ -409,7 +430,7 @@ function checkTTTGameEnd() {
         `;
         if (!tttRewarded) {
             tttRewarded = true;
-            currentTrophies += 5;
+            currentTrophies += 6;
             currentCoins += 50;
             updateCoinsUI();
             syncToDatabase();
@@ -419,18 +440,18 @@ function checkTTTGameEnd() {
         titleColor = '#f87171';
         bodyHTML = `
             <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">-5</span>
+                <span class="ttt-achievement-num">-3</span>
                 <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
             </div>
             <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">-50</span>
+                <span class="ttt-achievement-num">-25</span>
                 <span class="ttt-achievement-icon">${TTT_COIN_ICON}</span>
             </div>
         `;
         if (!tttRewarded) {
             tttRewarded = true;
-            currentTrophies = Math.max(0, currentTrophies - 5);
-            currentCoins = Math.max(0, currentCoins - 50);
+            currentTrophies = Math.max(0, currentTrophies - 3);
+            currentCoins = Math.max(0, currentCoins - 25);
             updateCoinsUI();
             syncToDatabase();
         }
@@ -500,8 +521,8 @@ async function confirmLeaveGameYes() {
         };
         await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
         tttRewarded = true;
-        currentTrophies = Math.max(0, currentTrophies - 5);
-        currentCoins = Math.max(0, currentCoins - 50);
+        currentTrophies = Math.max(0, currentTrophies - 3);
+        currentCoins = Math.max(0, currentCoins - 25);
         updateCoinsUI();
         syncToDatabase();
     }
