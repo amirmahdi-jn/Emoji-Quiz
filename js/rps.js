@@ -9,14 +9,13 @@ let rpsShowingReveal = false;
 
 const RPS_CHOICES = ['rock', 'paper', 'scissors'];
 const RPS_EMOJI = { rock: '✊', paper: '✋', scissors: '✌️' };
-const RPS_LABEL = { rock: 'سنگ', paper: 'کاغذ', scissors: 'قیچی' };
 const RPS_ROUND_SECONDS = 15;
 const RPS_REVEAL_MS = 2000;
 
 async function startRpsMatchmaking() {
     rpsEnteringGame = false;
 
-    const { data: waitingGames } = await supabaseClient
+    const { data: waitingGames, error: queryError } = await supabaseClient
         .from('rps_games')
         .select('*')
         .eq('status', 'waiting')
@@ -24,9 +23,19 @@ async function startRpsMatchmaking() {
         .order('created_at', { ascending: true })
         .limit(1);
 
+    if (queryError) {
+        refundOnlineEntry();
+        updateSearchText('خطا در اتصال. لطفا دوباره تلاش کنید.');
+        setTimeout(() => {
+            currentOnlineGameType = null;
+            showScreen('two-player-screen');
+        }, 1500);
+        return;
+    }
+
     if (waitingGames && waitingGames.length > 0) {
         const game = waitingGames[0];
-        const { data: joined } = await supabaseClient
+        const { data: joined, error: joinError } = await supabaseClient
             .from('rps_games')
             .update({
                 player2_name: currentName,
@@ -39,12 +48,22 @@ async function startRpsMatchmaking() {
             .select()
             .maybeSingle();
 
+        if (joinError) {
+            refundOnlineEntry();
+            updateSearchText('خطا در اتصال. لطفا دوباره تلاش کنید.');
+            setTimeout(() => {
+                currentOnlineGameType = null;
+                showScreen('two-player-screen');
+            }, 1500);
+            return;
+        }
+
         if (joined) {
             rpsGame = joined;
             subscribeToRpsGame(joined.id);
             updateSearchText('حریف پیدا شد. در حال ورود...');
             setTimeout(() => {
-                if (!rpsEnteringGame) {
+                if (!rpsEnteringGame && currentOnlineGameType === 'rps') {
                     rpsEnteringGame = true;
                     enterRpsGame();
                 }
@@ -53,7 +72,7 @@ async function startRpsMatchmaking() {
         }
     }
 
-    const { data: created } = await supabaseClient
+    const { data: created, error: createError } = await supabaseClient
         .from('rps_games')
         .insert({
             player1_name: currentName,
@@ -62,10 +81,18 @@ async function startRpsMatchmaking() {
         .select()
         .maybeSingle();
 
-    if (created) {
-        rpsGame = created;
-        subscribeToRpsGame(created.id);
+    if (createError || !created) {
+        refundOnlineEntry();
+        updateSearchText('خطا در ساخت بازی. لطفا دوباره تلاش کنید.');
+        setTimeout(() => {
+            currentOnlineGameType = null;
+            showScreen('two-player-screen');
+        }, 1500);
+        return;
     }
+
+    rpsGame = created;
+    subscribeToRpsGame(created.id);
 }
 
 function subscribeToRpsGame(gameId) {
@@ -84,6 +111,8 @@ function subscribeToRpsGame(gameId) {
 }
 
 async function handleRpsRealtime(newGame) {
+    if (currentOnlineGameType !== 'rps') return;
+
     const prevRound = rpsGame ? rpsGame.round_number : 0;
     rpsGame = newGame;
 
@@ -94,7 +123,7 @@ async function handleRpsRealtime(newGame) {
         rpsEnteringGame = true;
         updateSearchText('حریف پیدا شد. در حال ورود...');
         setTimeout(() => {
-            enterRpsGame();
+            if (currentOnlineGameType === 'rps') enterRpsGame();
         }, 150);
         return;
     }
@@ -124,7 +153,7 @@ async function handleRpsRealtime(newGame) {
 
     renderRpsGame();
 
-    if (newGame.status === 'playing' && newGame.player1_choice && newGame.player2_choice && !newGame.last_round_p1) {
+    if (newGame.status === 'playing' && newGame.player1_choice && newGame.player2_choice && newGame.round_number === prevRound) {
         processRpsRound();
     }
 
@@ -147,24 +176,23 @@ async function fetchRpsPlayerProfiles() {
 }
 
 async function enterRpsGame() {
+    if (currentOnlineGameType !== 'rps') return;
+    if (!rpsGame) return;
+
     showScreen('online-game-screen');
     const titleEl = document.getElementById('game-title-name');
     if (titleEl) titleEl.innerText = 'سنگ کاغذ قیچی';
     const body = document.getElementById('online-game-body');
     if (body) body.innerHTML = '';
 
-    if (!rpsGame || rpsGame.status !== 'finished') {
+    if (rpsGame.status !== 'finished') {
         rpsRewarded = false;
     }
 
     rpsShowingReveal = false;
-    if (rpsGame && rpsGame.round_started_at) {
+    if (rpsGame.round_started_at) {
         const dbStart = new Date(rpsGame.round_started_at).getTime();
-        if (!isNaN(dbStart)) {
-            rpsLocalRoundStart = dbStart;
-        } else {
-            rpsLocalRoundStart = Date.now();
-        }
+        rpsLocalRoundStart = isNaN(dbStart) ? Date.now() : dbStart;
     } else {
         rpsLocalRoundStart = Date.now();
     }
@@ -172,14 +200,14 @@ async function enterRpsGame() {
 
     renderRpsGame();
 
-    if (rpsGame && rpsGame.status === 'playing') {
+    if (rpsGame.status === 'playing') {
         startRpsTimer();
     }
 
     checkRpsGameEnd();
 
     fetchRpsPlayerProfiles().then(() => {
-        if (rpsGame) renderRpsGame();
+        if (rpsGame && currentOnlineGameType === 'rps') renderRpsGame();
     });
 }
 
@@ -317,6 +345,7 @@ async function pickRps(choice) {
     if (!rpsGame || rpsGame.status !== 'playing') return;
     if (!RPS_CHOICES.includes(choice)) return;
     if (rpsShowingReveal) return;
+    if (currentOnlineGameType !== 'rps') return;
 
     const isPlayer1 = rpsGame.player1_name === currentName;
     const myChoice = isPlayer1 ? rpsGame.player1_choice : rpsGame.player2_choice;
@@ -336,7 +365,6 @@ async function pickRps(choice) {
 async function processRpsRound() {
     if (!rpsGame || rpsGame.status !== 'playing') return;
     if (!rpsGame.player1_choice || !rpsGame.player2_choice) return;
-    if (rpsGame.last_round_p1 && rpsGame.last_round_p2) return;
 
     const p1 = rpsGame.player1_choice;
     const p2 = rpsGame.player2_choice;
@@ -436,6 +464,7 @@ function startRpsTimer() {
 async function handleRpsTimeout() {
     if (!rpsGame || rpsGame.status !== 'playing') return;
     if (rpsShowingReveal) return;
+    if (currentOnlineGameType !== 'rps') return;
 
     const isPlayer1 = rpsGame.player1_name === currentName;
     const myChoice = isPlayer1 ? rpsGame.player1_choice : rpsGame.player2_choice;
@@ -535,21 +564,22 @@ function checkRpsGameEnd() {
 }
 
 function exitRpsGame() {
+    if (rpsSubscription) { supabaseClient.removeChannel(rpsSubscription); rpsSubscription = null; }
+    if (rpsTimerInterval) { clearInterval(rpsTimerInterval); rpsTimerInterval = null; }
     const overlay = document.getElementById('rps-result-overlay');
     if (overlay) overlay.remove();
-    if (rpsTimerInterval) { clearInterval(rpsTimerInterval); rpsTimerInterval = null; }
-    if (rpsSubscription) { supabaseClient.removeChannel(rpsSubscription); rpsSubscription = null; }
     rpsGame = null;
     rpsEnteringGame = false;
     rpsTimeoutFired = false;
     rpsRewarded = false;
     rpsShowingReveal = false;
+    currentOnlineGameType = null;
     showScreen('two-player-screen');
 }
 
 function confirmLeaveGameRps() {
     if (!rpsGame || rpsGame.status !== 'playing') {
-        leaveOnlineGameRps();
+        exitRpsGame();
         return;
     }
     if (tttLeaveConfirmOpen) return;
@@ -576,36 +606,20 @@ async function confirmLeaveGameYesRps() {
         updateCoinsUI();
         syncToDatabase();
     }
-    leaveOnlineGameRps();
-}
-
-function leaveOnlineGameRps() {
-    if (rpsSubscription) { supabaseClient.removeChannel(rpsSubscription); rpsSubscription = null; }
-    if (rpsTimerInterval) { clearInterval(rpsTimerInterval); rpsTimerInterval = null; }
-    const overlay = document.getElementById('rps-result-overlay');
-    if (overlay) overlay.remove();
-    const modal = document.getElementById('leave-game-modal');
-    if (modal) modal.classList.remove('active');
-    const activeScreen = document.querySelector('.screen.active');
-    if (activeScreen) activeScreen.classList.remove('blurred');
-    tttLeaveConfirmOpen = false;
-    rpsGame = null;
-    rpsEnteringGame = false;
-    rpsTimeoutFired = false;
-    rpsRewarded = false;
-    rpsShowingReveal = false;
-    showScreen('two-player-screen');
+    exitRpsGame();
 }
 
 function cancelOnlineSearchRps() {
     if (rpsSubscription) { supabaseClient.removeChannel(rpsSubscription); rpsSubscription = null; }
     if (rpsGame && rpsGame.status === 'waiting' && rpsGame.player1_name === currentName) {
         supabaseClient.from('rps_games').delete().eq('id', rpsGame.id).then();
-        currentCoins += 25;
-        updateCoinsUI();
-        syncToDatabase();
     }
+    refundOnlineEntry();
     rpsGame = null;
     rpsEnteringGame = false;
+    rpsTimeoutFired = false;
+    rpsRewarded = false;
+    rpsShowingReveal = false;
+    currentOnlineGameType = null;
     showScreen('two-player-screen');
 }
