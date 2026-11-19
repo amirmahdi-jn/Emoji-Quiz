@@ -103,7 +103,7 @@ async function updatePrivateBadges() {
         .select('*', { count: 'exact', head: true })
         .eq('receiver_name', currentName)
         .eq('is_read', false);
-    
+
     const msgBadge = document.getElementById('msg-badge');
     if (msgBadge) {
         if (msgCount > 0) {
@@ -119,7 +119,7 @@ async function updatePrivateBadges() {
         .select('*', { count: 'exact', head: true })
         .eq('receiver_name', currentName)
         .eq('status', 'pending');
-    
+
     const reqBadge = document.getElementById('req-badge');
     if (reqBadge) {
         if (reqCount > 0) {
@@ -135,10 +135,10 @@ function switchPrivateTab(tab) {
     document.getElementById('tab-btn-friends').classList.toggle('active', tab === 'friends');
     document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
     document.getElementById('tab-btn-requests').classList.toggle('active', tab === 'requests');
-    
+
     const listContainer = document.getElementById('private-chat-list');
     listContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">در حال دریافت...</p>';
-    
+
     if (tab === 'chats') {
         loadChatsList(listContainer);
     } else if (tab === 'friends') {
@@ -211,7 +211,7 @@ async function searchUserForChat() {
     const input = document.getElementById('searchUserInput');
     const term = input.value.trim();
     const listContainer = document.getElementById('private-chat-list');
-    
+
     if (!term) return;
     if (term === currentName) {
         listContainer.innerHTML = '<p style="text-align:center; color:#f87171;">شما نمی‌توانید به خودتان درخواست دهید!</p>';
@@ -267,7 +267,7 @@ async function sendFriendRequest(receiver) {
         btn.innerHTML = '<span style="color: #22c55e; font-weight: bold;">درخواست ارسال شد</span>';
         btn.disabled = true;
         btn.style.background = 'transparent';
-        
+
         setTimeout(() => {
             btn.innerHTML = 'در انتظار تایید';
             btn.style.background = '#eab308';
@@ -455,12 +455,12 @@ async function rejectRequest(reqId) {
 async function openPrivateChat(user, avatarSrc) {
     activePrivateChat = user;
     currentChatContext = 'private';
-    
+
     if (!cachedAvatarMap[user]) {
         const { data } = await supabaseClient.from('profiles').select('custom_avatar_url, last_seen').eq('name', user).maybeSingle();
         if (data) cachedAvatarMap[user] = data;
     }
-    
+
     const { data: pData } = await supabaseClient.from('profiles').select('last_seen').eq('name', user).maybeSingle();
     const statusHTML = getStatusHTML(user, pData ? pData.last_seen : null);
 
@@ -489,7 +489,7 @@ async function openPrivateChat(user, avatarSrc) {
         </div>
     `;
     document.body.appendChild(chatWindow);
-    
+
     supabaseClient.from('private_messages')
         .update({ is_read: true })
         .eq('receiver_name', currentName)
@@ -516,7 +516,7 @@ function closePrivateChat() {
 async function loadPrivateMessages() {
     const container = document.getElementById('private-messages-container');
     if (!container) return;
-    
+
     const { data } = await supabaseClient.from('private_messages')
         .select('*')
         .or(`and(sender_name.eq.${currentName},receiver_name.eq.${activePrivateChat}),and(sender_name.eq.${activePrivateChat},receiver_name.eq.${currentName})`)
@@ -544,9 +544,9 @@ async function loadPrivateMessages() {
         .channel('public:private_messages')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, (payload) => {
             const msg = payload.new;
-            if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) || 
+            if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) ||
                 (msg.sender_name === activePrivateChat && msg.receiver_name === currentName)) {
-                
+
                 if (!document.querySelector(`[data-private-msg-id="${msg.id}"]`)) {
                     const msgDate = new Date(msg.created_at).toDateString();
                     let lastDate = null;
@@ -554,17 +554,17 @@ async function loadPrivateMessages() {
                     if (wrappers.length > 0) {
                         lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
                     }
-                    
+
                     if (lastDate !== msgDate) {
                         const dateDiv = document.createElement('div');
                         dateDiv.className = 'chat-header-date';
                         dateDiv.innerText = getPersianDateString(msg.created_at);
                         container.appendChild(dateDiv);
                     }
-                    
+
                     appendPrivateMessageUI(msg);
                     container.scrollTop = container.scrollHeight;
-                    
+
                     if (msg.receiver_name === currentName) {
                         supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
                     }
@@ -580,12 +580,15 @@ async function loadPrivateMessages() {
                     textEl.textContent = msg.text;
                     if (msg.is_edited) {
                         let timeEl = wrapper.querySelector('.chat-msg-time');
-                        if (!timeEl.innerHTML.includes('(ویرایش شده)')) {
-                            timeEl.innerHTML += ' <span style="color:var(--text-muted);">(ویرایش شده)</span>';
+                        if (timeEl && !timeEl.textContent.includes('(ویرایش شده)')) {
+                            const editedSpan = document.createElement('span');
+                            editedSpan.style.color = 'var(--text-muted)';
+                            editedSpan.textContent = ' (ویرایش شده)';
+                            timeEl.appendChild(editedSpan);
                         }
                     }
                 }
-                
+
                 const tickEl = wrapper.querySelector('.msg-tick');
                 if (tickEl && msg.sender_name === currentName) {
                     tickEl.innerHTML = msg.is_read ? doubleTickSvg : singleTickSvg;
@@ -600,62 +603,96 @@ function appendPrivateMessageUI(msg) {
     if (!container) return;
 
     const isMe = msg.sender_name === currentName;
-    
     let avatarSrc = defaultAvatar;
     if (isMe) {
-        if (currentCustomAvatarUrl) {
-            avatarSrc = currentCustomAvatarUrl;
-        }
+        if (currentCustomAvatarUrl) avatarSrc = currentCustomAvatarUrl;
     } else {
         const uData = cachedAvatarMap[msg.sender_name];
-        if (uData && uData.custom_avatar_url) {
-            avatarSrc = uData.custom_avatar_url;
-        }
+        if (uData && uData.custom_avatar_url) avatarSrc = uData.custom_avatar_url;
     }
-    
+
     const time = getPersianTime(msg.created_at);
     const color = getUserColor(msg.sender_name);
-
-    let replyHTML = '';
-    if (msg.reply_to_text) {
-        replyHTML = `<div style="font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; margin-bottom: 5px; border-right: 2px solid var(--primary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><b>${msg.reply_to_name || 'کاربر'}:</b> ${msg.reply_to_text}</div>`;
-    }
-
-    let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
-    let tickHTML = '';
-    if (isMe) {
-        tickHTML = `<span class="msg-tick" style="margin-left: 4px;">${msg.is_read ? doubleTickSvg : singleTickSvg}</span>`;
-    }
-
-    let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>` : '';
-    
-    let replyBtnHTML = !isMe ? `<button class="msg-reply-btn" onclick="openReplyModal('${msg.id}', '${msg.sender_name}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
-    </button>` : '';
 
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
     wrapper.setAttribute('data-private-msg-id', msg.id);
     wrapper.setAttribute('data-date', new Date(msg.created_at).toDateString());
-    
-    wrapper.innerHTML = `
-        <div class="chat-msg-avatar">
-            <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-        </div>
-        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
-            <div class="chat-msg-header" style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;">${msg.sender_name} ${getVerifiedIcon(msg.sender_name)}</span>
-                ${menuBtnHTML}
-            </div>
-            ${replyHTML}
-            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
-            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left; display: flex; align-items: center; justify-content: flex-end;">
-                ${tickHTML} <span dir="rtl" style="margin-left: 6px;">${time}${editHTML}</span>
-            </div>
-            ${replyBtnHTML}
-        </div>
-    `;
 
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'chat-msg-avatar';
+    const avatarImg = document.createElement('img');
+    avatarImg.src = avatarSrc;
+    avatarImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+    avatarDiv.appendChild(avatarImg);
+    wrapper.appendChild(avatarDiv);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'chat-msg-content';
+    contentDiv.style.cssText = `background:${isMe ? 'rgba(199,36,255,0.2)' : 'rgba(255,255,255,0.1)'}; padding:8px 12px; border-radius:12px; position:relative;`;
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'chat-msg-header';
+    headerDiv.style.cssText = 'margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; gap:10px;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'chat-msg-name';
+    nameSpan.style.cssText = `color:${color}; font-size:0.75rem; font-weight:bold;`;
+    nameSpan.textContent = msg.sender_name;
+    nameSpan.insertAdjacentHTML('beforeend', getVerifiedIcon(msg.sender_name));
+    headerDiv.appendChild(nameSpan);
+
+    if (isMe) {
+        const menuBtn = document.createElement('button');
+        menuBtn.className = 'msg-menu-btn';
+        menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
+        menuBtn.addEventListener('click', () => window.openEditModal(msg.id, msg.text));
+        headerDiv.appendChild(menuBtn);
+    }
+    contentDiv.appendChild(headerDiv);
+
+    if (msg.reply_to_text) {
+        const replyDiv = document.createElement('div');
+        replyDiv.style.cssText = 'font-size:0.7rem; color:var(--text-muted); background:rgba(0,0,0,0.2); padding:4px; border-radius:4px; margin-bottom:5px; border-right:2px solid var(--primary-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+        const replyName = document.createElement('b');
+        replyName.textContent = (msg.reply_to_name || 'کاربر') + ':';
+        replyDiv.appendChild(replyName);
+        replyDiv.appendChild(document.createTextNode(' ' + msg.reply_to_text));
+        contentDiv.appendChild(replyDiv);
+    }
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'chat-msg-text';
+    textDiv.style.cssText = 'font-size:0.85rem; color:#fff; white-space:pre-wrap;';
+    textDiv.textContent = msg.text;
+    contentDiv.appendChild(textDiv);
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'chat-msg-time';
+    timeDiv.style.cssText = 'font-size:0.6rem; color:var(--text-muted); direction:ltr; margin-top:5px; text-align:left; display:flex; align-items:center; justify-content:flex-end;';
+    if (isMe) {
+        const tickSpan = document.createElement('span');
+        tickSpan.className = 'msg-tick';
+        tickSpan.style.cssText = 'margin-left:4px;';
+        tickSpan.innerHTML = msg.is_read ? doubleTickSvg : singleTickSvg;
+        timeDiv.appendChild(tickSpan);
+    }
+    const timeInner = document.createElement('span');
+    timeInner.setAttribute('dir', 'rtl');
+    timeInner.style.cssText = 'margin-left:6px;';
+    timeInner.textContent = time + (msg.is_edited ? ' (ویرایش شده)' : '');
+    timeDiv.appendChild(timeInner);
+    contentDiv.appendChild(timeDiv);
+
+    if (!isMe) {
+        const replyBtn = document.createElement('button');
+        replyBtn.className = 'msg-reply-btn';
+        replyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
+        replyBtn.addEventListener('click', () => window.openReplyModal(msg.id, msg.sender_name, msg.text));
+        contentDiv.appendChild(replyBtn);
+    }
+
+    wrapper.appendChild(contentDiv);
     container.appendChild(wrapper);
 }
 
@@ -663,7 +700,7 @@ async function sendPrivateMessage() {
     const input = document.getElementById('private-chat-input');
     const text = input.value.trim();
     if (!text || !activePrivateChat) return;
-    
+
     input.value = '';
     input.style.height = 'auto';
 
@@ -679,7 +716,7 @@ async function sendPrivateMessage() {
         msgData.reply_to_name = window.currentReply.sender;
         window.currentReply = null;
     }
-    
+
     const { data, error } = await supabaseClient.from('private_messages').insert([msgData]).select();
     if (data && data.length > 0) {
         const msg = data[0];
@@ -691,14 +728,14 @@ async function sendPrivateMessage() {
             if (wrappers.length > 0) {
                 lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
             }
-            
+
             if (lastDate !== msgDate) {
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'chat-header-date';
                 dateDiv.innerText = getPersianDateString(msg.created_at);
                 container.appendChild(dateDiv);
             }
-            
+
             appendPrivateMessageUI(msg);
             container.scrollTop = container.scrollHeight;
         }
@@ -731,7 +768,7 @@ async function fetchLeaderboard() {
         topThreeContainer.style.display = 'flex';
         return;
     }
-    
+
     if (!data || data.length === 0) {
         topThreeContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.8rem;">هنوز رکوردی ثبت نشده است.</p>';
         topThreeContainer.style.display = 'flex';
@@ -772,7 +809,7 @@ async function fetchLeaderboard() {
             </div>
         `;
         row.querySelector('span[style*="font-weight: bold"]').innerHTML = profile.name + getVerifiedIcon(profile.name);
-        
+
         if (index < 3) {
             topThreeContainer.appendChild(row);
         } else {
@@ -786,15 +823,17 @@ async function initPanelChat() {
     if (!chatMessages) return;
     chatMessages.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">در حال اتصال...</div>';
 
-    const { data, error } = await supabaseClient
+    const { data: rawData, error } = await supabaseClient
         .from('messages')
         .select('*')
-        .order('created_at', { ascending: true })
-        .limit(50);
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-    if (error) { 
-        chatMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 20px;">خطا در اتصال</div>'; 
-        return; 
+    const data = rawData ? rawData.reverse() : null;
+
+    if (error) {
+        chatMessages.innerHTML = '<div style="text-align: center; color: #f87171; font-size: 0.8rem; margin-top: 20px;">خطا در اتصال</div>';
+        return;
     }
 
     const { data: profilesData } = await supabaseClient.from('profiles').select('name, custom_avatar_url');
@@ -829,28 +868,28 @@ async function initPanelChat() {
             { event: 'INSERT', schema: 'public', table: 'messages' },
             async (payload) => {
                 if (document.querySelector(`[data-msg-id="${payload.new.id}"]`)) return;
-                
+
                 const { data: profileData } = await supabaseClient
                     .from('profiles')
                     .select('custom_avatar_url')
                     .eq('name', payload.new.sender_name)
                     .maybeSingle();
                 const avatarUrl = profileData && profileData.custom_avatar_url ? profileData.custom_avatar_url : defaultAvatar;
-                
+
                 const msgDate = new Date(payload.new.created_at).toDateString();
                 let lastDate = null;
                 const wrappers = chatMessages.querySelectorAll('.chat-msg-wrapper');
                 if (wrappers.length > 0) {
                     lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
                 }
-                
+
                 if (lastDate !== msgDate) {
                     const dateDiv = document.createElement('div');
                     dateDiv.className = 'chat-header-date';
                     dateDiv.innerText = getPersianDateString(payload.new.created_at);
                     chatMessages.appendChild(dateDiv);
                 }
-                
+
                 appendPanelChatMessage(payload.new, avatarUrl);
             })
         .on('postgres_changes',
@@ -864,8 +903,11 @@ async function initPanelChat() {
                         textEl.textContent = msg.text;
                         if (msg.is_edited) {
                             let timeEl = wrapper.querySelector('.chat-msg-time');
-                            if (!timeEl.innerHTML.includes('(ویرایش شده)')) {
-                                timeEl.innerHTML += ' <span style="color:var(--text-muted);">(ویرایش شده)</span>';
+                            if (timeEl && !timeEl.textContent.includes('(ویرایش شده)')) {
+                                const editedSpan = document.createElement('span');
+                                editedSpan.style.color = 'var(--text-muted)';
+                                editedSpan.textContent = ' (ویرایش شده)';
+                                timeEl.appendChild(editedSpan);
                             }
                         }
                     }
@@ -890,7 +932,6 @@ function appendPanelChatMessage(msg, avatarUrl) {
     const color = getUserColor(msg.sender_name);
     const time = getPersianTime(msg.created_at);
     const isMe = msg.sender_name === currentName;
-
     const avatarSrc = avatarUrl || defaultAvatar;
 
     const wrapper = document.createElement('div');
@@ -898,37 +939,69 @@ function appendPanelChatMessage(msg, avatarUrl) {
     wrapper.setAttribute('data-msg-id', msg.id);
     wrapper.setAttribute('data-date', new Date(msg.created_at).toDateString());
 
-    let replyHTML = '';
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'chat-msg-avatar';
+    const avatarImg = document.createElement('img');
+    avatarImg.src = avatarSrc;
+    avatarImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+    avatarDiv.appendChild(avatarImg);
+    wrapper.appendChild(avatarDiv);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'chat-msg-content';
+    contentDiv.style.cssText = `background:${isMe ? 'rgba(199,36,255,0.2)' : 'rgba(255,255,255,0.1)'}; padding:8px 12px; border-radius:12px; position:relative;`;
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'chat-msg-header';
+    headerDiv.style.cssText = 'margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; gap:10px;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'chat-msg-name';
+    nameSpan.style.cssText = `color:${color}; font-size:0.75rem; font-weight:bold;`;
+    nameSpan.textContent = msg.sender_name || 'Guest';
+    nameSpan.insertAdjacentHTML('beforeend', getVerifiedIcon(msg.sender_name));
+    headerDiv.appendChild(nameSpan);
+
+    if (isMe) {
+        const menuBtn = document.createElement('button');
+        menuBtn.className = 'msg-menu-btn';
+        menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
+        menuBtn.addEventListener('click', () => window.openEditModal(msg.id, msg.text));
+        headerDiv.appendChild(menuBtn);
+    }
+    contentDiv.appendChild(headerDiv);
+
     if (msg.reply_to_text) {
-        replyHTML = `<div style="font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; margin-bottom: 5px; border-right: 2px solid var(--primary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><b>${msg.reply_to_name || 'کاربر'}:</b> ${msg.reply_to_text}</div>`;
+        const replyDiv = document.createElement('div');
+        replyDiv.style.cssText = 'font-size:0.7rem; color:var(--text-muted); background:rgba(0,0,0,0.2); padding:4px; border-radius:4px; margin-bottom:5px; border-right:2px solid var(--primary-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+        const replyName = document.createElement('b');
+        replyName.textContent = (msg.reply_to_name || 'کاربر') + ':';
+        replyDiv.appendChild(replyName);
+        replyDiv.appendChild(document.createTextNode(' ' + msg.reply_to_text));
+        contentDiv.appendChild(replyDiv);
     }
 
-    let editHTML = msg.is_edited ? ' <span style="color:var(--text-muted); font-size:0.55rem;">(ویرایش شده)</span>' : '';
+    const textDiv = document.createElement('div');
+    textDiv.className = 'chat-msg-text';
+    textDiv.style.cssText = 'font-size:0.85rem; color:#fff; white-space:pre-wrap;';
+    textDiv.textContent = msg.text;
+    contentDiv.appendChild(textDiv);
 
-    let menuBtnHTML = isMe ? `<button class="msg-menu-btn" onclick="openEditModal('${msg.id}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>` : '';
-    
-    let replyBtnHTML = !isMe ? `<button class="msg-reply-btn" onclick="openReplyModal('${msg.id}', '${msg.sender_name}', this.getAttribute('data-text'))" data-text="${msg.text.replace(/"/g, '&quot;')}">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
-    </button>` : '';
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'chat-msg-time';
+    timeDiv.style.cssText = 'font-size:0.6rem; color:var(--text-muted); direction:ltr; margin-top:5px; text-align:left;';
+    timeDiv.textContent = time + (msg.is_edited ? ' (ویرایش شده)' : '');
+    contentDiv.appendChild(timeDiv);
 
-    wrapper.innerHTML = `
-        <div class="chat-msg-avatar">
-            <img src="${avatarSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-        </div>
-        <div class="chat-msg-content" style="background: ${isMe ? 'rgba(199, 36, 255, 0.2)' : 'rgba(255,255,255,0.1)'}; padding: 8px 12px; border-radius: 12px; position: relative;">
-            <div class="chat-msg-header" style="margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <span class="chat-msg-name" style="color: ${color}; font-size: 0.75rem; font-weight: bold;"></span>
-                ${menuBtnHTML}
-            </div>
-            ${replyHTML}
-            <div class="chat-msg-text" style="font-size: 0.85rem; color: #fff; white-space: pre-wrap;">${msg.text}</div>
-            <div class="chat-msg-time" style="font-size: 0.6rem; color: var(--text-muted); direction: ltr; margin-top: 5px; text-align: left;">${time}${editHTML}</div>
-            ${replyBtnHTML}
-        </div>
-    `;
+    if (!isMe) {
+        const replyBtn = document.createElement('button');
+        replyBtn.className = 'msg-reply-btn';
+        replyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
+        replyBtn.addEventListener('click', () => window.openReplyModal(msg.id, msg.sender_name, msg.text));
+        contentDiv.appendChild(replyBtn);
+    }
 
-    wrapper.querySelector('.chat-msg-name').innerHTML = (msg.sender_name || 'Guest') + getVerifiedIcon(msg.sender_name);
-
+    wrapper.appendChild(contentDiv);
     chatMessages.appendChild(wrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -968,7 +1041,7 @@ async function sendPanelChatMessage() {
             if (wrappers.length > 0) {
                 lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
             }
-            
+
             if (lastDate !== msgDate) {
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'chat-header-date';
@@ -997,17 +1070,17 @@ window.submitReply = async function() {
     const input = document.getElementById('reply-input-text');
     const text = input.value.trim();
     if (!text || !window.currentReplyData) return;
-    
-    const msgData = { 
-        text: text, 
+
+    const msgData = {
+        text: text,
         sender_name: currentName,
         reply_to_id: window.currentReplyData.id,
         reply_to_text: window.currentReplyData.text,
         reply_to_name: window.currentReplyData.sender
     };
-    
+
     closeReplyModal();
-    
+
     if (currentChatContext === 'private' && activePrivateChat) {
         msgData.receiver_name = activePrivateChat;
         const { data } = await supabaseClient.from('private_messages').insert([msgData]).select();
@@ -1069,9 +1142,9 @@ window.submitEdit = async function() {
     const input = document.getElementById('edit-input-text');
     const text = input.value.trim();
     if (!text || !window.currentEditId) return;
-    
+
     closeEditModal();
-    
+
     if (currentChatContext === 'private' && activePrivateChat) {
         await supabaseClient.from('private_messages').update({ text: text, is_edited: true }).eq('id', window.currentEditId);
     } else {
@@ -1093,7 +1166,7 @@ window.addEventListener('load', async () => {
     renderChapters();
     checkOnlineStatus();
     initProfilesListener();
-    
+
     if (currentName && currentName !== 'Guest') {
         supabaseClient.from('profiles').update({ last_seen: null }).eq('name', currentName).then();
     }
