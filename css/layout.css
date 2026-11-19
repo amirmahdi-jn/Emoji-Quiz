@@ -492,6 +492,13 @@
     padding: 10px 20px 25px;
 }
 
+.game-stats-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
 .ttt-container {
     flex: 1;
     display: flex;
@@ -640,154 +647,4 @@
 }
 .ttt-result-title.win { color: var(--success-color); }
 .ttt-result-title.lose { color: #f87171; }
-.ttt-result-title.draw { color: var(--coin-color); }
-
-.ttt-achievements-title {
-    color: #ffffff;
-    font-size: 1rem;
-    font-weight: bold;
-    text-align: center;
-    margin: 15px 0 10px 0;
-}
-.ttt-achievement-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    direction: rtl;
-    margin: 8px 0;
-}
-.ttt-achievement-num {
-    color: #ffffff;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-.ttt-achievement-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.ttt-achievement-icon svg {
-    display: block;
-}
-
-.ttt-result-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-.ttt-result-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 15px;
-    border: none;
-    font-family: 'Vazirmatn', sans-serif;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: transform 0.1s;
-}
-.ttt-result-btn.primary {
-    background: var(--primary-color);
-    color: #fff;
-}
-.ttt-result-btn.secondary {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-}
-.ttt-result-btn:active { transform: scale(0.95); }
-
-.game-stats-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 15px;
-}
-
-@media (max-width: 430px) {
-    .top-bar { gap: 6px; }
-    .profile-bar {
-        min-width: 95px;
-        max-width: 145px;
-        padding: 5px 5px 5px 10px;
-        gap: 6px;
-        height: 46px;
-    }
-    .profile-avatar {
-        width: 36px;
-        height: 36px;
-    }
-    .profile-name {
-        font-size: 11px;
-        max-width: 90px;
-    }
-    .main-stat-pill {
-        height: 38px;
-        padding: 0 8px;
-        gap: 3px;
-        min-width: 44px;
-        max-width: 58px;
-        font-size: 0.7rem;
-        border-radius: 19px;
-    }
-    .main-coin-icon, .main-trophy-icon, .main-diamond-icon {
-        width: 11px;
-        height: 11px;
-    }
-    .panel-btn {
-        width: 46px;
-        height: 46px;
-    }
-    .panel-btn svg {
-        width: 22px;
-        height: 22px;
-    }
-}
-
-@media (max-width: 380px) {
-    .top-bar { gap: 4px; }
-    .profile-bar {
-        min-width: 82px;
-        max-width: 120px;
-        padding: 4px 4px 4px 8px;
-        gap: 5px;
-        height: 42px;
-    }
-    .profile-avatar {
-        width: 32px;
-        height: 32px;
-    }
-    .profile-name {
-        font-size: 10px;
-        max-width: 78px;
-    }
-    .main-stat-pill {
-        height: 34px;
-        padding: 0 6px;
-        gap: 2px;
-        min-width: 40px;
-        max-width: 50px;
-        font-size: 0.65rem;
-        border-radius: 17px;
-    }
-    .main-coin-icon, .main-trophy-icon, .main-diamond-icon {
-        width: 10px;
-        height: 10px;
-    }
-    .panel-btn {
-        width: 42px;
-        height: 42px;
-    }
-    .panel-btn svg {
-        width: 20px;
-        height: 20px;
-    }
-    .online-game-icon { width: 78px; height: 78px; }
-    .online-game-item > span { font-size: 0.72rem; }
-    .online-games-grid { gap: 18px; padding: 30px 15px; }
-    .online-game-cost { font-size: 0.65rem; }
-    .online-game-cost .cost-coin-icon { width: 12px; height: 12px; }
-    .ttt-cell { font-size: 2.5rem; }
-    .ttt-player-avatar { width: 38px; height: 38px; }
-}
+.ttt-result-title.draw {
