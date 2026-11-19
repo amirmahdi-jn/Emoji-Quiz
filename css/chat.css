@@ -289,5 +289,5 @@
     justify-content: center;
     transition: 0.2s;
 }
-.trash-btn svg { width: 20px; height: 20px; stroke: #ef4444; }
+.trash-btn svg { width: 20px; height: 20px; stroke: #ffffff; }
 .trash-btn:active { transform: scale(0.9); }
