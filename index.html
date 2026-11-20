@@ -710,12 +710,18 @@
         </div>
     </div>
 
-    <div id="guest-restriction-modal" class="modal">
+    <div id="guest-restriction-modal" class="modal" style="z-index: 999999;">
         <div class="modal-content" style="text-align: center; direction: rtl;">
-            <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px; font-size: 1.5rem; font-weight: 900;">توجه</h2>
-            <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem; text-align: center;">کاربر گرامی!</p>
-            <p id="guest-restriction-text" style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem; white-space: nowrap; text-align: center;">برای ورود به این بخش، ابتدا باید نام بگذارید.</p>
-            <button class="btn-primary" style="margin-top: 15px;" onclick="closeGuestModal()">باشه</button>
+            <div style="display: flex; justify-content: center; align-items: center; width: 80px; height: 80px; margin: 0 auto 15px; background: rgba(245, 158, 11, 0.15); border-radius: 50%; border: 2px solid rgba(245, 158, 11, 0.4);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h2 style="color: #ffffff; text-align: center; margin-bottom: 15px; font-size: 1.4rem; font-weight: 900;">توجه</h2>
+            <p style="color: var(--text-muted); margin-bottom: 22px; font-size: 0.95rem; text-align: center; line-height: 1.8;">لطفا ابتدا از بخش تنظیمات ثبت نام کنید.</p>
+            <button class="btn-primary" style="margin-top: 0;" onclick="closeGuestModal()">باشه</button>
         </div>
     </div>
 
