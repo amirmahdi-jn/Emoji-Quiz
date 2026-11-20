@@ -103,7 +103,7 @@ function openModal(modalId) {
         if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
         const badge = document.getElementById('profileAccountBadge');
         if (badge) {
-            if (window.currentUserIsAnonymous) {
+            if (window.currentUserIsAnonymous !== false) {
                 badge.innerHTML = `<span style="color:#fb923c;">● حساب مهمان</span> <span style="color:var(--text-muted);font-size:0.72rem;">(برای ذخیره دائمی وارد بخش حساب شوید)</span>`;
             } else {
                 badge.innerHTML = `<span style="color:#22c55e;">● حساب ثبت‌شده</span>`;
@@ -121,6 +121,10 @@ function closeModal() {
 }
 
 function triggerAvatarUpload() {
+    if (window.currentUserIsAnonymous !== false) {
+        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
+        return;
+    }
     if (isUploadingAvatar) return;
     document.getElementById('avatar-upload').click();
 }
@@ -166,12 +170,14 @@ async function handleAvatarUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-        showGuestModal('برای تغییر پروفایل، ابتدا باید نام بگذارید.');
+    if (window.currentUserIsAnonymous !== false) {
+        event.target.value = '';
+        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
         return;
     }
 
     if (currentDiamonds < 10) {
+        event.target.value = '';
         const ndModal = document.getElementById('no-diamond-modal');
         if (ndModal) ndModal.classList.add('active');
         return;
@@ -218,6 +224,10 @@ async function handleAvatarUpload(event) {
 }
 
 function openNameModal() {
+    if (window.currentUserIsAnonymous !== false) {
+        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
+        return;
+    }
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
