@@ -33,6 +33,8 @@ async function updatePrivateBadges() {
 }
 
 function switchPrivateTab(tab) {
+    if (isUserGuest()) { showGuestModal(); return; }
+
     document.getElementById('tab-btn-friends').classList.toggle('active', tab === 'friends');
     document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
     document.getElementById('tab-btn-requests').classList.toggle('active', tab === 'requests');
@@ -103,9 +105,8 @@ function listenForPrivateEvents() {
 }
 
 async function searchUserForChat() {
-    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
-    if (isGuest) {
-        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+    if (isUserGuest()) {
+        showGuestModal();
         return;
     }
 
@@ -354,6 +355,8 @@ async function rejectRequest(reqId) {
 }
 
 async function openPrivateChat(user, avatarSrc) {
+    if (isUserGuest()) { showGuestModal(); return; }
+
     activePrivateChat = user;
     currentChatContext = 'private';
 
@@ -598,6 +601,11 @@ function appendPrivateMessageUI(msg) {
 }
 
 async function sendPrivateMessage() {
+    if (isUserGuest()) {
+        showGuestModal();
+        return;
+    }
+
     const input = document.getElementById('private-chat-input');
     const text = input.value.trim();
     if (!text || !activePrivateChat) return;
