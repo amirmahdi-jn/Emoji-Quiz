@@ -180,6 +180,7 @@
 .settings-info-btn:active { background: rgba(255, 255, 255, 0.1); }
 .settings-info-btn .right-side { display: flex; align-items: center; gap: 10px; }
 .settings-info-btn .info-icon { stroke: #f44336; width: 22px; height: 22px; }
+.settings-info-btn:nth-child(3) .info-icon { stroke: #22c55e; }
 .settings-info-btn .arrow-svg { width: 18px; height: 18px; opacity: 0.7; stroke: var(--text-color); }
 
 .info-list { display: flex; flex-direction: column; width: 100%; gap: 12px; margin-bottom: 10px; }
@@ -467,8 +468,8 @@
     font-family: 'Vazirmatn', sans-serif;
     outline: none;
     box-sizing: border-box;
-    direction: ltr;
-    text-align: left;
+    direction: rtl;
+    text-align: right;
 }
 .account-input:focus {
     border-color: var(--primary-color);
