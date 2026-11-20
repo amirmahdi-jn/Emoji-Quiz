@@ -1,48 +1,7 @@
-const DEVICE_KEY = 'emojiQuizDeviceId_v8';
-
-function setCookie(name, value, days) {
-    const d = new Date();
-    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/;SameSite=Lax";
-}
-
-function getCookie(name) {
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-}
-
-function getHardwareId() {
-    const screenInfo = `${window.screen.width}x${window.screen.height}x${window.screen.colorDepth}`;
-    const navInfo = `${navigator.hardwareConcurrency || 0}-${navigator.userAgent.length}-${window.devicePixelRatio || 1}`;
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    let hash = 0;
-    const str = screenInfo + navInfo + tz;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return 'hw_' + Math.abs(hash).toString(36);
-}
-
-function getDeviceId() {
-    let id = getCookie(DEVICE_KEY);
-    if (id) return id;
-    id = getHardwareId() + '_' + Math.random().toString(36).substr(2, 5);
-    setCookie(DEVICE_KEY, id, 365);
-    return id;
-}
-
 function syncToDatabase() {
     const solvedArray = Object.keys(solvedLevels).map(k => parseInt(k));
     supabaseClient.from('profiles').upsert({
-        device_id: getDeviceId(),
+        user_id: window.currentUserId,
         name: currentName,
         custom_avatar_url: currentCustomAvatarUrl,
         coins: currentCoins,
@@ -54,7 +13,7 @@ function syncToDatabase() {
         last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
         last_challenge_date: lastChallengeDate,
         challenge_correct: challengeCorrect
-    }, { onConflict: 'device_id' }).then(() => {
+    }, { onConflict: 'user_id' }).then(() => {
         updateAllStatsUI();
     });
 }
@@ -74,14 +33,14 @@ let myStatsSubscription = null;
 
 function subscribeToMyProfileStats() {
     if (myStatsSubscription) supabaseClient.removeChannel(myStatsSubscription);
-    const deviceId = getDeviceId();
+    if (!window.currentUserId) return;
     myStatsSubscription = supabaseClient
-        .channel('my_profile_stats_' + deviceId)
+        .channel('my_profile_stats_' + window.currentUserId)
         .on('postgres_changes', {
             event: 'UPDATE',
             schema: 'public',
             table: 'profiles',
-            filter: `device_id=eq.${deviceId}`
+            filter: `user_id=eq.${window.currentUserId}`
         }, (payload) => {
             const p = payload.new;
             if (typeof p.coins === 'number') currentCoins = p.coins;
@@ -93,16 +52,39 @@ function subscribeToMyProfileStats() {
 }
 
 async function loadProfile() {
-    const deviceId = getDeviceId();
-    let dbProfile = null;
+    let user = null;
+    try {
+        const { data } = await supabaseClient.auth.getUser();
+        user = data.user;
+    } catch (e) {
+        document.getElementById('offline-overlay').classList.add('active');
+        return;
+    }
 
+    if (!user) {
+        try {
+            const { data } = await supabaseClient.auth.signInAnonymously();
+            user = data.user;
+        } catch (e) {
+            document.getElementById('offline-overlay').classList.add('active');
+            return;
+        }
+    }
+
+    if (!user) {
+        document.getElementById('offline-overlay').classList.add('active');
+        return;
+    }
+
+    window.currentUserId = user.id;
+
+    let dbProfile = null;
     try {
         const { data, error } = await supabaseClient
             .from('profiles')
             .select('*')
-            .eq('device_id', deviceId)
+            .eq('user_id', user.id)
             .maybeSingle();
-
         if (error) {
             document.getElementById('offline-overlay').classList.add('active');
             return;
@@ -153,8 +135,8 @@ async function loadProfile() {
 
     try {
         await supabaseClient.from('profiles').insert({
+            user_id: user.id,
             name: currentName,
-            device_id: deviceId,
             custom_avatar_url: null,
             solved_levels: 0,
             coins: currentCoins,
@@ -175,11 +157,8 @@ function updateProfileUI() {
     const nameEl = document.getElementById('profileNameDisplay');
     const avatarEl = document.getElementById('headerAvatar');
     const previewEl = document.getElementById('profilePreview');
-
     if (nameEl) nameEl.innerText = currentName;
-
     let avatarSrc = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
-
     if (avatarEl) avatarEl.src = avatarSrc;
     if (previewEl) previewEl.src = avatarSrc;
 }
