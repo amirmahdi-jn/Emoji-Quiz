@@ -55,7 +55,7 @@ function checkTTTGameEnd() {
         }
     } else if (iWon) {
         titleHTML = isLeftResult ? 'حریف بازی رو ترک کرد. 😅' : 'بردی! 😃';
-        titleColor = '#22c55e';
+        titleColor = isLeftResult ? '#fcd34d' : '#22c55e';
         bodyHTML = `
             <div class="ttt-achievement-row">
                 <span class="ttt-achievement-num">+10</span>
@@ -81,15 +81,10 @@ function checkTTTGameEnd() {
                 <span class="ttt-achievement-num">-5</span>
                 <span class="ttt-achievement-icon">${TTT_TROPHY_ICON}</span>
             </div>
-            <div class="ttt-achievement-row">
-                <span class="ttt-achievement-num">-25</span>
-                <span class="ttt-achievement-icon">${TTT_COIN_ICON}</span>
-            </div>
         `;
         if (!tttRewarded) {
             tttRewarded = true;
             currentTrophies = Math.max(0, currentTrophies - 5);
-            currentCoins = Math.max(0, currentCoins - 25);
             updateAllStatsUI();
             syncToDatabase();
         }
@@ -164,7 +159,6 @@ async function confirmLeaveGameYes() {
         await supabaseClient.from('ttt_games').update(updateData).eq('id', tttGame.id);
         tttRewarded = true;
         currentTrophies = Math.max(0, currentTrophies - 5);
-        currentCoins = Math.max(0, currentCoins - 25);
         updateAllStatsUI();
         syncToDatabase();
     }
