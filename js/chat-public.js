@@ -187,9 +187,8 @@ function appendPanelChatMessage(msg, avatarUrl) {
 }
 
 async function sendPanelChatMessage() {
-    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
-    if (isGuest) {
-        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+    if (isUserGuest()) {
+        showGuestModal();
         return;
     }
 
