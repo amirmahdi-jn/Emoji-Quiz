@@ -54,7 +54,7 @@ function checkTTTGameEnd() {
             syncToDatabase();
         }
     } else if (iWon) {
-        titleHTML = iLeft ? 'حریف رفت، بردی! 🎉' : 'بردی! 😃';
+        titleHTML = isLeftResult ? 'حریف بازی رو ترک کرد. 😅' : 'بردی! 😃';
         titleColor = '#22c55e';
         bodyHTML = `
             <div class="ttt-achievement-row">
