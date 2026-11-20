@@ -79,7 +79,6 @@ async function startTTTMatchmaking() {
             if (data) {
                 tttGame = data;
                 subscribeToTTTGame(data.id);
-                updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
                 tttSearching = false;
                 if (!tttEnteringGame) {
                     tttEnteringGame = true;
@@ -126,11 +125,10 @@ async function startTTTMatchmaking() {
                 tttSearching = false;
                 if (!tttEnteringGame && document.getElementById('online-search-screen').classList.contains('active')) {
                     tttEnteringGame = true;
-                    updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
                     enterTTTGame();
                 }
             }
-        }, 2000);
+        }, 500);
     } catch (e) {
         tttSearching = false;
         tttRefundEntry();
@@ -159,7 +157,7 @@ function openOnlineGame(gameType) {
     }
     const nameEl = document.getElementById('search-game-name');
     if (nameEl) nameEl.innerText = 'دوز';
-    updateSearchText('منتظر پیوستن حریف...');
+    updateSearchText('منتظر پیوستن حریف ⏳️');
     showScreen('online-search-screen');
     startTTTMatchmaking();
 }
