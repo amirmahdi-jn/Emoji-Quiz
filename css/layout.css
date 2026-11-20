@@ -574,7 +574,7 @@
     50% { opacity: 0; }
 }
 .ttt-timer.urgent {
-    color: #ef4444;
+    color: #f472b6;
     animation: blink 0.5s infinite;
 }
 
