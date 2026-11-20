@@ -77,6 +77,7 @@ async function loadProfile() {
     }
 
     window.currentUserId = user.id;
+    window.currentUserIsAnonymous = user.is_anonymous;
 
     let dbProfile = null;
     try {
