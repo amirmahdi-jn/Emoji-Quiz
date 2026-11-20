@@ -101,6 +101,14 @@ function openModal(modalId) {
     if (modalId === 'profile-modal') {
         const previewEl = document.getElementById('profilePreview');
         if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
+        const badge = document.getElementById('profileAccountBadge');
+        if (badge) {
+            if (window.currentUserIsAnonymous) {
+                badge.innerHTML = `<span style="color:#fb923c;">● حساب مهمان</span> <span style="color:var(--text-muted);font-size:0.72rem;">(برای ذخیره دائمی وارد بخش حساب شوید)</span>`;
+            } else {
+                badge.innerHTML = `<span style="color:#22c55e;">● حساب ثبت‌شده</span>`;
+            }
+        }
     }
 }
 
@@ -178,12 +186,12 @@ async function handleAvatarUpload(event) {
 
     try {
         const compressedBlob = await compressImage(file, 500, 500);
-        const fileName = `avatar_${getDeviceId()}.jpg`;
+        const fileName = `avatar_${window.currentUserId}.jpg`;
 
         const localUrl = URL.createObjectURL(compressedBlob);
         if (previewEl) previewEl.src = localUrl;
 
-        const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
+        const { error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
 
         if (error) {
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
@@ -243,16 +251,14 @@ async function saveName() {
         return;
     }
 
-    const deviceId = getDeviceId();
-
     try {
         const { data: existingName } = await supabaseClient
             .from('profiles')
-            .select('name, device_id')
+            .select('name, user_id')
             .ilike('name', raw)
             .limit(1);
 
-        if (existingName && existingName.length > 0 && existingName[0].device_id !== deviceId) {
+        if (existingName && existingName.length > 0 && existingName[0].user_id !== window.currentUserId) {
             document.getElementById('duplicate-alert-modal').classList.add('active');
             return;
         }
@@ -272,7 +278,7 @@ async function saveName() {
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
             })
-            .eq('device_id', deviceId);
+            .eq('user_id', window.currentUserId);
 
         if (error) {
             currentName = oldName;
@@ -288,22 +294,12 @@ async function saveName() {
         closeGuestModal();
         syncToDatabase();
 
-        if (oldName && oldName !== raw) {
-            await supabaseClient.from('messages')
-                .update({ sender_name: currentName })
-                .eq('sender_name', oldName);
-            await supabaseClient.from('private_messages')
-                .update({ sender_name: currentName })
-                .eq('sender_name', oldName);
-            await supabaseClient.from('private_messages')
-                .update({ receiver_name: currentName })
-                .eq('receiver_name', oldName);
-            await supabaseClient.from('friend_requests')
-                .update({ sender_name: currentName })
-                .eq('sender_name', oldName);
-            await supabaseClient.from('friend_requests')
-                .update({ receiver_name: currentName })
-                .eq('receiver_name', oldName);
+        if (oldName && oldName !== raw && oldName !== 'Guest') {
+            await supabaseClient.from('messages').update({ sender_name: currentName }).eq('sender_name', oldName);
+            await supabaseClient.from('private_messages').update({ sender_name: currentName }).eq('sender_name', oldName);
+            await supabaseClient.from('private_messages').update({ receiver_name: currentName }).eq('receiver_name', oldName);
+            await supabaseClient.from('friend_requests').update({ sender_name: currentName }).eq('sender_name', oldName);
+            await supabaseClient.from('friend_requests').update({ receiver_name: currentName }).eq('receiver_name', oldName);
         }
 
         if (currentPanelTab === 'top-players') {
