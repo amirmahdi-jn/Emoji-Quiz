@@ -18,7 +18,6 @@ function subscribeToTTTGame(gameId) {
                 clearTTTSearchInterval();
                 tttSearching = false;
                 tttEnteringGame = true;
-                updateSearchText('حریف پیدا شد. در حال ورود به بازی...');
                 enterTTTGame();
             } else if (gameActive) {
                 tttMovePending = false;
@@ -59,10 +58,15 @@ function enterTTTGame() {
     tttMovePending = false;
     resetTTTTimer();
     if (tttGame && tttGame.status === 'playing') startTTTTimer();
+    
     fetchTTTPlayerProfiles().then(() => {
         if (tttGame) renderTTTGame();
-        checkTTTGameEnd();
     });
+    
+    if (tttGame) {
+        renderTTTGame();
+        checkTTTGameEnd();
+    }
 }
 
 function renderTTTGame() {
