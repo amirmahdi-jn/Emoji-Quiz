@@ -181,6 +181,7 @@
 .settings-info-btn .right-side { display: flex; align-items: center; gap: 10px; }
 .settings-info-btn .info-icon { stroke: #f44336; width: 22px; height: 22px; }
 .settings-info-btn .arrow-svg { width: 18px; height: 18px; opacity: 0.7; stroke: var(--text-color); }
+
 .info-list { display: flex; flex-direction: column; width: 100%; gap: 12px; margin-bottom: 10px; }
 .info-row {
     display: flex;
@@ -428,4 +429,47 @@
 #alert-modal.active,
 #duplicate-alert-modal.active {
     display: flex;
+}
+
+.account-tabs {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+.account-tab {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Vazirmatn', sans-serif;
+    cursor: pointer;
+    font-weight: bold;
+}
+.account-tab.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+.account-form {
+    width: 100%;
+}
+.account-input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-family: 'Vazirmatn', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    direction: ltr;
+    text-align: left;
+}
+.account-input:focus {
+    border-color: var(--primary-color);
 }
