@@ -372,7 +372,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                 </div>
-                <button class="btn-primary" onclick="handleRegister()">ثبت نام</button>
+                <button class="btn-primary" id="register-submit-btn" onclick="handleRegister()">ثبت نام</button>
             </div>
             <div id="account-login-form" class="account-form" style="display:none;">
                 <div class="account-input-wrapper">
@@ -384,7 +384,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                 </div>
-                <button class="btn-primary" onclick="handleLogin()">ورود</button>
+                <button class="btn-primary" id="login-submit-btn" onclick="handleLogin()">ورود</button>
             </div>
             <button class="close-btn" onclick="closeModal()">بستن</button>
         </div>
@@ -698,6 +698,15 @@
             <p style="color: var(--text-color); margin-bottom: 5px; font-size: 0.95rem;">این نام قبلاً استفاده شده است.</p>
             <p style="color: var(--text-color); margin-bottom: 15px; font-size: 0.95rem;">لطفا یک نام جدید وارد کنید.</p>
             <button class="btn-primary" style="margin-top: 15px;" onclick="closeSimpleModal('duplicate-alert-modal')">باشه</button>
+        </div>
+    </div>
+
+    <div id="auth-message-modal" class="modal" style="z-index: 9999999;">
+        <div class="modal-content" style="text-align: center; direction: rtl;">
+            <div id="auth-message-icon" style="font-size: 3rem; line-height: 1; margin-bottom: 12px;"></div>
+            <h2 id="auth-message-title" style="text-align: center; margin-bottom: 15px; font-size: 1.3rem; font-weight: 900;"></h2>
+            <p id="auth-message-text" style="color: var(--text-color); margin-bottom: 20px; font-size: 0.85rem; line-height: 1.7;"></p>
+            <button class="btn-primary" style="margin-top: 5px;" onclick="closeAuthMessage()">باشه</button>
         </div>
     </div>
 
