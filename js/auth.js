@@ -15,8 +15,30 @@ function togglePasswordVisibility(inputId, btn) {
 
 function switchAccountTab(tab) {
     document.querySelectorAll('.account-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    document.getElementById('account-register-form').style.display = tab === 'register' ? 'block' : 'none';
-    document.getElementById('account-login-form').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('account-register-form').style.display = tab === 'register' ? 'flex' : 'none';
+    document.getElementById('account-login-form').style.display = tab === 'login' ? 'flex' : 'none';
+}
+
+function showAuthMessage(type, title, text) {
+    const modal = document.getElementById('auth-message-modal');
+    if (!modal) return;
+    const iconEl = document.getElementById('auth-message-icon');
+    const titleEl = document.getElementById('auth-message-title');
+    const textEl = document.getElementById('auth-message-text');
+    if (iconEl) {
+        iconEl.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+    }
+    if (titleEl) {
+        titleEl.textContent = title;
+        titleEl.style.color = type === 'success' ? '#22c55e' : type === 'error' ? '#f87171' : '#ffffff';
+    }
+    if (textEl) textEl.textContent = text;
+    modal.classList.add('active');
+}
+
+function closeAuthMessage() {
+    const modal = document.getElementById('auth-message-modal');
+    if (modal) modal.classList.remove('active');
 }
 
 async function getCurrentUser() {
@@ -25,53 +47,97 @@ async function getCurrentUser() {
 }
 
 async function handleRegister() {
-    const username = document.getElementById('reg-username').value.trim();
-    const password = document.getElementById('reg-password').value;
+    const usernameEl = document.getElementById('reg-username');
+    const passwordEl = document.getElementById('reg-password');
+    const btn = document.getElementById('register-submit-btn');
 
-    if (!username || !password) { alert('لطفاً همه فیلدها را پر کنید.'); return; }
-    if (!/^[a-zA-Z0-9]{3,10}$/.test(username)) { alert('نام کاربری باید ۳ تا ۱۰ کاراکتر انگلیسی باشد.'); return; }
-    if (password.length < 7) { alert('رمز عبور باید حداقل ۷ کاراکتر باشد.'); return; }
-    if (!/^[A-Za-z0-9_.]+$/.test(password)) { alert('رمز فقط می‌تواند شامل حروف، اعداد، _ و . باشد.'); return; }
-    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) { alert('رمز باید ترکیبی از حروف بزرگ، کوچک و اعداد باشد.'); return; }
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!username || !password) { showAuthMessage('error', 'خطا', 'لطفاً همه فیلدها را پر کنید.'); return; }
+    if (!/^[a-zA-Z0-9]{3,10}$/.test(username)) { showAuthMessage('error', 'خطا', 'نام کاربری باید ۳ تا ۱۰ کاراکتر انگلیسی باشد.'); return; }
+    if (password.length < 7) { showAuthMessage('error', 'خطا', 'رمز عبور باید حداقل ۷ کاراکتر باشد.'); return; }
+    if (!/^[A-Za-z0-9_.]+$/.test(password)) { showAuthMessage('error', 'خطا', 'رمز فقط می‌تواند شامل حروف، اعداد، _ و . باشد.'); return; }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) { showAuthMessage('error', 'خطا', 'رمز باید ترکیبی از حروف بزرگ، کوچک و اعداد باشد.'); return; }
+
+    const originalText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'در حال ثبت نام...'; }
 
     try {
-        let user = await getCurrentUser();
-        if (!user) {
+        let userId = window.currentUserId;
+        let isAnon = window.currentUserIsAnonymous;
+
+        if (!userId) {
             const { data } = await supabaseClient.auth.signInAnonymously();
-            user = data.user;
+            if (!data.user) throw new Error('اتصال برقرار نشد.');
+            userId = data.user.id;
+            isAnon = true;
+            window.currentUserId = userId;
+            window.currentUserIsAnonymous = true;
         }
-        if (!user) throw new Error('اتصال برقرار نشد.');
-        if (!user.is_anonymous) { alert('شما قبلاً ثبت‌نام کرده‌اید.'); return; }
+
+        if (isAnon === false) {
+            showAuthMessage('error', 'خطا', 'شما قبلاً ثبت‌نام کرده‌اید.');
+            return;
+        }
 
         const email = username + '@game.local';
-        const { error } = await supabaseClient.auth.updateUser({ email, password });
-        if (error) throw error;
+        const { error: authError } = await supabaseClient.auth.updateUser({ email, password });
+        if (authError) throw authError;
 
-        await supabaseClient.from('profiles').update({ name: username }).eq('user_id', user.id);
+        const { error: profileError } = await supabaseClient.from('profiles').update({ name: username }).eq('user_id', userId);
+        if (profileError) throw new Error('خطا در ذخیره نام کاربری');
 
-        alert('ثبت نام با موفقیت انجام شد!');
+        currentName = username;
+        window.currentUserIsAnonymous = false;
+        updateProfileUI();
+
+        const badge = document.getElementById('profileAccountBadge');
+        if (badge) badge.innerHTML = `<span style="color:#22c55e;">● حساب ثبت‌شده</span>`;
+
+        usernameEl.value = '';
+        passwordEl.value = '';
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+
         closeModal();
-        location.reload();
+        showAuthMessage('success', 'ثبت نام موفق', 'حساب شما با موفقیت ایجاد شد.');
     } catch (e) {
-        alert('خطا در ثبت نام: ' + (e.message || 'مشکل نامشخص'));
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        showAuthMessage('error', 'خطا در ثبت نام', e.message || 'مشکل نامشخص');
     }
 }
 
 async function handleLogin() {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
+    const usernameEl = document.getElementById('login-username');
+    const passwordEl = document.getElementById('login-password');
+    const btn = document.getElementById('login-submit-btn');
 
-    if (!username || !password) { alert('لطفاً همه فیلدها را پر کنید.'); return; }
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!username || !password) { showAuthMessage('error', 'خطا', 'لطفاً همه فیلدها را پر کنید.'); return; }
+
+    const originalText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'در حال ورود...'; }
 
     try {
         const email = username + '@game.local';
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        alert('ورود موفق!');
+        await loadProfile();
+        updateProfileUI();
+        updateCoinsUI();
+        renderChapters();
+
+        usernameEl.value = '';
+        passwordEl.value = '';
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+
         closeModal();
-        location.reload();
+        showAuthMessage('success', 'ورود موفق', 'خوش آمدید!');
     } catch (e) {
-        alert('نام کاربری یا رمز عبور اشتباه است.');
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        showAuthMessage('error', 'خطا در ورود', 'نام کاربری یا رمز عبور اشتباه است.');
     }
 }
