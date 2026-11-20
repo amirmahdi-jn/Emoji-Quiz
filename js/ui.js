@@ -5,30 +5,59 @@ let isUploadingAvatar = false;
 let panelRefreshTimer = null;
 let lastPanelRefreshTime = 0;
 
-function showGuestModal(text) {
-    const textEl = document.getElementById('guest-restriction-text');
-    if (textEl) textEl.innerText = text;
+function isUserGuest() {
+    return window.currentUserIsAnonymous !== false;
+}
+
+function showGuestModal() {
     const activeScreen = document.querySelector('.screen.active');
     if (activeScreen) activeScreen.classList.add('blurred');
-    document.getElementById('guest-restriction-modal').classList.add('active');
+    const modal = document.getElementById('guest-restriction-modal');
+    if (modal) modal.classList.add('active');
 }
 
 function closeGuestModal() {
     const activeScreen = document.querySelector('.screen.active');
     if (activeScreen) activeScreen.classList.remove('blurred');
-    document.getElementById('guest-restriction-modal').classList.remove('active');
+    const modal = document.getElementById('guest-restriction-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function requireRegistration() {
+    if (isUserGuest()) {
+        showGuestModal();
+        return false;
+    }
+    return true;
 }
 
 function startSinglePlayerMode() {
+    if (!requireRegistration()) return;
     renderChapters();
     showScreen('chapters-screen');
 }
 
 function startTwoPlayerMode() {
+    if (!requireRegistration()) return;
     showScreen('two-player-screen');
 }
 
 function showScreen(screenId) {
+    const restrictedScreens = [
+        'chapters-screen',
+        'levels-screen',
+        'game-screen',
+        'two-player-screen',
+        'online-search-screen',
+        'online-game-screen',
+        'panel-screen'
+    ];
+
+    if (restrictedScreens.includes(screenId) && isUserGuest()) {
+        showGuestModal();
+        return;
+    }
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
@@ -47,46 +76,34 @@ function showScreen(screenId) {
         }
     }
 
-    if (screenId !== 'panel-screen') {
-        firstPanelEntry = true;
-        closeGuestModal();
-    }
-
+    if (screenId !== 'panel-screen') firstPanelEntry = true;
     if (screenId === 'chapters-screen') renderChapters();
     if (screenId === 'levels-screen') renderLevels();
     if (screenId === 'panel-screen') switchPanelTab('top-players');
 }
 
 function switchPanelTab(tabId) {
-    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
+    if (isUserGuest()) { showGuestModal(); return; }
     currentPanelTab = tabId;
     document.querySelectorAll('.panel-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
     });
     renderPanelContent(tabId);
     updateAllStatsUI();
-
-    if (isGuest) {
-        const text = tabId === 'top-players' ? 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.' : 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
-
-        if (firstPanelEntry) {
-            firstPanelEntry = false;
-            if (tabId === 'top-players') {
-                setTimeout(() => {
-                    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-                        showGuestModal(text);
-                    }
-                }, 3000);
-            } else {
-                showGuestModal(text);
-            }
-        } else {
-            showGuestModal(text);
-        }
-    }
 }
 
 function openModal(modalId) {
+    const restrictedModals = [
+        'shop-modal', 'buy-coin-modal', 'buy-diamond-modal', 'payment-modal',
+        'challenge-modal', 'gift-modal', 'gift-result-modal', 'attention-modal',
+        'guide-modal', 'profile-modal'
+    ];
+
+    if (restrictedModals.includes(modalId) && isUserGuest()) {
+        showGuestModal();
+        return;
+    }
+
     const overlay = document.getElementById('modal-overlay');
     if (!overlay) return;
     document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
@@ -102,13 +119,7 @@ function openModal(modalId) {
         const previewEl = document.getElementById('profilePreview');
         if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
         const badge = document.getElementById('profileAccountBadge');
-        if (badge) {
-            if (window.currentUserIsAnonymous !== false) {
-                badge.innerHTML = `<span style="color:#fb923c;">● حساب مهمان</span> <span style="color:var(--text-muted);font-size:0.72rem;">(برای ذخیره دائمی وارد بخش حساب شوید)</span>`;
-            } else {
-                badge.innerHTML = `<span style="color:#22c55e;">● حساب ثبت‌شده</span>`;
-            }
-        }
+        if (badge) badge.innerHTML = `<span style="color:#22c55e;">● حساب ثبت‌شده</span>`;
     }
 }
 
@@ -121,10 +132,7 @@ function closeModal() {
 }
 
 function triggerAvatarUpload() {
-    if (window.currentUserIsAnonymous !== false) {
-        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
-        return;
-    }
+    if (!requireRegistration()) return;
     if (isUploadingAvatar) return;
     document.getElementById('avatar-upload').click();
 }
@@ -170,9 +178,8 @@ async function handleAvatarUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (window.currentUserIsAnonymous !== false) {
+    if (!requireRegistration()) {
         event.target.value = '';
-        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
         return;
     }
 
@@ -224,10 +231,7 @@ async function handleAvatarUpload(event) {
 }
 
 function openNameModal() {
-    if (window.currentUserIsAnonymous !== false) {
-        showAuthMessage('info', 'توجه', 'لطفا ابتدا از بخش تنظیمات ثبت نام کنید.');
-        return;
-    }
+    if (!requireRegistration()) return;
     const overlay = document.getElementById('name-modal-overlay');
     const input = document.getElementById('nameInput');
     if (!overlay || !input) return;
@@ -301,7 +305,6 @@ async function saveName() {
         updateProfileUI();
         updateCoinsUI();
         closeNameModal();
-        closeGuestModal();
         syncToDatabase();
 
         if (oldName && oldName !== raw && oldName !== 'Guest') {
