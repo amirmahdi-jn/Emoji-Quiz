@@ -57,7 +57,7 @@ function syncToDatabase() {
     }, { onConflict: 'device_id' }).then(({ error }) => {
         if (error) {
             console.error("Sync Error:", error);
-            alert("خطا در ذخیره اطلاعات در دیتابیس!\n" + error.message);
+            showCustomAlert('خطا', 'خطا در ذخیره اطلاعات در دیتابیس! لطفا اینترنت خود را بررسی کنید.', 'error');
         }
         updateAllStatsUI();
     });
@@ -109,7 +109,7 @@ async function loadProfile() {
 
         if (error) {
             console.error("Load Profile Error:", error);
-            alert("خطا در دریافت پروفایل!\n" + error.message);
+            showCustomAlert('خطا', 'خطا در دریافت پروفایل! لطفا صفحه را رفرش کنید.', 'error');
             document.getElementById('offline-overlay').classList.add('active');
             return;
         }
@@ -169,7 +169,7 @@ async function loadProfile() {
 
     if (insertError) {
         console.error("Insert Profile Error:", insertError);
-        alert("خطا در ساخت اکانت جدید!\n" + insertError.message + "\n\nلطفا مطمئن شوید جدول profiles ساخته شده است.");
+        showCustomAlert('خطا در ساخت اکانت', 'خطا در ساخت اکانت جدید! لطفا با پشتیبانی تماس بگیرید.', 'error');
         document.getElementById('offline-overlay').classList.add('active');
         return;
     }
