@@ -5,18 +5,16 @@ let isUploadingAvatar = false;
 let panelRefreshTimer = null;
 let lastPanelRefreshTime = 0;
 
-function showGuestModal(text) {
-    const textEl = document.getElementById('guest-restriction-text');
-    if (textEl) textEl.innerText = text;
+function showGuestModal() {
     const activeScreen = document.querySelector('.screen.active');
     if (activeScreen) activeScreen.classList.add('blurred');
-    document.getElementById('guest-restriction-modal').classList.add('active');
+    document.getElementById('guest-attention-modal').classList.add('active');
 }
 
 function closeGuestModal() {
     const activeScreen = document.querySelector('.screen.active');
     if (activeScreen) activeScreen.classList.remove('blurred');
-    document.getElementById('guest-restriction-modal').classList.remove('active');
+    document.getElementById('guest-attention-modal').classList.remove('active');
 }
 
 function startSinglePlayerMode() {
@@ -67,21 +65,15 @@ function switchPanelTab(tabId) {
     updateAllStatsUI();
 
     if (isGuest) {
-        const text = tabId === 'top-players' ? 'برای ورود به جمع برترین‌ها ابتدا باید نام بگذارید.' : 'برای ورود به این بخش، ابتدا باید نام بگذارید.';
-
-        if (firstPanelEntry) {
+        if (firstPanelEntry && tabId === 'top-players') {
             firstPanelEntry = false;
-            if (tabId === 'top-players') {
-                setTimeout(() => {
-                    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-                        showGuestModal(text);
-                    }
-                }, 3000);
-            } else {
-                showGuestModal(text);
-            }
+            setTimeout(() => {
+                if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
+                    showGuestModal();
+                }
+            }, 3000);
         } else {
-            showGuestModal(text);
+            showGuestModal();
         }
     }
 }
@@ -158,11 +150,6 @@ async function handleAvatarUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-        showGuestModal('برای تغییر پروفایل، ابتدا باید نام بگذارید.');
-        return;
-    }
-
     if (currentDiamonds < 10) {
         const ndModal = document.getElementById('no-diamond-modal');
         if (ndModal) ndModal.classList.add('active');
@@ -229,7 +216,7 @@ async function saveName() {
     const raw = input.value.trim();
 
     if (!/^[a-zA-Z0-9\.]{3,10}$/.test(raw)) {
-        document.getElementById('alert-modal').classList.add('active');
+        alert('لطفا از حروف و اعداد انگلیسی استفاده نمایید.');
         return;
     }
 
@@ -253,7 +240,7 @@ async function saveName() {
             .limit(1);
 
         if (existingName && existingName.length > 0 && existingName[0].device_id !== deviceId) {
-            document.getElementById('duplicate-alert-modal').classList.add('active');
+            alert('این نام قبلاً استفاده شده است. لطفا یک نام جدید وارد کنید.');
             return;
         }
     } catch (e) {}
