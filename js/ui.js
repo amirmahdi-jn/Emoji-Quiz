@@ -167,18 +167,19 @@ async function handleAvatarUpload(event) {
         const compressedBlob = await compressImage(file, 500, 500);
         const fileName = `avatar_${getDeviceId()}.jpg`;
 
-        const localUrl = URL.createObjectURL(compressedBlob);
-        if (previewEl) previewEl.src = localUrl;
-
-        const { data, error } = await supabaseClient.storage.from('avatars').upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
+        const { data, error } = await supabaseClient.storage
+            .from('avatars')
+            .upload(fileName, compressedBlob, { upsert: true, contentType: 'image/jpeg' });
 
         if (error) {
+            console.error("Avatar Upload Error:", error);
+            alert('خطا در آپلود عکس! لطفا اینترنت خود را بررسی کنید یا با پشتیبانی در ارتباط باشید.');
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
-            return;
+            return; 
         }
 
         const { data: { publicUrl } } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
-
+        
         currentCustomAvatarUrl = `${publicUrl}?t=${Date.now()}`;
         currentDiamonds -= 10;
 
@@ -188,7 +189,13 @@ async function handleAvatarUpload(event) {
 
         if (previewEl) previewEl.src = currentCustomAvatarUrl;
         if (headerAvatar) headerAvatar.src = currentCustomAvatarUrl;
+        
+        alert('عکس پروفایل با موفقیت تغییر کرد.');
+
     } catch (e) {
+        console.error("Avatar Process Error:", e);
+        alert('خطا در پردازش عکس! لطفا فایل دیگری انتخاب کنید.');
+        if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
     } finally {
         if (loadingOverlay) loadingOverlay.classList.remove('active');
         isUploadingAvatar = false;
