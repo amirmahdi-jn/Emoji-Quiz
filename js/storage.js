@@ -54,7 +54,11 @@ function syncToDatabase() {
         last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
         last_challenge_date: lastChallengeDate,
         challenge_correct: challengeCorrect
-    }, { onConflict: 'device_id' }).then(() => {
+    }, { onConflict: 'device_id' }).then(({ error }) => {
+        if (error) {
+            console.error("Sync Error:", error);
+            alert("خطا در ذخیره اطلاعات در دیتابیس!\n" + error.message);
+        }
         updateAllStatsUI();
     });
 }
@@ -104,6 +108,8 @@ async function loadProfile() {
             .maybeSingle();
 
         if (error) {
+            console.error("Load Profile Error:", error);
+            alert("خطا در دریافت پروفایل!\n" + error.message);
             document.getElementById('offline-overlay').classList.add('active');
             return;
         }
@@ -151,17 +157,19 @@ async function loadProfile() {
     currentDiamonds = 50;
     currentTrophies = 0;
 
-    try {
-        await supabaseClient.from('profiles').insert({
-            name: currentName,
-            device_id: deviceId,
-            custom_avatar_url: null,
-            solved_levels: 0,
-            coins: currentCoins,
-            diamonds: currentDiamonds,
-            trophies: 0
-        });
-    } catch (e) {
+    const { error: insertError } = await supabaseClient.from('profiles').insert({
+        name: currentName,
+        device_id: deviceId,
+        custom_avatar_url: null,
+        solved_levels: 0,
+        coins: currentCoins,
+        diamonds: currentDiamonds,
+        trophies: 0
+    });
+
+    if (insertError) {
+        console.error("Insert Profile Error:", insertError);
+        alert("خطا در ساخت اکانت جدید!\n" + insertError.message + "\n\nلطفا مطمئن شوید جدول profiles ساخته شده است.");
         document.getElementById('offline-overlay').classList.add('active');
         return;
     }
