@@ -173,7 +173,7 @@ async function handleAvatarUpload(event) {
 
         if (error) {
             console.error("Avatar Upload Error:", error);
-            alert('خطا در آپلود عکس! لطفا اینترنت خود را بررسی کنید یا با پشتیبانی در ارتباط باشید.');
+            alert('خطا در آپلود عکس!\n' + error.message);
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
             return; 
         }
@@ -259,16 +259,18 @@ async function saveName() {
     try {
         const { error } = await supabaseClient
             .from('profiles')
-            .update({
+            .upsert({
+                device_id: deviceId,
                 name: currentName,
                 custom_avatar_url: currentCustomAvatarUrl,
                 coins: currentCoins,
                 diamonds: currentDiamonds,
                 solved_levels: Object.keys(solvedLevels).length
-            })
-            .eq('device_id', deviceId);
+            }, { onConflict: 'device_id' });
 
         if (error) {
+            console.error("Save Name Error:", error);
+            alert("خطا در ذخیره نام!\n" + error.message);
             currentName = oldName;
             currentDiamonds += 10;
             updateProfileUI();
