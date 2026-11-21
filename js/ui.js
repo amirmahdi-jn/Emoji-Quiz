@@ -208,7 +208,7 @@ async function handleAvatarUpload(event) {
 
         if (error) {
             console.error("Avatar Upload Error:", error);
-            showCustomAlert('خطا در آپلود', 'خطا در آپلود عکس! لطفا اینترنت خود را بررسی کنید یا با پشتیبانی در ارتباط باشید.', 'error');
+            showCustomAlert('خطا در آپلود', 'لطفا اینترنت خود را بررسی کنید.', 'error');
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
             return; 
         }
@@ -229,7 +229,7 @@ async function handleAvatarUpload(event) {
 
     } catch (e) {
         console.error("Avatar Process Error:", e);
-        showCustomAlert('خطا', 'خطا در پردازش عکس! لطفا فایل دیگری انتخاب کنید.', 'error');
+        showCustomAlert('خطا در پردازش', 'لطفا فایل دیگری انتخاب کنید.', 'error');
         if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
     } finally {
         if (loadingOverlay) loadingOverlay.classList.remove('active');
@@ -258,7 +258,7 @@ async function saveName() {
     const raw = input.value.trim();
 
     if (!/^[a-zA-Z0-9\.]{3,10}$/.test(raw)) {
-        showCustomAlert('توجه', 'لطفا از حروف و اعداد انگلیسی استفاده نمایید.', 'warning');
+        showCustomAlert('توجه', 'لطفا از حروف و اعداد انگلیسی استفاده کنید.', 'warning');
         return;
     }
 
@@ -282,7 +282,7 @@ async function saveName() {
             .limit(1);
 
         if (existingName && existingName.length > 0 && existingName[0].device_id !== deviceId) {
-            showCustomAlert('نام تکراری', 'این نام قبلاً استفاده شده است. لطفا یک نام جدید وارد کنید.', 'warning');
+            showCustomAlert('نام تکراری', 'لطفا یک نام جدید وارد کنید.', 'warning');
             return;
         }
     } catch (e) {}
@@ -305,7 +305,7 @@ async function saveName() {
 
         if (error) {
             console.error("Save Name Error:", error);
-            showCustomAlert('خطا در دیتابیس', 'خطا در ذخیره نام! لطفا دوباره تلاش کنید.', 'error');
+            showCustomAlert('خطا در ذخیره نام', 'لطفا دوباره تلاش کنید.', 'error');
             currentName = oldName;
             currentDiamonds += 10;
             updateProfileUI();
