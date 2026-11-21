@@ -5,6 +5,35 @@ let isUploadingAvatar = false;
 let panelRefreshTimer = null;
 let lastPanelRefreshTime = 0;
 
+function showCustomAlert(title, message, type = 'error') {
+    const titleEl = document.getElementById('custom-alert-title');
+    const msgEl = document.getElementById('custom-alert-message');
+    const modal = document.getElementById('custom-alert-modal');
+
+    if (!titleEl || !msgEl || !modal) {
+        alert(message);
+        return;
+    }
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    if (type === 'success') {
+        titleEl.style.color = '#22c55e';
+    } else if (type === 'warning') {
+        titleEl.style.color = '#facc15';
+    } else {
+        titleEl.style.color = '#ef4444';
+    }
+
+    modal.classList.add('active');
+}
+
+function closeCustomAlert() {
+    const modal = document.getElementById('custom-alert-modal');
+    if (modal) modal.classList.remove('active');
+}
+
 function showGuestModal() {
     const activeScreen = document.querySelector('.screen.active');
     if (activeScreen) activeScreen.classList.add('blurred');
@@ -173,7 +202,7 @@ async function handleAvatarUpload(event) {
 
         if (error) {
             console.error("Avatar Upload Error:", error);
-            alert('خطا در آپلود عکس!\n' + error.message);
+            showCustomAlert('خطا در آپلود', 'خطا در آپلود عکس! لطفا اینترنت خود را بررسی کنید یا با پشتیبانی در ارتباط باشید.', 'error');
             if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
             return; 
         }
@@ -190,11 +219,11 @@ async function handleAvatarUpload(event) {
         if (previewEl) previewEl.src = currentCustomAvatarUrl;
         if (headerAvatar) headerAvatar.src = currentCustomAvatarUrl;
         
-        alert('عکس پروفایل با موفقیت تغییر کرد.');
+        showCustomAlert('موفق', 'عکس پروفایل با موفقیت تغییر کرد.', 'success');
 
     } catch (e) {
         console.error("Avatar Process Error:", e);
-        alert('خطا در پردازش عکس! لطفا فایل دیگری انتخاب کنید.');
+        showCustomAlert('خطا', 'خطا در پردازش عکس! لطفا فایل دیگری انتخاب کنید.', 'error');
         if (previewEl) previewEl.src = currentCustomAvatarUrl ? currentCustomAvatarUrl : defaultAvatar;
     } finally {
         if (loadingOverlay) loadingOverlay.classList.remove('active');
@@ -223,7 +252,7 @@ async function saveName() {
     const raw = input.value.trim();
 
     if (!/^[a-zA-Z0-9\.]{3,10}$/.test(raw)) {
-        alert('لطفا از حروف و اعداد انگلیسی استفاده نمایید.');
+        showCustomAlert('توجه', 'لطفا از حروف و اعداد انگلیسی استفاده نمایید.', 'warning');
         return;
     }
 
@@ -247,7 +276,7 @@ async function saveName() {
             .limit(1);
 
         if (existingName && existingName.length > 0 && existingName[0].device_id !== deviceId) {
-            alert('این نام قبلاً استفاده شده است. لطفا یک نام جدید وارد کنید.');
+            showCustomAlert('نام تکراری', 'این نام قبلاً استفاده شده است. لطفا یک نام جدید وارد کنید.', 'warning');
             return;
         }
     } catch (e) {}
@@ -270,7 +299,7 @@ async function saveName() {
 
         if (error) {
             console.error("Save Name Error:", error);
-            alert("خطا در ذخیره نام!\n" + error.message);
+            showCustomAlert('خطا در دیتابیس', 'خطا در ذخیره نام! لطفا دوباره تلاش کنید.', 'error');
             currentName = oldName;
             currentDiamonds += 10;
             updateProfileUI();
