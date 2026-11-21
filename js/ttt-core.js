@@ -144,7 +144,7 @@ function updateSearchText(text) {
 function openOnlineGame(gameType) {
     if (gameType !== 'tictactoe') return;
     if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-        showGuestModal('برای ورود به این بخش، ابتدا باید نام بگذارید.');
+        showGuestModal();
         return;
     }
     if (currentCoins < 25) {
