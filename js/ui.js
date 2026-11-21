@@ -5,6 +5,20 @@ let isUploadingAvatar = false;
 let panelRefreshTimer = null;
 let lastPanelRefreshTime = 0;
 
+function isGuestUser() {
+    const hasNoName = !currentName || currentName === 'Guest' || currentName.startsWith('Guest.');
+    const hasNoProfile = !currentCustomAvatarUrl;
+    return hasNoName || hasNoProfile;
+}
+
+function checkGuestRestriction() {
+    if (isGuestUser()) {
+        showGuestModal();
+        return true;
+    }
+    return false;
+}
+
 function showCustomAlert(title, message, type = 'error') {
     const titleEl = document.getElementById('custom-alert-title');
     const msgEl = document.getElementById('custom-alert-message');
@@ -47,15 +61,19 @@ function closeGuestModal() {
 }
 
 function startSinglePlayerMode() {
+    if (checkGuestRestriction()) return;
     renderChapters();
     showScreen('chapters-screen');
 }
 
 function startTwoPlayerMode() {
+    if (checkGuestRestriction()) return;
     showScreen('two-player-screen');
 }
 
 function showScreen(screenId) {
+    if (screenId !== 'main-menu' && checkGuestRestriction()) return;
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(screenId);
     if (target) target.classList.add('active');
@@ -85,29 +103,17 @@ function showScreen(screenId) {
 }
 
 function switchPanelTab(tabId) {
-    const isGuest = currentName === 'Guest' || currentName.startsWith('Guest.');
     currentPanelTab = tabId;
     document.querySelectorAll('.panel-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabId);
     });
     renderPanelContent(tabId);
     updateAllStatsUI();
-
-    if (isGuest) {
-        if (firstPanelEntry && tabId === 'top-players') {
-            firstPanelEntry = false;
-            setTimeout(() => {
-                if (currentName === 'Guest' || currentName.startsWith('Guest.')) {
-                    showGuestModal();
-                }
-            }, 3000);
-        } else {
-            showGuestModal();
-        }
-    }
 }
 
 function openModal(modalId) {
+    if (modalId !== 'profile-modal' && modalId !== 'custom-alert-modal' && checkGuestRestriction()) return;
+
     const overlay = document.getElementById('modal-overlay');
     if (!overlay) return;
     document.querySelectorAll('.modal-box, .guide-modal-content').forEach(el => el.classList.remove('active'));
