@@ -1,6 +1,24 @@
 const SUPABASE_URL = 'https://tkhvcfqqxxodhwgmdjiq.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_tFVmD-I9atRWGIpR0JvHDQ_p7rqHgja';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+        fetch: (url, options = {}) => {
+            let deviceId = '';
+            const nameEQ = 'emojiQuizDeviceId_v8=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                const c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) { deviceId = c.substring(nameEQ.length); break; }
+            }
+            options.headers = {
+                ...(options.headers || {}),
+                'x-device-id': deviceId
+            };
+            return fetch(url, options);
+        }
+    }
+});
 
 const defaultAvatar = 'avatar0.jpg';
 
