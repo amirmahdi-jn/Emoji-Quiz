@@ -154,21 +154,36 @@ function initDailyChallenge() {
     if (dailyChallengeInterval) clearInterval(dailyChallengeInterval);
     dailyChallengeInterval = setInterval(updateDailyTimer, 1000);
 
-    dailySubmit.addEventListener('click', () => {
-        if (dailyInput.disabled) return;
+    dailySubmit.addEventListener('click', async () => {
+        if (dailyInput.disabled || dailySubmit.disabled) return;
         const answer = dailyInput.value.trim();
         if (!answer) { dailyResult.textContent = 'لطفاً پاسخ را وارد کنید.'; dailyResult.className = 'challenge-result'; return; }
         const isCorrect = (answer === todayQuestion.answer);
-
-        lastChallengeDate = today;
-        challengeCorrect = isCorrect;
-        syncToDatabase();
+        const previousChallengeDate = lastChallengeDate;
+        const previousChallengeCorrect = challengeCorrect;
+        const previousDiamonds = currentDiamonds;
 
         dailyInput.disabled = true;
         dailySubmit.disabled = true;
-        if (isCorrect) {
-            currentDiamonds += 5;
+        lastChallengeDate = today;
+        challengeCorrect = isCorrect;
+        if (isCorrect) currentDiamonds += 5;
+        updateCoinsUI();
+
+        const saved = await syncToDatabase();
+        if (!saved) {
+            lastChallengeDate = previousChallengeDate;
+            challengeCorrect = previousChallengeCorrect;
+            currentDiamonds = previousDiamonds;
             updateCoinsUI();
+            dailyInput.disabled = false;
+            dailySubmit.disabled = false;
+            dailyResult.textContent = 'ذخیره جایزه انجام نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.';
+            dailyResult.className = 'challenge-result fail';
+            return;
+        }
+
+        if (isCorrect) {
             dailyResult.textContent = 'درست! ۵ الماس دریافت کردید.';
             dailyResult.className = 'challenge-result success';
         } else {
