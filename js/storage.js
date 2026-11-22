@@ -39,28 +39,35 @@ function getDeviceId() {
     return id;
 }
 
-function syncToDatabase() {
+async function syncToDatabase() {
     const solvedArray = Object.keys(solvedLevels).map(k => parseInt(k));
-    supabaseClient.from('profiles').upsert({
-        device_id: getDeviceId(),
-        name: currentName,
-        custom_avatar_url: currentCustomAvatarUrl,
-        coins: currentCoins,
-        diamonds: currentDiamonds,
-        trophies: currentTrophies,
-        solved_levels: solvedArray.length,
-        solved_levels_array: JSON.stringify(solvedArray),
-        remove_hint_uses: removeHintUses,
-        last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
-        last_challenge_date: lastChallengeDate,
-        challenge_correct: challengeCorrect
-    }, { onConflict: 'device_id' }).then(({ error }) => {
+    try {
+        const { error } = await supabaseClient.from('profiles').upsert({
+            device_id: getDeviceId(),
+            name: currentName,
+            custom_avatar_url: currentCustomAvatarUrl,
+            coins: currentCoins,
+            diamonds: currentDiamonds,
+            trophies: currentTrophies,
+            solved_levels: solvedArray.length,
+            solved_levels_array: JSON.stringify(solvedArray),
+            remove_hint_uses: removeHintUses,
+            last_gift_open: lastGiftOpen ? new Date(lastGiftOpen).toISOString() : null,
+            last_challenge_date: lastChallengeDate,
+            challenge_correct: challengeCorrect
+        }, { onConflict: 'device_id' });
         if (error) {
             console.error("Sync Error:", error);
             showCustomAlert('خطا', 'خطا در ذخیره اطلاعات در دیتابیس! لطفا اینترنت خود را بررسی کنید.', 'error');
+            return false;
         }
         updateAllStatsUI();
-    });
+        return true;
+    } catch (error) {
+        console.error("Sync Error:", error);
+        showCustomAlert('خطا', 'خطا در ذخیره اطلاعات در دیتابیس! لطفا اینترنت خود را بررسی کنید.', 'error');
+        return false;
+    }
 }
 
 function loadProgress() {
