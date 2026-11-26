@@ -1,4 +1,3 @@
-
 const DEVICE_KEY = 'emojiQuizDeviceId_v8';
 
 function setCookie(name, value, days) {
