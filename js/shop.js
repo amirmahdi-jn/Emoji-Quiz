@@ -13,9 +13,9 @@ function openPayment(key, amount, type) {
 
 const FRAME_DEFS = [
     { id: 'none', name: 'بدون قالب', price: 0, desc: 'بدون افکت' },
-    { id: 'fire', name: 'هاله آتشین', price: 30, desc: 'شعله‌های سوزان' },
-    { id: 'aurora', name: 'پرده اورورا', price: 50, desc: 'رنگ‌های درخشان' },
-    { id: 'glitch', name: 'روح گلیچ', price: 80, desc: 'موج‌های دیجیتال' }
+    { id: 'fire', name: 'هاله آتشین', price: 50, desc: 'شعله‌های سوزان' },
+    { id: 'aurora', name: 'پرده اورورا', price: 100, desc: 'رنگ‌های درخشان' },
+    { id: 'glitch', name: 'روح گلیچ', price: 150, desc: 'موج‌های دیجیتال' }
 ];
 
 function renderFrameShop() {
