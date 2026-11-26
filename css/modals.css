@@ -288,3 +288,46 @@
 #delete-friend-modal {
     z-index: 2147483000 !important;
 }
+
+
+.modal,
+#modal-overlay,
+#name-modal-overlay,
+#alert-modal,
+#duplicate-alert-modal,
+#offline-overlay,
+.ttt-result-overlay,
+.chat-custom-modal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    margin: auto;
+    text-align: center;
+    direction: rtl;
+}
+
+#no-coin-modal .modal-content,
+#no-diamond-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    direction: rtl;
+}
+
+#modal-overlay.active,
+.modal.active,
+#name-modal-overlay.active,
+#alert-modal.active,
+#duplicate-alert-modal.active,
+#offline-overlay.active,
+.chat-custom-modal.active {
+    display: flex;
+    }
