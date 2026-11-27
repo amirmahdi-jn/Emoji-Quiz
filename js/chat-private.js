@@ -1,3 +1,17 @@
+let privateSearchResultActive = false;
+let privateSearchTerm = '';
+
+document.addEventListener('input', (event) => {
+    if (event.target.id !== 'searchUserInput') return;
+    if (!privateSearchResultActive || event.target.value.trim() === privateSearchTerm) return;
+    privateSearchResultActive = false;
+    privateSearchTerm = '';
+    const listContainer = document.getElementById('private-chat-list');
+    if (listContainer && document.getElementById('tab-btn-friends')?.classList.contains('active')) {
+        loadFriendsList(listContainer);
+    }
+});
+
 async function updatePrivateBadges() {
     const { count: msgCount } = await supabaseClient
         .from('private_messages')
@@ -33,6 +47,8 @@ async function updatePrivateBadges() {
 }
 
 function switchPrivateTab(tab) {
+    privateSearchResultActive = false;
+    privateSearchTerm = '';
     document.getElementById('tab-btn-friends').classList.toggle('active', tab === 'friends');
     document.getElementById('tab-btn-chats').classList.toggle('active', tab === 'chats');
     document.getElementById('tab-btn-requests').classList.toggle('active', tab === 'requests');
@@ -58,7 +74,7 @@ function listenForPrivateEvents() {
             const activeTab = document.querySelector('.private-tab-btn.active')?.id;
             if (activeTab === 'tab-btn-requests') {
                 loadRequestsList(document.getElementById('private-chat-list'));
-            } else if (activeTab === 'tab-btn-friends') {
+            } else if (activeTab === 'tab-btn-friends' && !privateSearchResultActive) {
                 loadFriendsList(document.getElementById('private-chat-list'));
             }
         })
@@ -94,7 +110,7 @@ function listenForPrivateEvents() {
             }
 
             const activeTab = document.querySelector('.private-tab-btn.active')?.id;
-            if (activeTab === 'tab-btn-friends') {
+            if (activeTab === 'tab-btn-friends' && !privateSearchResultActive) {
                 loadFriendsList(document.getElementById('private-chat-list'));
             } else if (activeTab === 'tab-btn-chats') {
                 loadChatsList(document.getElementById('private-chat-list'));
@@ -115,6 +131,8 @@ async function searchUserForChat() {
     const listContainer = document.getElementById('private-chat-list');
 
     if (!term) return;
+    privateSearchResultActive = true;
+    privateSearchTerm = term;
     if (term === currentName) {
         listContainer.innerHTML = '<p style="text-align:center; color:#f87171;">شما نمی‌توانید به خودتان درخواست دهید!</p>';
         return;
@@ -124,6 +142,8 @@ async function searchUserForChat() {
 
     const { data: user } = await supabaseClient.from('profiles').select('name, custom_avatar_url, active_frame, last_seen').eq('name', term).maybeSingle();
 
+    if (!privateSearchResultActive || input.value.trim() !== term) return;
+
     if (!user) {
         listContainer.innerHTML = '<p style="text-align:center; color:#f87171;">کاربری با این آیدی یافت نشد.</p>';
         return;
@@ -131,6 +151,8 @@ async function searchUserForChat() {
 
     const { data: existingFriend } = await supabaseClient.from('friend_requests').select('status').or(`and(sender_name.eq.${currentName},receiver_name.eq.${term}),and(sender_name.eq.${term},receiver_name.eq.${currentName})`).eq('status', 'accepted').maybeSingle();
     const { data: existingPending } = await supabaseClient.from('friend_requests').select('status').or(`and(sender_name.eq.${currentName},receiver_name.eq.${term}),and(sender_name.eq.${term},receiver_name.eq.${currentName})`).eq('status', 'pending').maybeSingle();
+
+    if (!privateSearchResultActive || input.value.trim() !== term) return;
 
     let avatarSrc = user.custom_avatar_url || defaultAvatar;
     let actionBtn = '';
@@ -179,91 +201,136 @@ async function sendFriendRequest(receiver) {
 }
 
 async function loadChatsList(container) {
-    const { data: friends } = await supabaseClient.from('friend_requests')
-        .select('*')
-        .or(`and(sender_name.eq.${currentName},receiver_name.neq.${currentName}),and(receiver_name.eq.${currentName},sender_name.neq.${currentName})`)
-        .eq('status', 'accepted');
+    const { data: sent } = await supabaseClient
+        .from('private_messages')
+        .select('receiver_name, created_at, text, is_read')
+        .eq('sender_name', currentName)
+        .order('created_at', { ascending: false });
 
-    if (!friends || friends.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز پیامی ندارید.</p>';
-        return;
-    }
-
-    const { data: profiles } = await supabaseClient.from('profiles').select('name, custom_avatar_url, active_frame, last_seen');
-    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { custom_avatar_url: p.custom_avatar_url, active_frame: p.active_frame, last_seen: p.last_seen });
-
-    const { data: unreadMsgs } = await supabaseClient.from('private_messages')
-        .select('sender_name')
+    const { data: received } = await supabaseClient
+        .from('private_messages')
+        .select('sender_name, created_at, text, is_read')
         .eq('receiver_name', currentName)
-        .eq('is_read', false);
+        .order('created_at', { ascending: false });
 
-    const unreadCounts = {};
-    if (unreadMsgs) {
-        unreadMsgs.forEach(m => {
-            unreadCounts[m.sender_name] = (unreadCounts[m.sender_name] || 0) + 1;
+    const chatMap = new Map();
+
+    if (sent) {
+        sent.forEach(m => {
+            if (!chatMap.has(m.receiver_name)) {
+                chatMap.set(m.receiver_name, {
+                    name: m.receiver_name,
+                    lastMessage: m.text,
+                    date: m.created_at,
+                    unread: 0
+                });
+            }
         });
     }
 
-    container.innerHTML = '';
-    friends.forEach(f => {
-        const otherUser = f.sender_name === currentName ? f.receiver_name : f.sender_name;
-        const uData = cachedAvatarMap[otherUser] || { custom_avatar_url: null, active_frame: 'none', last_seen: null };
-        const avSrc = uData.custom_avatar_url || defaultAvatar;
-        const count = unreadCounts[otherUser] || 0;
-        let badgeHTML = count > 0 ? `<span class="unread-badge">${count}</span>` : '';
+    if (received) {
+        received.forEach(m => {
+            if (!chatMap.has(m.sender_name)) {
+                chatMap.set(m.sender_name, {
+                    name: m.sender_name,
+                    lastMessage: m.text,
+                    date: m.created_at,
+                    unread: 0
+                });
+            }
 
-        container.innerHTML += `
-            <div class="user-card" onclick="openPrivateChat('${otherUser}', '${avSrc}')" style="cursor:pointer;">
-                <div class="user-card-info">
-                    <div class="user-avatar-frame ${getFrameClass(uData.active_frame)}"><img src="${avSrc}"></div>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
-                        ${getStatusHTML(otherUser, uData.last_seen)}
-                    </div>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    ${badgeHTML}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+            if (!m.is_read) {
+                chatMap.get(m.sender_name).unread++;
+            }
+        });
+    }
+
+    const chats = Array.from(chatMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (chats.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">هنوز گفتگویی ندارید.</p>';
+        return;
+    }
+
+    const names = chats.map(c => c.name);
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('name, custom_avatar_url, active_frame, last_seen')
+        .in('name', names);
+
+    const profileMap = {};
+    if (profiles) profiles.forEach(p => profileMap[p.name] = p);
+
+    container.innerHTML = '';
+
+    chats.forEach(chat => {
+        const profile = profileMap[chat.name] || {};
+        const avatar = profile.custom_avatar_url || defaultAvatar;
+
+        const row = document.createElement('div');
+        row.className = 'friend-list-item';
+        row.innerHTML = `
+            <div class="user-card-info">
+                <div class="user-avatar-frame ${getFrameClass(profile.active_frame)}"><img src="${avatar}"></div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span>${chat.name} ${getVerifiedIcon(chat.name)}</span>
+                    ${getStatusHTML(chat.name, profile.last_seen)}
+                    <small style="color:var(--text-muted);">${chat.lastMessage || ''}</small>
                 </div>
             </div>
+            ${chat.unread > 0 ? `<span class="badge">${chat.unread}</span>` : ''}
+            <button class="user-card-action" onclick="openPrivateChat('${chat.name}', '${avatar}')">ورود به چت</button>
         `;
+        container.appendChild(row);
     });
 }
 
 async function loadFriendsList(container) {
-    const { data: friends } = await supabaseClient.from('friend_requests')
+    const { data: friends } = await supabaseClient
+        .from('friend_requests')
         .select('*')
-        .or(`and(sender_name.eq.${currentName},receiver_name.neq.${currentName}),and(receiver_name.eq.${currentName},sender_name.neq.${currentName})`)
-        .eq('status', 'accepted');
+        .or(`sender_name.eq.${currentName},receiver_name.eq.${currentName}`)
+        .eq('status', 'accepted')
+        .order('created_at', { ascending: false });
 
     if (!friends || friends.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز دوستی ندارید.</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">هنوز دوستی ندارید.</p>';
         return;
     }
 
-    const { data: profiles } = await supabaseClient.from('profiles').select('name, custom_avatar_url, active_frame, last_seen');
-    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { custom_avatar_url: p.custom_avatar_url, active_frame: p.active_frame, last_seen: p.last_seen });
+    const friendNames = friends.map(f => f.sender_name === currentName ? f.receiver_name : f.sender_name);
+
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('name, custom_avatar_url, active_frame, last_seen')
+        .in('name', friendNames);
+
+    const profileMap = {};
+    if (profiles) profiles.forEach(p => profileMap[p.name] = p);
 
     container.innerHTML = '';
+
     friends.forEach(f => {
         const otherUser = f.sender_name === currentName ? f.receiver_name : f.sender_name;
-        const uData = cachedAvatarMap[otherUser] || { custom_avatar_url: null, active_frame: 'none', last_seen: null };
-        const avSrc = uData.custom_avatar_url || defaultAvatar;
+        const profile = profileMap[otherUser] || {};
+        const avatar = profile.custom_avatar_url || defaultAvatar;
 
-        container.innerHTML += `
-            <div class="user-card">
-                <div class="user-card-info">
-                    <div class="user-avatar-frame ${getFrameClass(uData.active_frame)}"><img src="${avSrc}"></div>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
-                        ${getStatusHTML(otherUser, uData.last_seen)}
-                    </div>
+        const row = document.createElement('div');
+        row.className = 'friend-list-item';
+        row.innerHTML = `
+            <div class="user-card-info">
+                <div class="user-avatar-frame ${getFrameClass(profile.active_frame)}"><img src="${avatar}"></div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span>${otherUser} ${getVerifiedIcon(otherUser)}</span>
+                    ${getStatusHTML(otherUser, profile.last_seen)}
                 </div>
-                <button class="trash-btn" onclick="openDeleteFriendModal('${otherUser}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                </button>
             </div>
+            <button class="user-card-action" onclick="openPrivateChat('${otherUser}', '${avatar}')">ورود به چت</button>
+            <button class="trash-btn" onclick="openDeleteFriendModal('${otherUser}')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
         `;
+        container.appendChild(row);
     });
 }
 
@@ -282,327 +349,166 @@ async function confirmDeleteFriend() {
 
     await supabaseClient.from('friend_requests')
         .delete()
-        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${friendToDelete}),and(sender_name.eq.${friendToDelete},receiver_name.eq.${currentName})`)
-        .eq('status', 'accepted');
-
-    await supabaseClient.from('private_messages')
-        .delete()
         .or(`and(sender_name.eq.${currentName},receiver_name.eq.${friendToDelete}),and(sender_name.eq.${friendToDelete},receiver_name.eq.${currentName})`);
 
     if (activePrivateChat === friendToDelete) {
-        closePrivateChat();
+        activePrivateChat = null;
     }
 
     closeDeleteFriendModal();
     switchPrivateTab('friends');
-    updatePrivateBadges();
 }
 
 async function loadRequestsList(container) {
-    const { data: requests } = await supabaseClient.from('friend_requests')
+    const { data: requests } = await supabaseClient
+        .from('friend_requests')
         .select('*')
         .eq('receiver_name', currentName)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
     if (!requests || requests.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">هنوز درخواستی ندارید.</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">هنوز درخواستی ندارید.</p>';
         return;
     }
 
-    const { data: profiles } = await supabaseClient.from('profiles').select('name, custom_avatar_url, active_frame');
-    if (profiles) profiles.forEach(p => cachedAvatarMap[p.name] = { custom_avatar_url: p.custom_avatar_url, active_frame: p.active_frame });
+    const senderNames = requests.map(r => r.sender_name);
+
+    const { data: profiles } = await supabaseClient
+        .from('profiles')
+        .select('name, custom_avatar_url, active_frame, last_seen')
+        .in('name', senderNames);
+
+    const profileMap = {};
+    if (profiles) profiles.forEach(p => profileMap[p.name] = p);
 
     container.innerHTML = '';
-    requests.forEach(r => {
-        const uData = cachedAvatarMap[r.sender_name] || { custom_avatar_url: null, active_frame: 'none' };
-        const avSrc = uData.custom_avatar_url || defaultAvatar;
 
-        const date = new Date(r.created_at);
-        const pDate = date.toLocaleDateString('fa-IR');
-        const pTime = date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    requests.forEach(req => {
+        const profile = profileMap[req.sender_name] || {};
+        const avatar = profile.custom_avatar_url || defaultAvatar;
 
-        container.innerHTML += `
-            <div class="user-card" style="flex-direction:column; align-items:stretch;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div class="user-card-info">
-                        <div class="user-avatar-frame ${getFrameClass(uData.active_frame)}"><img src="${avSrc}"></div>
-                        <span>${r.sender_name} ${getVerifiedIcon(r.sender_name)}</span>
-                    </div>
-                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                        <span style="font-size:0.75rem; color:#fff;">${pDate}</span>
-                        <span style="font-size:0.7rem; color:var(--text-muted);">${pTime}</span>
-                    </div>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button class="user-card-action accept" style="flex:1;" onclick="acceptRequest('${r.id}')">تایید</button>
-                    <button class="user-card-action reject" style="flex:1;" onclick="rejectRequest('${r.id}')">رد</button>
+        const row = document.createElement('div');
+        row.className = 'friend-list-item';
+        row.innerHTML = `
+            <div class="user-card-info">
+                <div class="user-avatar-frame ${getFrameClass(profile.active_frame)}"><img src="${avatar}"></div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span>${req.sender_name} ${getVerifiedIcon(req.sender_name)}</span>
+                    ${getStatusHTML(req.sender_name, profile.last_seen)}
                 </div>
             </div>
+            <button class="user-card-action" style="background:#22c55e;" onclick="acceptFriendRequest(${req.id})">تایید</button>
+            <button class="user-card-action" style="background:#ef4444;" onclick="rejectFriendRequest(${req.id})">رد</button>
         `;
+        container.appendChild(row);
     });
 }
 
-async function acceptRequest(reqId) {
+async function acceptFriendRequest(reqId) {
     await supabaseClient.from('friend_requests').update({ status: 'accepted' }).eq('id', reqId);
-    switchPrivateTab('requests');
     updatePrivateBadges();
+    switchPrivateTab('friends');
 }
 
-async function rejectRequest(reqId) {
-    await supabaseClient.from('friend_requests').update({ status: 'rejected' }).eq('id', reqId);
-    switchPrivateTab('requests');
+async function rejectFriendRequest(reqId) {
+    await supabaseClient.from('friend_requests').delete().eq('id', reqId);
     updatePrivateBadges();
+    switchPrivateTab('requests');
 }
 
-async function openPrivateChat(user, avatarSrc) {
-    activePrivateChat = user;
+function openPrivateChat(name, avatar) {
+    activePrivateChat = name;
     currentChatContext = 'private';
 
-    if (!cachedAvatarMap[user]) {
-        const { data } = await supabaseClient.from('profiles').select('custom_avatar_url, active_frame, last_seen').eq('name', user).maybeSingle();
-        if (data) cachedAvatarMap[user] = data;
-    }
-
-    const { data: pData } = await supabaseClient.from('profiles').select('last_seen, active_frame, custom_avatar_url').eq('name', user).maybeSingle();
-    const statusHTML = getStatusHTML(user, pData ? pData.last_seen : null);
-
-    const chatWindow = document.createElement('div');
-    chatWindow.className = 'private-chat-window';
-    chatWindow.id = 'private-chat-window';
-    chatWindow.innerHTML = `
+    const panelContent = document.getElementById('panel-content');
+    panelContent.innerHTML = `
         <div class="private-chat-header">
-            <div class="header-right">
-                <div class="user-avatar-frame ${getFrameClass((cachedAvatarMap[user] || {}).active_frame)}"><img src="${avatarSrc}"></div>
-                <div class="name-status">
-                    <span class="name">${user} ${getVerifiedIcon(user)}</span>
-                    ${statusHTML}
-                </div>
-            </div>
-            <button class="back-btn" onclick="closePrivateChat()">
+            <button class="back-btn" onclick="renderPanelContent('private-chat')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8L2 12L6 16"/><path d="M2 12H22"/></svg>
             </button>
+            <div class="user-avatar-frame">
+                <img src="${avatar}">
+            </div>
+            <div class="name-status">
+                <span>${name}</span>
+                ${getStatusHTML(name, cachedAvatarMap[name]?.last_seen)}
+            </div>
         </div>
-        <div class="private-chat-messages" id="private-messages-container"></div>
-        <div class="private-input-row">
+        <div id="private-messages-container" class="private-messages-container"></div>
+        <div class="chat-input-row">
             <button class="send-msg-btn" onclick="sendPrivateMessage()" aria-label="ارسال پیام">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
             </button>
-            <textarea id="private-chat-input" placeholder="پیام..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"></textarea>
+            <textarea id="private-chat-input" placeholder="پیام خود را بنویسید..." rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"></textarea>
             <button class="sticker-open-btn" onclick="openStickerPicker()" aria-label="استیکر">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticker preview-icon"><path d="M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/><path d="M15 3v5a1 1 0 0 0 1 1h5"/><path d="M8 13h.01"/><path d="M16 13h.01"/><path d="M10 16s.8 1 2 1c1.3 0 2-1 2-1"/></svg>
             </button>
         </div>
     `;
-    document.body.appendChild(chatWindow);
 
-    supabaseClient.from('private_messages')
-        .update({ is_read: true })
-        .eq('receiver_name', currentName)
-        .eq('sender_name', user)
-        .then(() => {
-            updatePrivateBadges();
-            if (document.getElementById('tab-btn-chats')?.classList.contains('active')) {
-                loadChatsList(document.getElementById('private-chat-list'));
-            }
-        });
-
-    loadPrivateMessages();
+    loadPrivateMessages(name);
 }
 
-function closePrivateChat() {
-    if (privateChatSubscription) supabaseClient.removeChannel(privateChatSubscription);
-    const w = document.getElementById('private-chat-window');
-    if (w) w.remove();
-    activePrivateChat = null;
-    currentChatContext = 'public';
-    updatePrivateBadges();
-}
-
-async function loadPrivateMessages() {
+async function loadPrivateMessages(name) {
     const container = document.getElementById('private-messages-container');
     if (!container) return;
 
-    const { data } = await supabaseClient.from('private_messages')
+    const { data: messages } = await supabaseClient
+        .from('private_messages')
         .select('*')
-        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${activePrivateChat}),and(sender_name.eq.${activePrivateChat},receiver_name.eq.${currentName})`)
+        .or(`and(sender_name.eq.${currentName},receiver_name.eq.${name}),and(sender_name.eq.${name},receiver_name.eq.${currentName})`)
         .order('created_at', { ascending: true });
 
-    container.innerHTML = '';
-    let lastDate = null;
-    if (data) {
-        data.forEach(msg => {
+    if (!messages || messages.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">هنوز پیامی ارسال نشده است.</p>';
+    } else {
+        container.innerHTML = '';
+        let lastDate = null;
+
+        messages.forEach(msg => {
             const msgDate = new Date(msg.created_at).toDateString();
-            if (lastDate !== msgDate) {
+
+            if (msgDate !== lastDate) {
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'chat-header-date';
                 dateDiv.innerText = getPersianDateString(msg.created_at);
                 container.appendChild(dateDiv);
                 lastDate = msgDate;
             }
+
             appendPrivateMessageUI(msg);
         });
     }
+
+    await supabaseClient
+        .from('private_messages')
+        .update({ is_read: true })
+        .eq('sender_name', name)
+        .eq('receiver_name', currentName)
+        .eq('is_read', false);
+
     container.scrollTop = container.scrollHeight;
+    updatePrivateBadges();
 
     if (privateChatSubscription) supabaseClient.removeChannel(privateChatSubscription);
     privateChatSubscription = supabaseClient
-        .channel('public:private_messages')
+        .channel(`private-chat-${currentName}-${name}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'private_messages' }, (payload) => {
             const msg = payload.new;
-            if ((msg.sender_name === currentName && msg.receiver_name === activePrivateChat) ||
-                (msg.sender_name === activePrivateChat && msg.receiver_name === currentName)) {
-
-                if (!document.querySelector(`[data-private-msg-id="${msg.id}"]`)) {
-                    const msgDate = new Date(msg.created_at).toDateString();
-                    let lastDate = null;
-                    const wrappers = container.querySelectorAll('.chat-msg-wrapper');
-                    if (wrappers.length > 0) {
-                        lastDate = wrappers[wrappers.length - 1].getAttribute('data-date');
-                    }
-
-                    if (lastDate !== msgDate) {
-                        const dateDiv = document.createElement('div');
-                        dateDiv.className = 'chat-header-date';
-                        dateDiv.innerText = getPersianDateString(msg.created_at);
-                        container.appendChild(dateDiv);
-                    }
-
+            if (
+                (msg.sender_name === name && msg.receiver_name === currentName) ||
+                (msg.sender_name === currentName && msg.receiver_name === name)
+            ) {
+                const existing = document.querySelector(`[data-private-msg-id="${msg.id}"]`);
+                if (!existing) {
+                    if (container.innerHTML.includes('هنوز پیامی ارسال نشده است.')) container.innerHTML = '';
                     appendPrivateMessageUI(msg);
                     container.scrollTop = container.scrollHeight;
-
-                    if (msg.receiver_name === currentName) {
-                        supabaseClient.from('private_messages').update({ is_read: true }).eq('id', msg.id).then();
-                    }
-                }
-            }
-        })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'private_messages' }, (payload) => {
-            const msg = payload.new;
-            const wrapper = document.querySelector(`[data-private-msg-id="${msg.id}"]`);
-            if (wrapper) {
-                const textEl = wrapper.querySelector('.chat-msg-text');
-                if (textEl) {
-                    textEl.textContent = msg.text;
-                    if (msg.is_edited) {
-                        let timeEl = wrapper.querySelector('.chat-msg-time');
-                        if (timeEl && !timeEl.textContent.includes('(ویرایش شده)')) {
-                            const editedSpan = document.createElement('span');
-                            editedSpan.style.color = 'var(--text-muted)';
-                            editedSpan.textContent = ' (ویرایش شده)';
-                            timeEl.appendChild(editedSpan);
-                        }
-                    }
-                }
-
-                const tickEl = wrapper.querySelector('.msg-tick');
-                if (tickEl && msg.sender_name === currentName) {
-                    tickEl.innerHTML = msg.is_read ? doubleTickSvg : singleTickSvg;
                 }
             }
         })
         .subscribe();
-}
-
-function appendPrivateMessageUI(msg) {
-    const container = document.getElementById('private-messages-container');
-    if (!container) return;
-
-    const isMe = msg.sender_name === currentName;
-    let avatarSrc = defaultAvatar;
-    if (isMe) {
-        if (currentCustomAvatarUrl) avatarSrc = currentCustomAvatarUrl;
-    } else {
-        const uData = cachedAvatarMap[msg.sender_name];
-        if (uData && uData.custom_avatar_url) avatarSrc = uData.custom_avatar_url;
-    }
-
-    const time = getPersianTime(msg.created_at);
-    const color = getUserColor(msg.sender_name);
-
-    const wrapper = document.createElement('div');
-    wrapper.className = `chat-msg-wrapper ${isMe ? 'my-message' : 'other-message'}`;
-    wrapper.setAttribute('data-private-msg-id', msg.id);
-    wrapper.setAttribute('data-date', new Date(msg.created_at).toDateString());
-
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'chat-msg-avatar ' + getFrameClass(isMe ? currentFrame : ((cachedAvatarMap[msg.sender_name] || {}).active_frame));
-    const avatarImg = document.createElement('img');
-    avatarImg.src = avatarSrc;
-    avatarImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
-    avatarDiv.appendChild(avatarImg);
-    wrapper.appendChild(avatarDiv);
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'chat-msg-content';
-    contentDiv.style.cssText = `background:${isMe ? 'rgba(199,36,255,0.2)' : 'rgba(255,255,255,0.1)'}; padding:8px 12px; border-radius:12px; position:relative;`;
-
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'chat-msg-header';
-    headerDiv.style.cssText = 'margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; gap:10px;';
-
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'chat-msg-name';
-    nameSpan.style.cssText = `color:${color}; font-size:0.75rem; font-weight:bold;`;
-    nameSpan.textContent = msg.sender_name;
-    nameSpan.insertAdjacentHTML('beforeend', getVerifiedIcon(msg.sender_name));
-    headerDiv.appendChild(nameSpan);
-
-    if (isMe && msg.message_type !== 'sticker') {
-        const menuBtn = document.createElement('button');
-        menuBtn.className = 'msg-menu-btn';
-        menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
-        menuBtn.addEventListener('click', () => window.openEditModal(msg.id, msg.text));
-        headerDiv.appendChild(menuBtn);
-    }
-    contentDiv.appendChild(headerDiv);
-
-    if (msg.reply_to_text) {
-        const replyDiv = document.createElement('div');
-        replyDiv.style.cssText = 'font-size:0.7rem; color:var(--text-muted); background:rgba(0,0,0,0.2); padding:4px; border-radius:4px; margin-bottom:5px; border-right:2px solid var(--primary-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
-        const replyName = document.createElement('b');
-        replyName.textContent = (msg.reply_to_name || 'کاربر') + ':';
-        replyDiv.appendChild(replyName);
-        replyDiv.appendChild(document.createTextNode(' ' + msg.reply_to_text));
-        contentDiv.appendChild(replyDiv);
-    }
-
-    const textDiv = document.createElement('div');
-    textDiv.className = 'chat-msg-text';
-    textDiv.style.cssText = 'font-size:0.85rem; color:#fff; white-space:pre-wrap;';
-    if (msg.message_type === 'sticker' && msg.sticker_id) {
-        textDiv.appendChild(createStickerMessageElement(msg.sticker_id));
-    } else {
-        textDiv.textContent = msg.text;
-    }
-    contentDiv.appendChild(textDiv);
-
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'chat-msg-time';
-    timeDiv.style.cssText = 'font-size:0.6rem; color:var(--text-muted); direction:ltr; margin-top:5px; text-align:left; display:flex; align-items:center; justify-content:flex-end;';
-    if (isMe) {
-        const tickSpan = document.createElement('span');
-        tickSpan.className = 'msg-tick';
-        tickSpan.style.cssText = 'margin-left:4px;';
-        tickSpan.innerHTML = msg.is_read ? doubleTickSvg : singleTickSvg;
-        timeDiv.appendChild(tickSpan);
-    }
-    const timeInner = document.createElement('span');
-    timeInner.setAttribute('dir', 'rtl');
-    timeInner.style.cssText = 'margin-left:6px;';
-    timeInner.textContent = time + (msg.is_edited ? ' (ویرایش شده)' : '');
-    timeDiv.appendChild(timeInner);
-    contentDiv.appendChild(timeDiv);
-
-    if (!isMe && msg.message_type !== 'sticker') {
-        const replyBtn = document.createElement('button');
-        replyBtn.className = 'msg-reply-btn';
-        replyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>';
-        replyBtn.addEventListener('click', () => window.openReplyModal(msg.id, msg.sender_name, msg.text));
-        contentDiv.appendChild(replyBtn);
-    }
-
-    wrapper.appendChild(contentDiv);
-    container.appendChild(wrapper);
 }
 
 async function sendPrivateMessage() {
@@ -649,4 +555,4 @@ async function sendPrivateMessage() {
             container.scrollTop = container.scrollHeight;
         }
     }
-}
+                                             }
